@@ -1,0 +1,1119 @@
+{% extends "index.html" %} {% block title %}
+<title>AbsensiKu | Home</title>
+{% endblock %} {% block value_body %}
+<main
+  id="home"
+  class="overflow-x-hidden container-fluid d-flex flex-column justify-content-center align-items-center m-0 p-0"
+  style="gap: 25rem"
+>
+  <!-- page main -->
+  <section
+    id="page_main"
+    class="row row-cols-md-2 row-cols-1 justify-content-center align-items-center p-3 w-100 vh-100 bg-primary-subtle m-0"
+    data-aos="fade"
+    data-aos-delay="0"
+    data-aos-duration="500"
+  >
+    <div
+      class="col d-flex flex-column justify-content-center align-items-center pt-4 pt-md-0 px-md-4 order-2 order-md-1"
+      data-aos="fade-right"
+      data-aos-delay="500"
+      data-aos-duration="800"
+    >
+      <div class="w-100 text-start mb-4">
+        <h1 class="h3 poppins-medium text-start lh-1">
+          Selamat Datang di Absensi<span class="text-pink">Ku</span>
+        </h1>
+      </div>
+      <div class="w-100 text-start mb-4">
+        <a href="/sign-in" class="poppins-regular btn btn-pink btn-md"
+          >Mulai Sekarang</a
+        >
+      </div>
+    </div>
+    <div
+      class="col order-1 order-md-2 hero-img d-flex justify-content-center align-items-center"
+      data-aos="zoom-in"
+      data-aos-delay="1400"
+      data-aos-duration="800"
+    >
+      <img
+        id="img1"
+        class="img-fluid animated"
+        src="{{url_for('static',filename='img/home.svg')}}"
+        alt="home.svg"
+      />
+    </div>
+  </section>
+
+  <!-- about -->
+  <section
+    id="about"
+    class="row gap-3 justify-content-center align-items-center p-3 w-100"
+  >
+    <!-- title -->
+    <div
+      class="col-12"
+      data-aos="fade-bottom"
+      data-aos-delay="0"
+      data-aos-duration="1500"
+      data-aos-placement="center-center"
+    >
+      <div class="text-center text-pink poppins-bold">
+        <h1 class="h2 poppins-medium lh-1">Apakah itu?</h1>
+      </div>
+    </div>
+    <!-- content -->
+    <div
+      class="col-12 row-gap-3 row row-cols-1 row-cols-md-2 justify-content-center align-items-start"
+    >
+      <div
+        class="col start"
+        data-aos="fade-right"
+        data-aos-delay="0"
+        data-aos-duration="1500"
+        data-aos-placement="center-center"
+      >
+        <img
+          class="img-fluid object-fit-cover"
+          src="{{url_for('static',filename='img/dashboard_absensiku.png')}}"
+          alt="dashboard_absensiku.png"
+        />
+      </div>
+      <div
+        class="col"
+        data-aos="fade-left"
+        data-aos-delay="0"
+        data-aos-duration="1500"
+        data-aos-placement="center-center"
+      >
+        <p class="lead poppins-regular text-dark" style="text-align: justify">
+          <span class="poppins-medium"
+            >Absensi<span class="text-pink">Ku</span></span
+          >
+          adalah sebuah sistem manajemen kehadiran modern yang dirancang untuk
+          mempermudah dan mengotomatiskan proses pelacakan kehadiran karyawan.
+          Dengan fitur pemantauan real-time dan laporan yang mudah diakses
+          secara mobile.
+        </p>
+        <p class="lead poppins-regular text-dark" style="text-align: justify">
+          <span class="poppins-medium"
+            >Absensi<span class="text-pink">Ku</span></span
+          >
+          menjamin akurasi dan transparansi baik bagi karyawan maupun pemberi
+          kerja. Tujuan dari platform ini adalah menyediakan sistem yang mudah
+          digunakan untuk membantu organisasi meningkatkan produktivitas sambil
+          tetap menjaga akuntabilitas.
+        </p>
+      </div>
+    </div>
+  </section>
+
+  <!-- fitur -->
+  <section
+    id="fitur"
+    class="row gap-2 justify-content-center align-items-center p-3 w-100 bg-info-subtle m-0"
+    data-aos="fade"
+    data-aos-delay="0"
+    data-aos-duration="500"
+    data-aos-placement="center-bottom"
+  >
+    <!-- title -->
+    <div
+      class="col-12"
+      data-aos="fade-bottom"
+      data-aos-delay="500"
+      data-aos-duration="500"
+      data-aos-placement="center-center"
+    >
+      <div class="text-center text-pink">
+        <h1 class="h2 poppins-medium lh-1">Our Features</h1>
+      </div>
+    </div>
+    <!-- content -->
+    <div
+      class="col-12 bg-body-tertiary p-2 row row-cols-lg-4 row-cols-sm-2 row-cols-1 justify-content-md-between justify-content-center align-items-center"
+    >
+      <div
+        id="img"
+        data-aos="zoom-in"
+        data-aos-duration="500"
+        data-aos-placement="center-center"
+        data-aos-delay="0"
+        class="col d-flex flex-column gap-3 justify-content-center align-items-center"
+        style="max-width: max-content"
+      >
+        <div class="head d-flex justify-content-center align-items-center">
+          <img
+            class="img-fluid"
+            src="{{ url_for('static', filename='img/recapitulation.png') }}"
+            alt="recapitulation.png"
+          />
+        </div>
+        <figcaption
+          class="d-block fs-6 lead poppins-medium text-dark text-center lh-2 z-1"
+        >
+          Fast Recapitulation
+        </figcaption>
+      </div>
+      <div
+        id="img"
+        data-aos="zoom-in"
+        data-aos-duration="500"
+        data-aos-placement="center-center"
+        data-aos-delay="500"
+        class="col d-flex flex-column gap-3 justify-content-center align-items-center"
+        style="max-width: max-content"
+      >
+        <div class="head d-flex justify-content-center align-items-center">
+          <img
+            class="img-fluid"
+            src="{{ url_for('static', filename='img/realtime.png') }}"
+            alt="realtime.png"
+          />
+        </div>
+        <figcaption
+          class="d-block fs-6 lead poppins-medium text-dark text-center lh-2 z-1"
+        >
+          Realtime
+        </figcaption>
+      </div>
+      <div
+        id="img"
+        data-aos="zoom-in"
+        data-aos-duration="500"
+        data-aos-placement="center-center"
+        data-aos-delay="900"
+        class="col d-flex flex-column gap-3 justify-content-center align-items-center"
+        style="max-width: max-content"
+      >
+        <div class="head d-flex justify-content-center align-items-center">
+          <img
+            class="img-fluid"
+            src="{{ url_for('static', filename='img/mobile_friendly.svg') }}"
+            alt="mobile_friendly.svg"
+          />
+        </div>
+        <figcaption
+          class="d-block fs-6 lead poppins-medium text-dark text-center lh-2 z-1"
+        >
+          Mobile friendly design
+        </figcaption>
+      </div>
+      <div
+        id="img"
+        data-aos="zoom-in"
+        data-aos-duration="500"
+        data-aos-placement="center-center"
+        data-aos-delay="1400"
+        class="col d-flex flex-column gap-3 justify-content-center align-items-center"
+        style="max-width: max-content"
+      >
+        <div class="head d-flex justify-content-center align-items-center">
+          <img
+            class="img-fluid"
+            src="{{ url_for('static', filename='img/authentication_home.svg') }}"
+            alt="authentication_home.svg"
+          />
+        </div>
+        <figcaption
+          class="d-block fs-6 lead poppins-medium text-dark text-center lh-2 z-1"
+        >
+          Authentication
+        </figcaption>
+      </div>
+    </div>
+  </section>
+
+  <!-- dukungan -->
+  <section
+    id="dukungan"
+    class="row gap-4 justify-content-center align-items-center px-3 py-5 w-100"
+  >
+    <!-- title -->
+    <div
+      class="col-12"
+      data-aos="fade-bottom"
+      data-aos-delay="0"
+      data-aos-duration="500"
+      data-aos-placement="center-center"
+    >
+      <div class="text-center text-pink">
+        <h1 class="h2 poppins-medium lh-1">Our Support Partner</h1>
+      </div>
+    </div>
+    <!-- content -->
+    <div
+      class="col-12 d-flex justify-content-center align-items-center pb-4"
+      data-aos="zoom-in"
+      data-aos-duration="500"
+      data-aos-placement="center-center"
+      data-aos-delay="500"
+    >
+      <!-- gambar 1 -->
+      <div id="winnicode-img-home">
+        <img
+          class="img-fluid"
+          src="{{ url_for('static', filename='img/winni-code-copy.png') }}"
+          alt="winnicode.png"
+        />
+      </div>
+    </div>
+  </section>
+
+  <!-- Cara Penggunaan -->
+  <section
+    id="guide"
+    class="row gap-3 justify-content-center align-items-center p-3 w-100"
+  >
+    <!-- title -->
+    <div
+      class="col-12"
+      data-aos="fade-bottom"
+      data-aos-delay="0"
+      data-aos-duration="1500"
+      data-aos-placement="center-center"
+    >
+      <div class="text-center text-pink poppins-bold">
+        <h1 class="h2 poppins-medium lh-1">How to use?</h1>
+      </div>
+    </div>
+    <!-- content -->
+    <div
+      class="col-12 row-gap-3 row row-cols-1 row-cols-md-2 justify-content-center align-items-center"
+    >
+      <div
+        class="col start"
+        data-aos="fade-right"
+        data-aos-delay="0"
+        data-aos-duration="1500"
+        data-aos-placement="center-center"
+      >
+        <img
+          class="img-fluid object-fit-cover"
+          src="{{url_for('static',filename='img/manual.svg')}}"
+          alt="manual.svg"
+        />
+      </div>
+      <div
+        class="col d-flex justify-content-center align-items-center"
+        role="group"
+        data-aos="fade-left"
+        data-aos-delay="0"
+        data-aos-duration="1500"
+        data-aos-placement="center-center"
+      >
+        <div class="btn-group-vertical gap-3 w-100">
+          <!-- manual admin -->
+          <button onclick="manualAdmin()" type="button" class="btn btn-pink d-flex justify-content-center align-items-center poppins-regular w-100">
+            <div id="book-wrapper" class="wrapper text-md-start w-100">
+              <svg
+                id="book"
+                width="34"
+                height="46"
+                viewBox="0 0 34 46"
+                fill="none"
+                xmlns="http://www.w3.org/2000/svg"
+              >
+                <g id="book-property">
+                  <g id="Stay">
+                    <g id="Rectangle 45" filter="url(#filter0_i_1_161)">
+                      <path
+                        d="M0 6.35451C0 4.82531 1.15021 3.54084 2.67013 3.37269L29.8269 0.36838C31.6035 0.171834 33.1567 1.56273 33.1567 3.35019V34.0267C33.1567 35.6192 31.9125 36.9342 30.3224 37.0221L3.16569 38.5243C1.44635 38.6194 0 37.2508 0 35.5289V6.35451Z"
+                        fill="url(#paint0_linear_1_161)"
+                      ></path>
+                    </g>
+                    <g id="Rectangle 46" filter="url(#filter1_i_1_161)">
+                      <path
+                        d="M0.134766 7.89442C0.134766 6.32864 1.33896 5.02619 2.89993 4.90363L27.0778 3.00521C28.8219 2.86827 30.3127 4.24659 30.3127 5.99601V34.8854C30.3127 36.4698 29.0805 37.7811 27.4991 37.8796L3.32121 39.3851C1.59436 39.4926 0.134766 38.1211 0.134766 36.3909V7.89442Z"
+                        fill="url(#paint1_linear_1_161)"
+                      ></path>
+                    </g>
+                  </g>
+                  <g id="Animate">
+                    <g id="paper" filter="url(#filter2_i_1_161)">
+                      <path
+                        d="M0.134766 8.26922C0.134766 6.53427 1.60205 5.16103 3.3332 5.27579L28.765 6.96164C30.3414 7.06614 31.5666 8.37524 31.5666 9.95507V39.2236C31.5666 41.1346 29.8038 42.5585 27.9356 42.1565L2.50374 36.6847C1.12169 36.3874 0.134766 35.1655 0.134766 33.7519V8.26922Z"
+                        fill="url(#paint2_linear_1_161)"
+                      ></path>
+                    </g>
+                    <g id="cover">
+                      <g id="Rectangle 48" filter="url(#filter3_i_1_161)">
+                        <path
+                          d="M0 8.30851C0 6.39459 1.76798 4.97006 3.6381 5.37715L27.1268 10.4902C28.5054 10.7903 29.4887 12.0106 29.4887 13.4216V41.3953C29.4887 43.3093 27.7207 44.7338 25.8505 44.3267L2.3619 39.2136C0.983218 38.9135 0 37.6932 0 36.2823V8.30851Z"
+                          fill="url(#paint3_linear_1_161)"
+                        ></path>
+                      </g>
+                      <g id="Rectangle 49" filter="url(#filter4_i_1_161)">
+                        <rect
+                          width="16.5663"
+                          height="4.42503"
+                          rx="2.21252"
+                          transform="matrix(0.97237 0.233445 0 1 5.46338 14.0649)"
+                          fill="url(#paint4_linear_1_161)"
+                        ></rect>
+                      </g>
+                      <g id="Rectangle 50" filter="url(#filter5_i_1_161)">
+                        <rect
+                          width="16.5663"
+                          height="4.42503"
+                          rx="2.21252"
+                          transform="matrix(0.97237 0.233445 0 1 5.46338 22.5371)"
+                          fill="url(#paint5_linear_1_161)"
+                        ></rect>
+                      </g>
+                    </g>
+                  </g>
+                </g>
+                <defs>
+                  <filter
+                    id="filter0_i_1_161"
+                    x="0"
+                    y="0.349838"
+                    width="33.1567"
+                    height="40.1791"
+                    filterUnits="userSpaceOnUse"
+                    color-interpolation-filters="sRGB"
+                  >
+                    <feFlood
+                      flood-opacity="0"
+                      result="BackgroundImageFix"
+                    ></feFlood>
+                    <feBlend
+                      mode="normal"
+                      in="SourceGraphic"
+                      in2="BackgroundImageFix"
+                      result="shape"
+                    ></feBlend>
+                    <feColorMatrix
+                      in="SourceAlpha"
+                      type="matrix"
+                      values="0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 127 0"
+                      result="hardAlpha"
+                    ></feColorMatrix>
+                    <feOffset dy="2"></feOffset>
+                    <feGaussianBlur stdDeviation="2"></feGaussianBlur>
+                    <feComposite
+                      in2="hardAlpha"
+                      operator="arithmetic"
+                      k2="-1"
+                      k3="1"
+                    ></feComposite>
+                    <feColorMatrix
+                      type="matrix"
+                      values="0 0 0 0 1 0 0 0 0 1 0 0 0 0 1 0 0 0 0.4 0"
+                    ></feColorMatrix>
+                    <feBlend
+                      mode="normal"
+                      in2="shape"
+                      result="effect1_innerShadow_1_161"
+                    ></feBlend>
+                  </filter>
+                  <filter
+                    id="filter1_i_1_161"
+                    x="0.134766"
+                    y="2.99582"
+                    width="30.1779"
+                    height="37.3952"
+                    filterUnits="userSpaceOnUse"
+                    color-interpolation-filters="sRGB"
+                  >
+                    <feFlood
+                      flood-opacity="0"
+                      result="BackgroundImageFix"
+                    ></feFlood>
+                    <feBlend
+                      mode="normal"
+                      in="SourceGraphic"
+                      in2="BackgroundImageFix"
+                      result="shape"
+                    ></feBlend>
+                    <feColorMatrix
+                      in="SourceAlpha"
+                      type="matrix"
+                      values="0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 127 0"
+                      result="hardAlpha"
+                    ></feColorMatrix>
+                    <feOffset dy="1"></feOffset>
+                    <feGaussianBlur stdDeviation="1"></feGaussianBlur>
+                    <feComposite
+                      in2="hardAlpha"
+                      operator="arithmetic"
+                      k2="-1"
+                      k3="1"
+                    ></feComposite>
+                    <feColorMatrix
+                      type="matrix"
+                      values="0 0 0 0 1 0 0 0 0 1 0 0 0 0 1 0 0 0 0.4 0"
+                    ></feColorMatrix>
+                    <feBlend
+                      mode="normal"
+                      in2="shape"
+                      result="effect1_innerShadow_1_161"
+                    ></feBlend>
+                  </filter>
+                  <filter
+                    id="filter2_i_1_161"
+                    x="0.134766"
+                    y="5.26909"
+                    width="31.4318"
+                    height="37.9557"
+                    filterUnits="userSpaceOnUse"
+                    color-interpolation-filters="sRGB"
+                  >
+                    <feFlood
+                      flood-opacity="0"
+                      result="BackgroundImageFix"
+                    ></feFlood>
+                    <feBlend
+                      mode="normal"
+                      in="SourceGraphic"
+                      in2="BackgroundImageFix"
+                      result="shape"
+                    ></feBlend>
+                    <feColorMatrix
+                      in="SourceAlpha"
+                      type="matrix"
+                      values="0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 127 0"
+                      result="hardAlpha"
+                    ></feColorMatrix>
+                    <feOffset dy="1"></feOffset>
+                    <feGaussianBlur stdDeviation="1"></feGaussianBlur>
+                    <feComposite
+                      in2="hardAlpha"
+                      operator="arithmetic"
+                      k2="-1"
+                      k3="1"
+                    ></feComposite>
+                    <feColorMatrix
+                      type="matrix"
+                      values="0 0 0 0 1 0 0 0 0 1 0 0 0 0 1 0 0 0 0.4 0"
+                    ></feColorMatrix>
+                    <feBlend
+                      mode="normal"
+                      in2="shape"
+                      result="effect1_innerShadow_1_161"
+                    ></feBlend>
+                  </filter>
+                  <filter
+                    id="filter3_i_1_161"
+                    x="0"
+                    y="5.30733"
+                    width="29.4886"
+                    height="41.0892"
+                    filterUnits="userSpaceOnUse"
+                    color-interpolation-filters="sRGB"
+                  >
+                    <feFlood
+                      flood-opacity="0"
+                      result="BackgroundImageFix"
+                    ></feFlood>
+                    <feBlend
+                      mode="normal"
+                      in="SourceGraphic"
+                      in2="BackgroundImageFix"
+                      result="shape"
+                    ></feBlend>
+                    <feColorMatrix
+                      in="SourceAlpha"
+                      type="matrix"
+                      values="0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 127 0"
+                      result="hardAlpha"
+                    ></feColorMatrix>
+                    <feOffset dy="2"></feOffset>
+                    <feGaussianBlur stdDeviation="2"></feGaussianBlur>
+                    <feComposite
+                      in2="hardAlpha"
+                      operator="arithmetic"
+                      k2="-1"
+                      k3="1"
+                    ></feComposite>
+                    <feColorMatrix
+                      type="matrix"
+                      values="0 0 0 0 1 0 0 0 0 1 0 0 0 0 1 0 0 0 0.4 0"
+                    ></feColorMatrix>
+                    <feBlend
+                      mode="normal"
+                      in2="shape"
+                      result="effect1_innerShadow_1_161"
+                    ></feBlend>
+                  </filter>
+                  <filter
+                    id="filter4_i_1_161"
+                    x="5.46338"
+                    y="14.5215"
+                    width="16.1086"
+                    height="8.37935"
+                    filterUnits="userSpaceOnUse"
+                    color-interpolation-filters="sRGB"
+                  >
+                    <feFlood
+                      flood-opacity="0"
+                      result="BackgroundImageFix"
+                    ></feFlood>
+                    <feBlend
+                      mode="normal"
+                      in="SourceGraphic"
+                      in2="BackgroundImageFix"
+                      result="shape"
+                    ></feBlend>
+                    <feColorMatrix
+                      in="SourceAlpha"
+                      type="matrix"
+                      values="0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 127 0"
+                      result="hardAlpha"
+                    ></feColorMatrix>
+                    <feOffset dy="1"></feOffset>
+                    <feGaussianBlur stdDeviation="1"></feGaussianBlur>
+                    <feComposite
+                      in2="hardAlpha"
+                      operator="arithmetic"
+                      k2="-1"
+                      k3="1"
+                    ></feComposite>
+                    <feColorMatrix
+                      type="matrix"
+                      values="0 0 0 0 1 0 0 0 0 1 0 0 0 0 1 0 0 0 0.4 0"
+                    ></feColorMatrix>
+                    <feBlend
+                      mode="normal"
+                      in2="shape"
+                      result="effect1_innerShadow_1_161"
+                    ></feBlend>
+                  </filter>
+                  <filter
+                    id="filter5_i_1_161"
+                    x="5.46338"
+                    y="22.9936"
+                    width="16.1086"
+                    height="8.37935"
+                    filterUnits="userSpaceOnUse"
+                    color-interpolation-filters="sRGB"
+                  >
+                    <feFlood
+                      flood-opacity="0"
+                      result="BackgroundImageFix"
+                    ></feFlood>
+                    <feBlend
+                      mode="normal"
+                      in="SourceGraphic"
+                      in2="BackgroundImageFix"
+                      result="shape"
+                    ></feBlend>
+                    <feColorMatrix
+                      in="SourceAlpha"
+                      type="matrix"
+                      values="0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 127 0"
+                      result="hardAlpha"
+                    ></feColorMatrix>
+                    <feOffset dy="1"></feOffset>
+                    <feGaussianBlur stdDeviation="1"></feGaussianBlur>
+                    <feComposite
+                      in2="hardAlpha"
+                      operator="arithmetic"
+                      k2="-1"
+                      k3="1"
+                    ></feComposite>
+                    <feColorMatrix
+                      type="matrix"
+                      values="0 0 0 0 1 0 0 0 0 1 0 0 0 0 1 0 0 0 0.4 0"
+                    ></feColorMatrix>
+                    <feBlend
+                      mode="normal"
+                      in2="shape"
+                      result="effect1_innerShadow_1_161"
+                    ></feBlend>
+                  </filter>
+                  <linearGradient
+                    id="paint0_linear_1_161"
+                    x1="26.6727"
+                    y1="-1.62439"
+                    x2="22.6059"
+                    y2="17.9878"
+                    gradientUnits="userSpaceOnUse"
+                  >
+                    <stop stop-color="#FF8C39"></stop>
+                    <stop offset="1" stop-color="#EB00FF"></stop>
+                  </linearGradient>
+                  <linearGradient
+                    id="paint1_linear_1_161"
+                    x1="22.9389"
+                    y1="-51.4777"
+                    x2="-35.9318"
+                    y2="-26.2253"
+                    gradientUnits="userSpaceOnUse"
+                  >
+                    <stop stop-color="#E3DBFF"></stop>
+                    <stop offset="1" stop-color="#AB93FF"></stop>
+                  </linearGradient>
+                  <linearGradient
+                    id="paint2_linear_1_161"
+                    x1="23.8864"
+                    y1="-50.699"
+                    x2="-37.1839"
+                    y2="-24.165"
+                    gradientUnits="userSpaceOnUse"
+                  >
+                    <stop stop-color="#E3DBFF"></stop>
+                    <stop offset="1" stop-color="#AB93FF"></stop>
+                  </linearGradient>
+                  <linearGradient
+                    id="paint3_linear_1_161"
+                    x1="8.97476"
+                    y1="6.1372"
+                    x2="41.5841"
+                    y2="61.0068"
+                    gradientUnits="userSpaceOnUse"
+                  >
+                    <stop stop-color="#FF8C39"></stop>
+                    <stop offset="1" stop-color="#EB00FF"></stop>
+                  </linearGradient>
+                  <linearGradient
+                    id="paint4_linear_1_161"
+                    x1="-2.90833"
+                    y1="-6.42493"
+                    x2="17.0624"
+                    y2="6.1074"
+                    gradientUnits="userSpaceOnUse"
+                  >
+                    <stop stop-color="#D942C0"></stop>
+                    <stop offset="1" stop-color="#6317C3"></stop>
+                  </linearGradient>
+                  <linearGradient
+                    id="paint5_linear_1_161"
+                    x1="-2.90833"
+                    y1="-6.42493"
+                    x2="17.0624"
+                    y2="6.1074"
+                    gradientUnits="userSpaceOnUse"
+                  >
+                    <stop stop-color="#D942C0"></stop>
+                    <stop offset="1" stop-color="#6317C3"></stop>
+                  </linearGradient>
+                </defs>
+              </svg>
+              <span class="fs-6 poppins-medium">Manual Admin</span>
+            </div>
+          </button>
+
+          <!-- manual karyawan dan magang -->
+          <button onclick="manualKaryawan()" type="button" class="btn btn-pink d-flex justify-content-center align-items-center poppins-regular">
+            <div id="book-wrapper" class="wrapper text-md-start text-center w-100">
+              <svg
+              id="book"
+              width="34"
+              height="46"
+                viewBox="0 0 34 46"
+                fill="none"
+                xmlns="http://www.w3.org/2000/svg"
+              >
+                <g id="book-property">
+                  <g id="Stay">
+                    <g id="Rectangle 45" filter="url(#filter0_i_1_161)">
+                      <path
+                        d="M0 6.35451C0 4.82531 1.15021 3.54084 2.67013 3.37269L29.8269 0.36838C31.6035 0.171834 33.1567 1.56273 33.1567 3.35019V34.0267C33.1567 35.6192 31.9125 36.9342 30.3224 37.0221L3.16569 38.5243C1.44635 38.6194 0 37.2508 0 35.5289V6.35451Z"
+                        fill="url(#paint0_linear_1_161)"
+                      ></path>
+                    </g>
+                    <g id="Rectangle 46" filter="url(#filter1_i_1_161)">
+                      <path
+                        d="M0.134766 7.89442C0.134766 6.32864 1.33896 5.02619 2.89993 4.90363L27.0778 3.00521C28.8219 2.86827 30.3127 4.24659 30.3127 5.99601V34.8854C30.3127 36.4698 29.0805 37.7811 27.4991 37.8796L3.32121 39.3851C1.59436 39.4926 0.134766 38.1211 0.134766 36.3909V7.89442Z"
+                        fill="url(#paint1_linear_1_161)"
+                      ></path>
+                    </g>
+                  </g>
+                  <g id="Animate">
+                    <g id="paper" filter="url(#filter2_i_1_161)">
+                      <path
+                        d="M0.134766 8.26922C0.134766 6.53427 1.60205 5.16103 3.3332 5.27579L28.765 6.96164C30.3414 7.06614 31.5666 8.37524 31.5666 9.95507V39.2236C31.5666 41.1346 29.8038 42.5585 27.9356 42.1565L2.50374 36.6847C1.12169 36.3874 0.134766 35.1655 0.134766 33.7519V8.26922Z"
+                        fill="url(#paint2_linear_1_161)"
+                      ></path>
+                    </g>
+                    <g id="cover">
+                      <g id="Rectangle 48" filter="url(#filter3_i_1_161)">
+                        <path
+                          d="M0 8.30851C0 6.39459 1.76798 4.97006 3.6381 5.37715L27.1268 10.4902C28.5054 10.7903 29.4887 12.0106 29.4887 13.4216V41.3953C29.4887 43.3093 27.7207 44.7338 25.8505 44.3267L2.3619 39.2136C0.983218 38.9135 0 37.6932 0 36.2823V8.30851Z"
+                          fill="url(#paint3_linear_1_161)"
+                        ></path>
+                      </g>
+                      <g id="Rectangle 49" filter="url(#filter4_i_1_161)">
+                        <rect
+                          width="16.5663"
+                          height="4.42503"
+                          rx="2.21252"
+                          transform="matrix(0.97237 0.233445 0 1 5.46338 14.0649)"
+                          fill="url(#paint4_linear_1_161)"
+                        ></rect>
+                      </g>
+                      <g id="Rectangle 50" filter="url(#filter5_i_1_161)">
+                        <rect
+                          width="16.5663"
+                          height="4.42503"
+                          rx="2.21252"
+                          transform="matrix(0.97237 0.233445 0 1 5.46338 22.5371)"
+                          fill="url(#paint5_linear_1_161)"
+                        ></rect>
+                      </g>
+                    </g>
+                  </g>
+                </g>
+                <defs>
+                  <filter
+                    id="filter0_i_1_161"
+                    x="0"
+                    y="0.349838"
+                    width="33.1567"
+                    height="40.1791"
+                    filterUnits="userSpaceOnUse"
+                    color-interpolation-filters="sRGB"
+                  >
+                    <feFlood
+                      flood-opacity="0"
+                      result="BackgroundImageFix"
+                    ></feFlood>
+                    <feBlend
+                      mode="normal"
+                      in="SourceGraphic"
+                      in2="BackgroundImageFix"
+                      result="shape"
+                    ></feBlend>
+                    <feColorMatrix
+                      in="SourceAlpha"
+                      type="matrix"
+                      values="0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 127 0"
+                      result="hardAlpha"
+                    ></feColorMatrix>
+                    <feOffset dy="2"></feOffset>
+                    <feGaussianBlur stdDeviation="2"></feGaussianBlur>
+                    <feComposite
+                      in2="hardAlpha"
+                      operator="arithmetic"
+                      k2="-1"
+                      k3="1"
+                    ></feComposite>
+                    <feColorMatrix
+                      type="matrix"
+                      values="0 0 0 0 1 0 0 0 0 1 0 0 0 0 1 0 0 0 0.4 0"
+                    ></feColorMatrix>
+                    <feBlend
+                      mode="normal"
+                      in2="shape"
+                      result="effect1_innerShadow_1_161"
+                    ></feBlend>
+                  </filter>
+                  <filter
+                    id="filter1_i_1_161"
+                    x="0.134766"
+                    y="2.99582"
+                    width="30.1779"
+                    height="37.3952"
+                    filterUnits="userSpaceOnUse"
+                    color-interpolation-filters="sRGB"
+                  >
+                    <feFlood
+                      flood-opacity="0"
+                      result="BackgroundImageFix"
+                    ></feFlood>
+                    <feBlend
+                      mode="normal"
+                      in="SourceGraphic"
+                      in2="BackgroundImageFix"
+                      result="shape"
+                    ></feBlend>
+                    <feColorMatrix
+                      in="SourceAlpha"
+                      type="matrix"
+                      values="0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 127 0"
+                      result="hardAlpha"
+                    ></feColorMatrix>
+                    <feOffset dy="1"></feOffset>
+                    <feGaussianBlur stdDeviation="1"></feGaussianBlur>
+                    <feComposite
+                      in2="hardAlpha"
+                      operator="arithmetic"
+                      k2="-1"
+                      k3="1"
+                    ></feComposite>
+                    <feColorMatrix
+                      type="matrix"
+                      values="0 0 0 0 1 0 0 0 0 1 0 0 0 0 1 0 0 0 0.4 0"
+                    ></feColorMatrix>
+                    <feBlend
+                      mode="normal"
+                      in2="shape"
+                      result="effect1_innerShadow_1_161"
+                    ></feBlend>
+                  </filter>
+                  <filter
+                    id="filter2_i_1_161"
+                    x="0.134766"
+                    y="5.26909"
+                    width="31.4318"
+                    height="37.9557"
+                    filterUnits="userSpaceOnUse"
+                    color-interpolation-filters="sRGB"
+                  >
+                    <feFlood
+                      flood-opacity="0"
+                      result="BackgroundImageFix"
+                    ></feFlood>
+                    <feBlend
+                      mode="normal"
+                      in="SourceGraphic"
+                      in2="BackgroundImageFix"
+                      result="shape"
+                    ></feBlend>
+                    <feColorMatrix
+                      in="SourceAlpha"
+                      type="matrix"
+                      values="0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 127 0"
+                      result="hardAlpha"
+                    ></feColorMatrix>
+                    <feOffset dy="1"></feOffset>
+                    <feGaussianBlur stdDeviation="1"></feGaussianBlur>
+                    <feComposite
+                      in2="hardAlpha"
+                      operator="arithmetic"
+                      k2="-1"
+                      k3="1"
+                    ></feComposite>
+                    <feColorMatrix
+                      type="matrix"
+                      values="0 0 0 0 1 0 0 0 0 1 0 0 0 0 1 0 0 0 0.4 0"
+                    ></feColorMatrix>
+                    <feBlend
+                      mode="normal"
+                      in2="shape"
+                      result="effect1_innerShadow_1_161"
+                    ></feBlend>
+                  </filter>
+                  <filter
+                    id="filter3_i_1_161"
+                    x="0"
+                    y="5.30733"
+                    width="29.4886"
+                    height="41.0892"
+                    filterUnits="userSpaceOnUse"
+                    color-interpolation-filters="sRGB"
+                  >
+                    <feFlood
+                      flood-opacity="0"
+                      result="BackgroundImageFix"
+                    ></feFlood>
+                    <feBlend
+                      mode="normal"
+                      in="SourceGraphic"
+                      in2="BackgroundImageFix"
+                      result="shape"
+                    ></feBlend>
+                    <feColorMatrix
+                      in="SourceAlpha"
+                      type="matrix"
+                      values="0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 127 0"
+                      result="hardAlpha"
+                    ></feColorMatrix>
+                    <feOffset dy="2"></feOffset>
+                    <feGaussianBlur stdDeviation="2"></feGaussianBlur>
+                    <feComposite
+                      in2="hardAlpha"
+                      operator="arithmetic"
+                      k2="-1"
+                      k3="1"
+                    ></feComposite>
+                    <feColorMatrix
+                      type="matrix"
+                      values="0 0 0 0 1 0 0 0 0 1 0 0 0 0 1 0 0 0 0.4 0"
+                    ></feColorMatrix>
+                    <feBlend
+                      mode="normal"
+                      in2="shape"
+                      result="effect1_innerShadow_1_161"
+                    ></feBlend>
+                  </filter>
+                  <filter
+                    id="filter4_i_1_161"
+                    x="5.46338"
+                    y="14.5215"
+                    width="16.1086"
+                    height="8.37935"
+                    filterUnits="userSpaceOnUse"
+                    color-interpolation-filters="sRGB"
+                  >
+                    <feFlood
+                      flood-opacity="0"
+                      result="BackgroundImageFix"
+                    ></feFlood>
+                    <feBlend
+                      mode="normal"
+                      in="SourceGraphic"
+                      in2="BackgroundImageFix"
+                      result="shape"
+                    ></feBlend>
+                    <feColorMatrix
+                      in="SourceAlpha"
+                      type="matrix"
+                      values="0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 127 0"
+                      result="hardAlpha"
+                    ></feColorMatrix>
+                    <feOffset dy="1"></feOffset>
+                    <feGaussianBlur stdDeviation="1"></feGaussianBlur>
+                    <feComposite
+                      in2="hardAlpha"
+                      operator="arithmetic"
+                      k2="-1"
+                      k3="1"
+                    ></feComposite>
+                    <feColorMatrix
+                      type="matrix"
+                      values="0 0 0 0 1 0 0 0 0 1 0 0 0 0 1 0 0 0 0.4 0"
+                    ></feColorMatrix>
+                    <feBlend
+                      mode="normal"
+                      in2="shape"
+                      result="effect1_innerShadow_1_161"
+                    ></feBlend>
+                  </filter>
+                  <filter
+                    id="filter5_i_1_161"
+                    x="5.46338"
+                    y="22.9936"
+                    width="16.1086"
+                    height="8.37935"
+                    filterUnits="userSpaceOnUse"
+                    color-interpolation-filters="sRGB"
+                  >
+                    <feFlood
+                      flood-opacity="0"
+                      result="BackgroundImageFix"
+                    ></feFlood>
+                    <feBlend
+                      mode="normal"
+                      in="SourceGraphic"
+                      in2="BackgroundImageFix"
+                      result="shape"
+                    ></feBlend>
+                    <feColorMatrix
+                      in="SourceAlpha"
+                      type="matrix"
+                      values="0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 127 0"
+                      result="hardAlpha"
+                    ></feColorMatrix>
+                    <feOffset dy="1"></feOffset>
+                    <feGaussianBlur stdDeviation="1"></feGaussianBlur>
+                    <feComposite
+                      in2="hardAlpha"
+                      operator="arithmetic"
+                      k2="-1"
+                      k3="1"
+                    ></feComposite>
+                    <feColorMatrix
+                      type="matrix"
+                      values="0 0 0 0 1 0 0 0 0 1 0 0 0 0 1 0 0 0 0.4 0"
+                    ></feColorMatrix>
+                    <feBlend
+                      mode="normal"
+                      in2="shape"
+                      result="effect1_innerShadow_1_161"
+                    ></feBlend>
+                  </filter>
+                  <linearGradient
+                    id="paint0_linear_1_161"
+                    x1="26.6727"
+                    y1="-1.62439"
+                    x2="22.6059"
+                    y2="17.9878"
+                    gradientUnits="userSpaceOnUse"
+                  >
+                    <stop stop-color="#FF8C39"></stop>
+                    <stop offset="1" stop-color="#EB00FF"></stop>
+                  </linearGradient>
+                  <linearGradient
+                    id="paint1_linear_1_161"
+                    x1="22.9389"
+                    y1="-51.4777"
+                    x2="-35.9318"
+                    y2="-26.2253"
+                    gradientUnits="userSpaceOnUse"
+                  >
+                    <stop stop-color="#E3DBFF"></stop>
+                    <stop offset="1" stop-color="#AB93FF"></stop>
+                  </linearGradient>
+                  <linearGradient
+                    id="paint2_linear_1_161"
+                    x1="23.8864"
+                    y1="-50.699"
+                    x2="-37.1839"
+                    y2="-24.165"
+                    gradientUnits="userSpaceOnUse"
+                  >
+                    <stop stop-color="#E3DBFF"></stop>
+                    <stop offset="1" stop-color="#AB93FF"></stop>
+                  </linearGradient>
+                  <linearGradient
+                    id="paint3_linear_1_161"
+                    x1="8.97476"
+                    y1="6.1372"
+                    x2="41.5841"
+                    y2="61.0068"
+                    gradientUnits="userSpaceOnUse"
+                  >
+                    <stop stop-color="#FF8C39"></stop>
+                    <stop offset="1" stop-color="#EB00FF"></stop>
+                  </linearGradient>
+                  <linearGradient
+                    id="paint4_linear_1_161"
+                    x1="-2.90833"
+                    y1="-6.42493"
+                    x2="17.0624"
+                    y2="6.1074"
+                    gradientUnits="userSpaceOnUse"
+                  >
+                    <stop stop-color="#D942C0"></stop>
+                    <stop offset="1" stop-color="#6317C3"></stop>
+                  </linearGradient>
+                  <linearGradient
+                    id="paint5_linear_1_161"
+                    x1="-2.90833"
+                    y1="-6.42493"
+                    x2="17.0624"
+                    y2="6.1074"
+                    gradientUnits="userSpaceOnUse"
+                  >
+                    <stop stop-color="#D942C0"></stop>
+                    <stop offset="1" stop-color="#6317C3"></stop>
+                  </linearGradient>
+                </defs>
+              </svg>
+              <span class="fs-6 poppins-medium">Manual Karyawan dan Magang</span>
+            </div>
+          </button>
+        </div>
+      </div>
+    </div>
+  </section>
+</main>
+
+<footer
+  class="container-fluid row row-cols-1 row-cols-lg-2 bg-secondary px-5 py-4 m-0 mt-5"
+>
+  <div class="col text-lg-start text-center">
+    <p class="poppins-light text-light my-auto">
+      © 2022 Copyright
+      <span class="poppins-medium text-black"
+        >Absensi<span class="text-pink">Ku</span></span
+      >. All Rigths Reserved
+    </p>
+  </div>
+  <div class="col text-lg-end text-center">
+    <p class="poppins-light text-light my-auto">
+      developed by
+      <span class="poppins-regular">Salahudin Kholik Prasetyono</span>
+    </p>
+  </div>
+</footer>
+
+<!-- back to top button -->
+<button class="position-fixed btn btn-pink btn-md" id="btn-back-to-top">
+  <i class="fas fa-arrow-up fa-2x"></i>
+</button>
+{% endblock %}

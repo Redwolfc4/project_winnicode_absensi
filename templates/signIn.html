@@ -1,0 +1,122 @@
+{% extends "index.html" %} {% block title %}
+<title>Absensi|Login</title>
+{% endblock %} {% block value_body %}
+<section id="signin" class="h-100">
+  <div class="container py-5 h-100">
+    <div class="row align-items-center justify-content-center h-100">
+      <!-- gambar -->
+      <div class="d-lg-block d-none col-md-8 col-lg-7 col-xl-6 mb-4">
+        <img
+          src="{{url_for('static', filename='img/login-concept-illustration.png')}}"
+          class="img-fluid"
+          alt="login-concept-illustration.png"
+        />
+      </div>
+      <!-- bagian form -->
+      <div class="col-md-7 col-lg-5 col-xl-5 offset-xl-1 m-lg-0 mb-4">
+        <form
+          action="/sign-in"
+          method="post"
+          class="row border border-3 rounded-2 border-purple"
+        >
+          <div
+            id="logo-signin"
+            class="col-12 d-flex justify-content-center align-items-center p-0 m-0 mb-4"
+          >
+            <img
+              id="winni-logo"
+              src="{{url_for('static', filename='img/winni-code-copy.png')}}"
+              alt="winni-code.png"
+            />
+          </div>
+
+          <div>
+            <h5 class="fw-normal mb-3 pb-3 poppins-regular" style="letter-spacing: 1px">
+              Sign into your account
+            </h5>
+          </div>
+
+          <input
+            type="hidden"
+            id="csrf_token"
+            name="csrf_token"
+            value="{{ csrf_token() }}"
+          />
+          <!-- Email input -->
+          <div class="col-12 form-outline mb-4">
+            <label class="form-label poppins-regular" for="email">Email address</label>
+            <input type="email poppins-regular" id="email" name="email" class="form-control" placeholder="Insert email..." />
+          </div>
+
+          <!-- Password input -->
+          <div class="col-12 form-outline mb-4">
+            <label class="form-label poppins-regular" for="password">Password</label>
+            <input
+              type="password"
+              id="password"
+              name="password"
+              class="form-control poppins-regular" placeholder="Insert password..."
+            />
+            <a href="/sign-in/forget" class="poppins-regular">Forget password?</a>
+          </div>
+
+          <!-- masuk sebagai -->
+          <div class="col-12 form-outline mb-4">
+            <label class="form-label  poppins-regular" for="jobs">Masuk Sebagai ?</label>
+            <select id="jobs" name="jobs" class="form-select  poppins-regular">
+              <option value="None" selected>--Select Jobs--</option>
+              <option value="Karyawan">Karyawan</option>
+              <option value="Magang">Magang</option>
+              <option value="Admin">Admin</option>
+              <option value="Manager">Manager / Pemimpin Perusahaan</option>
+            </select>
+          </div>
+
+          <!-- Submit button -->
+          <div class="col-12 row gap-4">
+            <div class="col-12">
+              <button type="submit" class="btn btn-primary poppins-medium">Sign in</button>
+            </div>
+            <div class="col-12">
+              <p class="mb-5 pb-lg-2  poppins-regular" style="color: #393f81">
+                Don't have an account?
+                <a class="poppins-regular" href="{{ url_for('signUp') }}" style="color: #393f81"
+                  >Register here</a
+                >
+              </p>
+            </div>
+          </div>
+        </form>
+      </div>
+    </div>
+  </div>
+</section>
+{% endblock %} 
+
+{% block message %}
+{% if (status and msg) %}
+<script>
+Swal.fire({
+  icon: "success",
+  title: "{{ title }}",
+  text: "{{ msg }}",
+  timer:3000,
+  willClose: ()=>{
+    window.location.replace('/sign-in');
+  }
+});
+</script>
+{% elif msg %}
+<script>
+  Swal.fire({
+    icon: "error",
+    title: "OOPS!",
+    text: "{{ msg }}",
+    timer: 3000,
+    willClose:()=>{
+      window.location.replace('/sign-in');
+    }
+  });
+</script>
+{% endif %}
+{% endblock %}

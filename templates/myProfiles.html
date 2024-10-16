@@ -1,0 +1,158 @@
+{% extends "index.html" %} {% block title %}
+<title>Abstraksi|My Profile</title>
+{% endblock %} {% block value_body %}
+<!-- Profile -->
+<section id="profile" style="background-color: #eee">
+  <div class="container py-5">
+    <div class="row">
+      <div class="col">
+        <nav aria-label="breadcrumb" class="bg-light rounded-3 p-3 mb-4">
+          <ol class="breadcrumb mb-0">
+            <li class="breadcrumb-item poppins-medium"><a href="/dashboard/magang">Home</a></li>
+            <li class="breadcrumb-item poppins-medium active">My Profiles</li>
+          </ol>
+        </nav>
+      </div>
+    </div>
+
+    <form action="/myProfiles" method="post" class="card-body" enctype="multipart/form-data">
+      <div class="row justify-content-center align-items-center">
+        <div class="col-lg-4">
+          <div class="card mb-4">
+            <div class="card-body d-flex flex-column align-items-center gap-2 justify-content-center">
+              <label for="profile-pic" class="hover-camera position-relative" style="max-width: 150px;">
+                <img
+                  id="profile-pic-preview"
+                  src="{{url_for('static',filename=data.photo_profile)}}"
+                  alt="avatar"
+                  class="rounded-circle img-fluid bg-body-secondary"
+                  style="width: 150px"
+                />
+                <img src="{{url_for('static',filename='img/camera-icon.svg')}}" class="icon-camera" alt="camera-icon.svg">
+              </label>
+              <input class="d-none" type="file" id="profile-pic" name="profile-pic" accept="image/*" value="{{ data.photo_profile }}"/>
+              <h5 class="my-3 poppins-medium ">{{ data.nama }}</h5>
+              <p class="text-muted poppins-regular mb-1">{{ data.departement }}</p>
+              <p class="text-muted poppins-regular mb-2">{{ data.jobs }}</p>
+              <button onclick="removeCookies(event)" id="logout"role="button" class="poppins-regular mb-0 btn btn-danger"><i class="fas fa-right-from-bracket fa-rotate-180 me-2"></i>Logout</button>
+            </div>
+          </div>
+          <!-- card dari akun seperti instagram  dan lainnya -->
+        </div>
+
+        <div class="col-lg-8">
+          <div class="card mb-4">
+            <div class="card-body">
+              <!-- csrf token -->
+              <input type="hidden" id="csrf_token" name="csrf_token" value="{{ csrf_token() }}" />
+
+              <!-- email -->
+              <div class="row justify-content-center align-items-center">
+                <div class="col-sm-3">
+                  <label for="email" class="mb-0 poppins-regular">Email</label>
+                </div>
+                <div class="col-sm-9">
+                  <input type="email" id="email" name="email" class="text-muted poppins-regular mb-0 border border-0 w-100" readonly value="{{ data.email }}">
+                </div>
+              </div>
+              <hr />
+
+              <!-- name  -->
+              <div class="row justify-content-center align-items-center">
+                <div class="col-sm-3">
+                  <label for="nama" class="mb-0 poppins-regular">Full Name</label>
+                </div>
+                <div class="col-sm-9">
+                  <input type="text" id="nama" name="nama" class="text-muted poppins-regular mb-0 border border-0 w-100" value="{{ data.nama }}">
+                </div>
+              </div>
+              <hr />
+
+
+              {% if data.role == 3 %}
+
+              <!-- Nik  -->
+              <div class="row justify-content-center align-items-center">
+                <div class="col-sm-3">
+                  <label for="nik" class="mb-0 poppins-regular">Nomor Induk Kependudukan</label>
+                </div>
+                <div class="col-sm-9">
+                  <input type="number" id="nik" name="nik" class="text-muted poppins-regular mb-0 border border-0 w-100" value="{{ data.nik }}">
+                </div>
+              </div>
+              <hr />
+
+              <!-- Tempat Lahir  -->
+              <div class="row justify-content-center align-items-center">
+                <div class="col-sm-3">
+                  <label for="tempat_lahir" class="mb-0 poppins-regular">Tempat Lahir</label>
+                </div>
+                <div class="col-sm-9">
+                  <input type="text" id="tempat_lahir" name="tempat_lahir" class="text-muted poppins-regular mb-0 border border-0 w-100" value="{{ data.tempat_lahir }}">
+                </div>
+              </div>
+              <hr />
+
+              <!-- Tanggal Lahir  -->
+              <div class="row justify-content-center align-items-center">
+                <div class="col-sm-3">
+                  <label for="tanggal_lahir" class="mb-0 poppins-regular">Tanggal Lahir</label>
+                </div>
+                <div class="col-sm-9">
+                  <input type="date" id="tanggal_lahir" name="tanggal_lahir" class="text-muted poppins-regular mb-0 border border-0 w-100" value="{{'' if data.tanggal_lahir == '' else data.tanggal_lahir | format_date}}">
+                </div>
+              </div>
+              <hr/>
+              {% endif %}
+
+              <!-- tombol submit  -->
+              <div class="row justify-content-center align-items-center pt-3">
+                <div class="col-sm-12 d-flex justify-content-center align-items-center gap-4">
+                  <button type="submit" id="submit" disabled=true role="button" class="poppins-regular mb-0 btn btn-primary">Submit</button>
+                  <button type="reset" id="reset"  role="button" disabled=true class="poppins-regular mb-0 btn btn-danger">Reset</button>
+                </div>
+              </div>
+
+            </div>
+          </div>
+          <!-- masukkan asgin jika diperlukan -->
+        </div>  
+      </div>
+    </form>
+  </div>
+</section>
+{% endblock  %}
+
+{% block js_custom %}
+<!-- akan membentuk static/js/myProfiles.js -->
+<script src="{{ url_for('static', filename='js/myProfiles.js') }}"></script>
+{% endblock js_custom %}
+
+{% block message %}
+{% if (status and msg) %}
+<script>
+  Swal.fire({
+    icon: "{{ status }}",
+    title: "Update Profile",
+    text: "{{ msg }}",
+    timer: 3000,
+    willClose: ()=>{
+      window.location.replace('/myProfiles');
+
+    }
+  });
+</script>
+{% elif msg %}
+<script>
+  Swal.fire({
+    icon: "error",
+    title: "OOPS! Something went wrong",
+    text: "{{ msg }}",
+    timer: 3000,
+    willClose: ()=>{
+      window.location.replace('/myProfiles');
+    }
+  });
+</script>
+{% endif %}
+{% endblock %}

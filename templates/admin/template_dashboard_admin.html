@@ -1,0 +1,218 @@
+{% extends "index.html" %} {% block title %}
+<title>Absensi | Dashboard Manage</title>
+{% endblock %} {% block navbar %}
+<ul class="navbar-nav me-auto mb-2 mb-lg-0">
+  <li class="nav-item">
+    <a
+      class="nav-link poppins-regular active"
+      aria-current="page"
+      href="/dashboard/magang"
+      >Dashboard</a
+    >
+  </li>
+  <li class="nav-item">
+    <a class="nav-link poppins-regular" href="/task/magang">Task</a>
+  </li>
+</ul>
+
+{% comment %} add account {% endcomment %}
+<div
+  class="modal fade"
+  id="addAccountModal"
+  tabindex="-1"
+  aria-labelledby="addAccountModalLabel"
+  aria-hidden="true"
+>
+  <div class="modal-dialog">
+    <div class="modal-content">
+      <form action="/dashboard/admin/createAccount" method="post">
+        <div class="modal-header">
+          <h1
+            class="modal-title fs-5 poppins-regular"
+            id="addAccountModalLabel"
+          >
+            Create Account
+          </h1>
+          <button
+            type="button"
+            class="btn-close"
+            data-bs-dismiss="modal"
+            aria-label="Close"
+          ></button>
+        </div>
+        <div class="modal-body">
+          <div class="form-floating">
+            <!-- Input Hidden for Method Override -->
+            <input type="hidden" name="_method" value="CREATE" />
+            <!-- csrf token -->
+            <input
+              type="hidden"
+              id="csrf_token"
+              name="csrf_token"
+              value="{{ csrf_token() }}"
+            />
+
+            <!-- nik -->
+            <div class="form-floating mb-3">
+              <input type="number" class="form-control" id="nik" name="nik" />
+              <label class="poppins-regular" for="nik"
+                >Nomor Induk Kependudukan</label
+              >
+            </div>
+
+            <!-- nama -->
+            <div class="form-floating mb-3">
+              <input type="text" class="form-control" name="nama" id="nama" />
+              <label class="poppins-regular" for="nama">Nama Lengkap</label>
+            </div>
+
+            <!-- email -->
+            <div class="form-floating mb-3">
+              <input
+                type="email"
+                class="form-control"
+                name="email"
+                id="email"
+              />
+              <label class="poppins-regular" for="email">Email address</label>
+            </div>
+
+            <!-- departement -->
+            <div class="form-floating mb-3">
+              <select
+                class="form-select"
+                id="departement"
+                name="departement"
+                aria-label="Floating label select example"
+              >
+                <option value="None">--Pilih Departement--</option>
+                <option value="Admin Fullstack Developer">
+                  Admin Fullstack Developer
+                </option>
+                <option value="Admin Web Developer Laravel">
+                  Admin Web Developer Laravel
+                </option>
+                <option value="Admin Copywriting">Admin Copywriting</option>
+              </select>
+              <label class="poppins-regular" for="departement"
+                >Pilih Departement</label
+              >
+            </div>
+
+            <!-- born -->
+            <div class="form-floating mb-3">
+              <input
+                type="text"
+                class="form-control"
+                name="tempat_lahir"
+                id="tempat_lahir"
+              />
+              <label class="poppins-regular" for="tempat_lahir">Born</label>
+            </div>
+
+            <!-- birthday -->
+            <div class="form-floating mb-3">
+              <input
+                type="date"
+                class="form-control"
+                name="tanggal_lahir"
+                id="tanggal_lahir"
+              />
+              <label class="poppins-regular" for="tanggal_lahir" readonly
+                >Birthday</label
+              >
+            </div>
+
+            <!-- Status Perusahaan -->
+            <div class="form-floating mb-3">
+              <select id="jobs" name="jobs" class="form-select">
+                <option value="None">--Select Jobs--</option>
+                <option value="User">User</option>
+              </select>
+              <label class="poppins-regular" for="jobs">Status Perusahan</label>
+            </div>
+
+            <!-- works date -->
+            <div id="works date" class="row mb-3 g-3">
+              <!-- start works -->
+              <div class="col-md-6">
+                <div class="form-floating">
+                  <input
+                    type="date"
+                    class="form-control"
+                    name="start_date"
+                    id="start_date"
+                  />
+                  <label class="poppins-regular" for="start_date"
+                    >Start Date Works</label
+                  >
+                </div>
+              </div>
+
+              <!-- end works -->
+              <div class="col-md-6">
+                <div class="form-floating">
+                  <input
+                    type="date"
+                    class="form-control"
+                    name="end_date"
+                    id="end_date"
+                  />
+                  <label class="poppins-regular" for="end_date"
+                    >End Date Works</label
+                  >
+                </div>
+              </div>
+            </div>
+
+            <!-- works_time -->
+            <div id="works_time" class="row mb-3 g-3">
+              <!-- start Time -->
+              <div class="col-md-6">
+                <div class="form-floating">
+                  <input
+                    type="time"
+                    class="form-control"
+                    name="start_time"
+                    id="start_time"
+                  />
+                  <label class="poppins-regular" for="start_time"
+                    >Start Time Works</label
+                  >
+                </div>
+              </div>
+
+              <!-- end Time -->
+              <div class="col-md-6">
+                <div class="form-floating">
+                  <input
+                    type="time"
+                    class="form-control"
+                    name="end_time"
+                    id="end_time"
+                  />
+                  <label class="poppins-regular" for="end_time"
+                    >End Time Works</label
+                  >
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+        <div class="modal-footer">
+          <button
+            type="button"
+            class="btn btn-secondary poppins-regular"
+            data-bs-dismiss="modal"
+          >
+            Close
+          </button>
+          <button type="button" class="btn btn-primary poppins-regular">
+            Save changes
+          </button>
+        </div>
+      </form>
+    </div>
+  </div>
+</div>
+{% endblock %}

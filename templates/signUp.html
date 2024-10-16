@@ -1,0 +1,106 @@
+{% extends "index.html" %}
+
+{% block title %}
+  <title>Absensi|Register</title>
+{% endblock %}
+
+{% block value_body %}
+<section id="signup" class="h-100">
+  <div class="container py-5 h-100">
+    <div class="row d-flex align-items-center justify-content-center h-100">
+      <!-- gambar -->
+      <div class="d-lg-inline-block d-none col-lg-7 col-xl-6 m-lg-0 mb-4">
+        <img
+          src="{{url_for('static', filename='img/sign-up-concept-illustration.png')}}"
+          class="img-fluid"
+          alt="sign-up-concept-illustration.png"
+        />
+      </div>
+      <!-- bagian form -->
+      <div class="col-md-7 col-lg-5 col-xl-5 offset-xl-1">
+        <form action="sign-up" method="post" class="row border border-3 rounded-2 border-purple  m-md-0 m-sm-2 m-1">
+          <!-- logo -->
+          <div id="logo-signup" class="col-12 d-flex justify-content-center align-items-center p-0 m-0 mb-4">
+            <img id="winni-logo" src="{{url_for('static', filename='img/winni-code-copy.png')}}" alt="winni-code-copy.png">
+          </div>
+          <!-- text -->
+          <div>
+            <h5 class="fw-normal mb-3 pb-3" style="letter-spacing: 1px;">Sign Upto your account</h5>
+          </div>
+          <input type="hidden" id="csrf_token" name="csrf_token" value="{{ csrf_token() }}">
+          <!-- Nama lengkap input -->
+          <div class="col-12 form-outline mb-4">
+            <label class="form-label" for="nama">Nama Lengkap</label>
+            <input
+              type="text"
+              id="nama"
+              name="nama"
+              class="form-control"
+            />
+          </div>
+          <!-- Departement input -->
+          <div class="col-12 form-outline mb-4">
+            <label class="form-label" for="departement">Departement</label>
+            <select id="departement" name="departement" class="form-select">
+              <option value=None selected>--Pilih Departement--</option>
+              <option value="Fullstack Developer">Fullstack Developer</option>
+              <option value="Web Developer Laravel">Web Developer Laravel</option>
+              <option value="Copywriting">Copywriting</option>
+            </select>
+          </div>
+          <!-- Email input -->
+          <div class="col-12 form-outline mb-4">
+            <label class="form-label" for="email">Email address</label>
+            <input
+              type="email"
+              id="email"
+              name="email"
+              class="form-control"
+            />
+          </div>
+
+          <!-- Password input -->
+          <div class="col-12 form-outline mb-4">
+            <label class="form-label" for="password">Password</label>
+            <input
+              type="password"
+              id="password"
+              name="password"
+              class="form-control"
+            />
+          </div>
+
+          <!-- Daftar sebagai -->
+          <div class="col-12 form-outline mb-4">
+            <label class="form-label" for="jobs">Daftar Sebagai ?</label>
+            <select id="jobs" name="jobs" class="form-select">
+              <option value=None selected>--Select Jobs--</option>
+              <option value="Karyawan">Karyawan</option>
+              <option value="Magang">Magang</option>
+            </select>
+          </div>
+
+          <!-- Submit button -->
+          <div class="col-12 row gap-4">
+            <div class="col-12">
+              <button
+                type="submit"
+                class="btn btn-primary"
+              >
+                Sign Up
+              </button>
+            </div>
+
+            <div class="col-12">
+              <p class="mb-5 pb-lg-2" style="color: #393f81">
+                Have an account?
+                <a href="{{ url_for('signIn') }}" style="color: #393f81">Login here</a>
+              </p>
+            </div>
+          </div>
+        </form>
+      </div>
+    </div>
+  </div>
+</section>
+{% endblock %}

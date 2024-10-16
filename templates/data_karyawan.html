@@ -1,0 +1,53 @@
+{% extends "index.html" %} {% block title %}
+<title>AbsensiKu | Data Karyawan / Magang</title>
+{% endblock %}
+
+
+{% block value_body %}
+<nav class="navbar navbar-expand-lg bg-body-tertiary shadow fixed-top">
+  <div class="container-fluid gap-4">
+    <a class="navbar-brand d-flex justify-content-center align-items-center m-0 p-0" href="#">
+      <img id="winnicode-navbar-logo" src="{{url_for('static',filename='img/winni-code-copy.png')}}" alt="Logo"
+        class="d-inline-block align-text-top" />
+    </a>
+    <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarSupportedContent"
+      aria-controls="navbarSupportedContent" aria-expanded="false" aria-label="Toggle navigation">
+      <span class="navbar-toggler-icon"></span>
+    </button>
+    <div class="collapse navbar-collapse" id="navbarSupportedContent">
+      {% block navbar %}
+      
+      {% if data.role==3 %}
+      <ul class="navbar-nav me-auto mb-2 mb-lg-0">
+        <li class="nav-item">
+          <a class="nav-link poppins-regular active" aria-current="page" href="/dashboard/magang">Dashboard</a>
+        </li>
+        <li class="nav-item">
+          <a class="nav-link poppins-regular" href="/task/magang">Task</a>
+        </li>
+      </ul>
+      {% elif data.role==1 %}
+      <ul class="navbar-nav me-auto mb-2 mb-lg-0">
+        <li class="nav-item">
+          <a class="nav-link poppins-regular" aria-current="page" href="/dashboard/magang">Dashboard</a>
+        </li>
+        <li class="nav-item">
+          <a class="nav-link poppins-regular active" href="/data_karyawan/admin">Data Karyawan</a>
+        </li>
+      </ul>
+      {% endif %}
+        
+      {% endblock navbar%}
+      <a role="button" href="/myProfiles " id="page-user"
+        class="d-flex justify-content-center align-items-center gap-2 text-decoration-none">
+        <img src="{{url_for('static',filename=data.photo_profile)}}" class="img-fluid rounded rounded-circle" alt />
+        <div class="vr"></div>
+        <h5 class="poppins-regular text-secondary text-truncate" style="max-width: 7.5rem">
+          {{data.nama}}
+        </h5>
+      </a>
+    </div>
+  </div>
+</nav>
+
+{% endblock value_body%}
