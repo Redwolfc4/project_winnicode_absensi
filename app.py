@@ -707,7 +707,7 @@ def signOut():
 @app.route("/sign-in/forget", methods=["GET", "POST"])
 def forgetPassword():
     if request.method == "POST":
-        try:
+        # try:
             # inisisasi data
             csrf_token, email, password_new, password2_new = request.form.values()
 
@@ -753,10 +753,10 @@ def forgetPassword():
                 )
             )
 
-        except ValueError as e:
-            return redirect(url_for("forgetPassword", msg=e.args[0]))
-        except Exception as e:
-            return redirect(url_for("forgetPassword", msg=e.args[0]))
+        # except ValueError as e:
+        #     return redirect(url_for("forgetPassword", msg=e.args[0]))
+        # except Exception as e:
+        #     return redirect(url_for("forgetPassword", msg=e.args[0]))
 
     # request method get
     msg = request.args.get("msg")
@@ -1115,7 +1115,15 @@ def handle_csrf_error(e):
 @app.route("/<path>/<argument>/<argument2>/<argument3>", methods=["GET"])
 def notFound(path=None, argument=None, argument2=None, argument3=None):
     previous = request.referrer
-    data = {"next": "/", "previous": urlparse(previous).path if previous else previous}
+    
+    parsed_url = urlparse(previous)
+    print(parsed_url)
+    if type(parsed_url.path)==bytes:
+        print('jalan')
+        parsed_url = parsed_url.path.decode("utf-8")
+        parsed_url = ' '
+    data = {"next": "/", "previous": path}
+    print(data)
     return render_template("notFound.html", data=data)
 
 
@@ -1124,7 +1132,7 @@ if __name__ == "__main__":
     # # Menjadwalkan pengecekan absensi setiap menit
     delete_absen = BackgroundScheduler()
     delete_absen.add_job(
-        func=unhadir_absensi, trigger="interval", hours=1
+        func=unhadir_absensi, trigger="interval", minutes=30
     )  # interval hours/minute/second. date run_date .cron day_of_week,hours,minutes
     delete_absen.start()
     app.run(port=900, debug=True)
