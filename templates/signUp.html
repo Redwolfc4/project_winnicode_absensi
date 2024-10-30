@@ -9,7 +9,7 @@
   <div class="container py-5 h-100">
     <div class="row d-flex align-items-center justify-content-center h-100">
       <!-- gambar -->
-      <div class="d-lg-inline-block d-none col-lg-7 col-xl-6 m-lg-0 mb-4">
+      <div class="d-lg-inline-block d-none col-lg-7 col-xl-6 m-lg-0 mb-4" data-aos='fade-right' data-aos-delay='0' data-aos-duration='800' data-aos-easing='ease-in-sine'>
         <img
           src="{{url_for('static', filename='img/sign-up-concept-illustration.png')}}"
           class="img-fluid"
@@ -17,7 +17,7 @@
         />
       </div>
       <!-- bagian form -->
-      <div class="col-md-7 col-lg-5 col-xl-5 offset-xl-1">
+      <div class="col-md-7 col-lg-5 col-xl-5 offset-xl-1" data-aos='fade-left' data-aos-delay='800' data-aos-duration='1600' data-aos-easing='ease-in-sine'>
         <form action="sign-up" method="post" class="row border border-3 rounded-2 border-purple  m-md-0 m-sm-2 m-1">
           <!-- logo -->
           <div id="logo-signup" class="col-12 d-flex justify-content-center align-items-center p-0 m-0 mb-4">
@@ -81,8 +81,8 @@
           </div>
 
           <!-- Submit button -->
-          <div class="col-12 row gap-4">
-            <div class="col-12">
+          <div class="col-12 m-0 row gap-4">
+            <div class="col-12 p-0">
               <button
                 type="submit"
                 class="btn btn-primary"
@@ -91,11 +91,15 @@
               </button>
             </div>
 
-            <div class="col-12">
-              <p class="mb-5 pb-lg-2" style="color: #393f81">
+            <div class="col-12 p-0">
+              <p class="pb-lg-2" style="color: #393f81">
                 Have an account?
                 <a href="{{ url_for('signIn') }}" style="color: #393f81">Login here</a>
               </p>
+            </div>
+
+            <div class="col-12 d-flex justify-content-center align-items-center p-0">
+              <h1 class="h6 poppins-regular text-gray-800"> Waktu server : <span id="clock" class='poppins-medium' style="max-width: max-content;"></span></h1>
             </div>
           </div>
         </form>

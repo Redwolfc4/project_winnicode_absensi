@@ -69,12 +69,6 @@ class OtpPasswordGenerator:
         self.__auth_uri = os.getenv('GOOGLE_AUTH_URI')
         self.__auth_provider_cert_url = os.getenv('GOOGLE_AUTH_PROVIDER_CERT_URL')
         
-        # The file token.json stores the user's access and refresh tokens, and is
-        # created automatically when the authorization flow completes for the first time.
-        self.__client_token_path = os.path.join(
-            app.root_path, "static", os.getenv("CLIENT_TOKEN_PATH")
-        )  # ubah jadi app.root
-        
         result = db.token_otp.find_one({},{'_id':0})
         if result:
             self.__creds = Credentials.from_authorized_user_info(

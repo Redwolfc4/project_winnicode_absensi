@@ -2,8 +2,9 @@
 <title>AbsensiKu | Dashboard Karyawan / Magang</title>
 {% endblock %}
 
+<!-- navbar -->
 {% block value_body %}
-<nav class="navbar navbar-expand-lg bg-body-tertiary shadow fixed-top">
+<nav class="navbar navbar-expand-lg bg-body-tertiary shadow sticky-top" data-aos='fade-down' data-aos-delay='0' data-aos-duration='800'>
   <div class="container-fluid gap-4">
     <a class="navbar-brand d-flex justify-content-center align-items-center m-0 p-0" href="#">
       <img id="winnicode-navbar-logo" src="{{url_for('static',filename='img/winni-code-copy.png')}}" alt="Logo"
@@ -22,6 +23,12 @@
           <a class="nav-link poppins-regular active" aria-current="page" href="/dashboard/magang">Dashboard</a>
         </li>
         <li class="nav-item">
+          <a class="nav-link poppins-regular" href="/change-password">Ubah Password</a>
+        </li>
+        <li class="nav-item">
+          <a class="nav-link poppins-regular" href="/riwayat-kehadiran">Riwayat Kehadiran</a>
+        </li>
+        <li class="nav-item">
           <a class="nav-link poppins-regular" href="/task/magang">Task</a>
         </li>
       </ul>
@@ -31,7 +38,10 @@
           <a class="nav-link poppins-regular active" aria-current="page" href="/dashboard/magang">Dashboard</a>
         </li>
         <li class="nav-item">
-          <a class="nav-link poppins-regular" href="/data_karyawan/admin">Data Karyawan</a>
+          <a class="nav-link poppins-regular" href="/change-password">Ubah Password</a>
+        </li>
+        <li class="nav-item">
+          <a class="nav-link poppins-regular" href="/riwayat-kehadiran">Riwayat Kehadiran Karyawan</a>
         </li>
       </ul>
       {% endif %}
@@ -51,29 +61,31 @@
 
 {% block content %}
 {% if data.role==3 %}
-
-<div id="dashboard{{ data.role }}" class="container-fluid" style="margin-top: 7rem">
+<!-- content -->
+<div id="riwayat_kehadiran{{ data.role }}" class="container-fluid" style='margin-top: 1.5rem'>
   <!-- Page Heading -->
   <div class="d-sm-flex align-items-center justify-content-between mb-4">
-    <h1 class="h3 poppins-regular mb-0 text-gray-800">Dashboard</h1>
+    <h1 class="h3 poppins-regular mb-md-0 mb-sm-2 text-gray-800" data-aos='zoom-in-right' data-aos-delay='200' data-aos-duration='800'>Riwayat Absen Saya</h1>
+    <h1 id="clock" class="h6 border border-1 rounded border-secondary-subtle p-1 px-2 poppins-regular mb-0 text-gray-800" data-aos='zoom-in-leftt' data-aos-delay='200' data-aos-duration='800'></h1>
   </div>
-
-  <div class="row justify-content-center">
-    {% for data in data2 %}
-    <div id="{{data['titleCard']|lower}}" class="col-xl-3 col-md-6 mb-4">
-      <div class="card {{ data.borderLeft }} shadow h-100 py-2">
+  <!-- card riwayat -->
+  {% block content_body_3 %}
+  <div class="row justify-content-center align-items-center">
+    {% for i in range(0,data2|length) %}
+    <div id="{{data2[i]['titleCard']|lower}}" class="col-lg-3 col-md-6 mb-4" data-aos='zoom-in' data-aos-delay='{{ i*400 }}' data-aos-duration='800'>
+      <div class="card {{ data2[i].borderLeft }} shadow h-100 py-2">
         <div class="card-body">
           <div class="row no-gutters align-items-center">
             <div class="col mr-2">
-              <div class="text-xs poppins-regular {{ data.textColor }} text-uppercase mb-1">
-                {{data['titleCard']}}
+              <div class="text-xs poppins-regular {{ data2[i].textColor }} text-uppercase mb-1">
+                {{data2[i]['titleCard']}}
               </div>
               <div id="angka" class="h5 mb-0 poppins-regular text-gray-800">
-                {{data.angkaCard}}
+                {{data2[i].angkaCard}}
               </div>
             </div>
             <div class="col-auto">
-              <i class="{{data.icon}}"></i>
+              <i class="{{data2[i].icon}}"></i>
             </div>
           </div>
         </div>
@@ -83,7 +95,7 @@
   </div>
 
   <div class="row justify-content-center align-items-center mt-5 px-3">
-    <div class="card border border-0 col-md-6 col">
+    <div class="card border border-0 col-md-6 col" data-aos='zoom-in-up' data-aos-delay='600' data-aos-duration='800'>
       <!-- card header -->
       <div class="card-header border border-success d-flex justify-content-center align-items-center w-100 bg-success">
         <h5 class="card-title h5 m-0 text-white poppins-medium align-middle" id="absen">Absensi Hari Ke- {{
@@ -104,12 +116,12 @@
           <p class="card-text" id="work_hours"><strong>Waktu</strong>: {{
             data.waktu_awal_kerja }} - {{
             data.waktu_akhir_kerja }} WIB</p>
-          <p class="d-none" id="timer">{{ data.waktu_awal_kerja }}-{{
-            data.waktu_akhir_kerja }}</p>
+          <!--<p class="d-none" id="timer">{{ data.waktu_awal_kerja }}-{{
+            data.waktu_akhir_kerja }}</p>-->
         </div>
         <!-- form absensi -->
         <div id="absensi_kehadiran" class="d-flex justify-content-center align-items-center">
-          <input type="hidden" id="csrf_token" name="csrf_token" value="{{ csrf_token() }}" />
+          <input type="hidden" id="csrf_token1" name="csrf_token" value="{{ csrf_token() }}" />
           <input type="hidden" id="user_id" name="user_id" value="{{ data._id }}" />
           <button class="btn {{ data['class-button-hadir'] }}" id="status_hadir" name="status_hadir"
             onclick="submitAbsen('hadir')">
@@ -119,13 +131,22 @@
       </div>
     </div>
   </div>
+  {% endblock content_body_3 %}
 </div>
 
 <!-- admin -->
 {% elif data.role==1 %}
-<div id="dashboard{{data.role}}" class="container-fluid" style="margin-top: 7rem">
+<div id="dashboard{{data.role}}" class="container-fluid" style="margin-top: 1.5rem">
+  <!-- Page Heading -->
+  <div class="d-sm-flex align-items-center justify-content-between mb-4">
+    <h1 class="h3 poppins-regular mb-md-0 mb-sm-2 text-gray-800" data-aos='zoom-in-right' data-aos-delay='200' data-aos-duration='800'>{{ data['heading_title_body'] }}</h1>
+    <h1 id="clock" class="h6 border border-1 rounded border-secondary-subtle p-1 px-2 poppins-regular mb-0 text-gray-800" data-aos='zoom-in-left' data-aos-delay='200' data-aos-duration='800'></h1>
+  </div>
+
+  {% block content_body_1 %}
+
   <!-- DataTales Example -->
-  <div class="card shadow mb-4">
+  <div class="card shadow mb-4" data-aos='fade-up' data-aos-delay='200' data-aos-duration='800'>
     <div class="card-header g-sm-0 g-4 py-3 row align-items-center">
       <h6 class="col-sm-6 col-12 m-0 font-weight-bold text-primary poppins-medium">Data Absensi Karyawan dan
         Magang</h6>
@@ -187,7 +208,7 @@
                     <th class="poppins-semibold" rowspan="2">Birthday</th>
                     <th class="poppins-semibold" rowspan="2">Status</th>
                     <th class="poppins-semibold" colspan="4">Works</th>
-                    <th class="poppins-semibold" colspan="2">Absen</th>
+                    <th class="poppins-semibold" colspan="4">Absen</th>
                     <th class="poppins-semibold" colspan="3">Action</thcol>
                   </tr>
                   <tr class="table-warning align-middle" style='--bs-table-bg:#efd500'>
@@ -196,7 +217,9 @@
                     <th>Start Time</th>
                     <th>End Time</th>
                     <th style="--bs-table-bg:#71ea71">Present</th>
+                    <th style="--bs-table-bg:#71ea71">Late</th>
                     <th style="--bs-table-bg:#71ea71">Unpresent</th>
+                    <th style="--bs-table-bg:#71ea71">Holiday</th>
                     <th style="--bs-table-bg:#38e9f2">View</th>
                     <th style="--bs-table-bg:#38e9f2">Edit</th>
                     <th style="--bs-table-bg:#38e9f2">Delete</th>
@@ -204,7 +227,7 @@
                 </thead>
                 <tbody>
                   {% for i in range(0,(data_karyawan_magang|length)) %}
-                  <tr id="{{ data_karyawan_magang[i]._id }}">
+                  <tr id="{{ data_karyawan_magang[i]._id }}" data-aos='slide-right' data-aos-delay='{{ 400+(i*100) if i<26 else 400+((i-26)*100) }}' data-aos-duration='800'>
                     <td class="poppins-regular">{{ (data.first_table - 1) * data.table_length + i+1 }}</td>
                     <td class="poppins-regular">{{ data_karyawan_magang[i].nik }}</td>
                     <td class="poppins-regular">{{ data_karyawan_magang[i].nama}}</td>
@@ -221,7 +244,9 @@
                     <td class="poppins-regular">{{ data_karyawan_magang[i].waktu_awal_kerja }}</td>
                     <td class="poppins-regular">{{ data_karyawan_magang[i].waktu_akhir_kerja }}</td>
                     <td class="poppins-regular">{{ data_karyawan_magang[i].absen.hadir }}</td>
+                    <td class="poppins-regular">{{ data_karyawan_magang[i].absen.telat }}</td>
                     <td class="poppins-regular">{{ data_karyawan_magang[i].absen.tidak_hadir }}</td>
+                    <td class="poppins-regular">{{ data_karyawan_magang[i].absen.libur }}</td>
                     <!-- trigger modal view -->
                     <td class="poppins-regular"><a type="button" id="triggerviewModal"
                         data-bs-target="#viewModal{{ data_karyawan_magang[i]._id }}" class="btn btn-primary"
@@ -365,7 +390,7 @@
                               <!-- Input Hidden for Method Override -->
                               <input type="hidden" name="_method" value="PUT">
                               <!-- csrf token -->
-                              <input type="hidden" id="csrf_token" name="csrf_token" value="{{ csrf_token() }}" />
+                              <input type="hidden" id="csrf_token{{ i+1 }}" name="csrf_token" value="{{ csrf_token() }}" />
 
                               <!-- nik -->
                               <div class="form-floating mb-3">
@@ -419,8 +444,8 @@
                               <!-- birthday -->
                               <div class="form-floating mb-3">
                                 <input type="date" class="form-control" name="tanggal_lahir" id="tanggal_lahir"
-                                  value="{{ data_karyawan_magang[i].tanggal_lahir|format_date if data_karyawan_magang[i].tanggal_lahir else '' }}">
-                                <label class="poppins-regular" for="tanggal_lahir" readonly>Birthday</label>
+                                  value="{{ data_karyawan_magang[i].tanggal_lahir|format_date if data_karyawan_magang[i].tanggal_lahir else '' }}" readonly>
+                                <label class="poppins-regular" for="tanggal_lahir">Birthday</label>
                               </div>
 
                               <!-- Status Perusahaan -->
@@ -582,9 +607,96 @@
       </div>
     </div>
   </div>
-  <!-- Modal add account -->
-  
+  {% endblock %}
 </div>
+<div id="addAccountAdmin">
+  <button class="btn btn-pink p-2 rounded" data-bs-toggle="modal" data-bs-title="Create Account Admin"
+  id="triggerAddModal" data-bs-target="#addModal"><i class="fa-solid fa-user-plus fa-lg"></i></button>
+</div>
+<!-- Modal edit -->
+<div class="modal fade" id="addModal" tabindex="-1"
+aria-hidden="true">
+  <div class="modal-dialog">
+    <div class="modal-content">
+      <form action="/dashboard/admin/create-account" method="post">
+        <!-- modal header -->
+        <div class="modal-header">
+          <h1 class="modal-title fs-5 poppins-medium text-pink">Add Admin / Sub Admin</h1>
+          <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+        </div>
+        <!-- body modal -->
+        <div class="modal-body">
+          <div class="form-floating">
+            <!-- csrf token -->
+            <input type="hidden" id="csrf_token_add" name="csrf_token" value="{{ csrf_token() }}" />
+          
+            <!-- nama -->
+            <div class="form-floating mb-3">
+              <input type="text" class="form-control" name="nama" id="nama"
+                placeholder="Masukkan Nama Lengkap admin / sub admin">
+              <label class="poppins-regular" for="nama">Nama Lengkap</label>
+            </div>
+          
+            <!-- email -->
+            <div class="form-floating mb-3">
+              <input type="email" class="form-control" name="email" id="email"
+                placeholder="Masukkan Email admin / sub admin">
+              <label class="poppins-regular" for="email">Email address</label>
+            </div>
+          
+            <!-- departement -->
+            <div class="form-floating mb-3">
+              <select class="form-select" id="departement" name="departement"
+                aria-label="Floating label select example">
+                <option value=None>
+                  --Pilih
+                  Departement--</option>
+                <option value="Superuser">Superuser</option>
+                <option value="Mentor">Mentor</option>
+              </select>
+              <label class="poppins-regular" for="departement">Pilih
+                Departement</label>
+            </div>
+          
+            <!-- Status Perusahaan -->
+            <div class="form-floating mb-3">
+              <select id="jobs" name="jobs" class="form-select">
+                <option value=None>
+                  --Select
+                  Jobs--</option>
+                <option value="Admin">Admin</option>
+                <option value="Sub Admin">Sub Admin</option>
+              </select>
+              <label class="poppins-regular" for="jobs">Status Perusahan</label>
+            </div>
+
+            <!-- password -->
+            <div class="form-floating mb-3">
+              <input type="password" class="form-control" name="password" id="password"
+                placeholder="Masukkan Password admin / sub admin">
+              <label class="poppins-regular" for="password">Password</label>
+            </div>
+
+            <!-- confirm password -->
+            <div class="form-floating mb-3">
+              <input type="password" class="form-control" name="password2" id="password2"
+                placeholder="Masukkan Konfirmasi Password admin / sub admin">
+              <label class="poppins-regular" for="password2">Konfirmasi
+                Password</label>
+            </div>
+          </div>
+        </div>
+        <div class="modal-footer">
+          <button type="button" type="reset" id="reset" class="btn btn-danger poppins-regular"
+            data-bs-dismiss="modal">Close</button>
+          <input role="button" type="submit" type="submit" id="submit"
+            class="btn btn-primary poppins-regular" disabled=" true" value="Save Changes"></input>
+        </div>
+      </form>
+    </div>
+  </div>
+</div>
+<!-- end modal -->
 
 {% endif %}
 {% endblock content %}
@@ -595,6 +707,15 @@
 <script src="{{ url_for('static', filename='js/index.js') }}"></script>
 <!-- akan membentuk static/js/admin_dashboard.js -->
 <script src="{{ url_for('static', filename='js/admin_dashboard.js') }}"></script>
+<!-- tooltip -->
+<script>
+  const tooltipTriggerList = document.querySelectorAll('[data-bs-title]');
+  const tooltipList = [...tooltipTriggerList].map(tooltipTriggerEl => new bootstrap.Tooltip(tooltipTriggerEl, {
+    placement: 'left',
+    customClass: 'custom-tooltip',  // Kelas kustom untuk tooltip
+    trigger: 'hover focus' // Pemicu tooltip
+  }));
+</script>
 {% endblock js_custom %}
 
 {% block message %}

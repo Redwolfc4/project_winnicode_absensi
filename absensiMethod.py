@@ -2,6 +2,22 @@ import base64
 import datetime
 import jwt
 from bson import ObjectId
+from cryptography.fernet import Fernet
+import requests
+import datetime
+
+# Generate a key for encryption (this should be securely stored)
+key = Fernet.generate_key()
+cipher = Fernet(key)
+
+# ambil waktu berdasarkan api
+def get_time_zone_now(location:str='asia/jakarta'):
+    url = f"https://www.timeapi.io/api/time/current/zone?timeZone={location}"
+    waktu_str = requests.get(url).json()['dateTime']
+    waktu_sekarang =  datetime.datetime.fromisoformat(waktu_str)
+    return  waktu_sekarang
+
+    
 
 # tidak hadir untuk magang / karyawan
 def unhadir_absensi():
@@ -26,7 +42,7 @@ def unhadir_absensi():
     
     from app import db
     users = db.users.find({"role": 3})  # nanti diubah bisa role 2 dan 3
-    now = datetime.datetime.now()
+    now = get_time_zone_now()
     time_now = now.time()
     print("Server sedang berjalan dilatar belakang")
     # db.absen_magang.delete_many({'tanggal_hadir':now.strftime('%d %B %Y').lower()})
@@ -38,7 +54,7 @@ def unhadir_absensi():
             akhir_kerja = user["akhir_kerja"]
             waktu_akhir_kerja = user["waktu_akhir_kerja"]
             user_id = user["_id"]
-            i = 0
+
             # cek mulai kerja dan akhir kerja user
             if mulai_kerja != "" and akhir_kerja != "":
                 # cek tanggal sekarang dengan rentang kerja
@@ -180,7 +196,7 @@ def format_date(value):
     return date_obj.strftime("%Y-%m-%d")
 
 # kurangin tanggal hari ini sama tanggal mulai awal
-def     cek_tanggal_kerja(awal_kerja_str: str, akhir_kerja_str: str):
+def cek_tanggal_kerja(awal_kerja_str: str, akhir_kerja_str: str):
     """
     Mengecek apakah tanggal sekarang berada diantara awal_kerja dan akhir_kerja.
 
@@ -203,7 +219,7 @@ def     cek_tanggal_kerja(awal_kerja_str: str, akhir_kerja_str: str):
     awal_kerja = datetime.datetime.strptime(awal_kerja_str, format_tanggal)
     akhir_kerja = datetime.datetime.strptime(akhir_kerja_str, format_tanggal)
 
-    tanggal_sekarang = datetime.datetime.now()
+    tanggal_sekarang = get_time_zone_now()
     # apakah awal kerja > tanggal_sekarang > akhir kerja
     if (tanggal_sekarang - awal_kerja >= datetime.timedelta(days=0)) and (
         akhir_kerja - tanggal_sekarang >= datetime.timedelta(days=0)

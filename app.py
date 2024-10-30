@@ -1,9 +1,10 @@
 from absensiMethod import (cek_tanggal_kerja, format_date, format_time, signInPayload,
-    string_to_uuid_like, unhadir_absensi, uuid_like_to_string)
+    string_to_uuid_like, unhadir_absensi, uuid_like_to_string, cipher, get_time_zone_now)
 from convert import (
     convert_to_excel,
     PDF
 )
+import cryptography.fernet as Fernet
 from flask import (
     Flask,
     redirect,
@@ -12,7 +13,7 @@ from flask import (
     request,
     jsonify,
     send_file,
-    make_response
+    make_response,
 )
 from flask_wtf.csrf import CSRFProtect
 from pymongo.mongo_client import MongoClient
@@ -20,7 +21,6 @@ from dotenv import load_dotenv
 import os, hashlib, jwt, datetime
 from bson import ObjectId
 from apscheduler.schedulers.background import BackgroundScheduler
-from urllib.parse import urlparse
 from io import BytesIO
 from openpyxl import load_workbook
 from werkzeug.utils import secure_filename
@@ -64,27 +64,112 @@ def home():
     The home page will redirect to the signIn page if the user is not authenticated.
     """
 
-    # return redirect(url_for('dashboard'))
     return render_template("home.html")
 
+# change password
+@app.route("/change-password", methods=["GET", 'POST'])
+def change_password():
+    # method post
+    if request.method == "POST":
+        try:
+            cookie = request.cookies.get("token_key")
+            csrf_token = request.cookies.get("csrf_token")
+            X_CSRFToken = request.headers.get("X-CSRFToken")
+            # cek csrf token
+            if csrf_token == None or csrf_token == "":
+                return jsonify({'status': 400,'redirect': url_for("sign-in", msg="CSRF Token Expired")})
+            # cek xcsrf token
+            if X_CSRFToken == None or X_CSRFToken == "":
+                return jsonify({'status': 400,'redirect': url_for("sign-in", msg="X-CSRF Token Expired")})
+            # cek cookie
+            if cookie == None or cookie == "":
+                return jsonify({'status': 400,'redirect': url_for("sign-in", msg="Cookie Expired")})
+            cookie = uuid_like_to_string(cookie)
+            csrf_token = uuid_like_to_string(csrf_token)
+            if not csrf_token:
+                return jsonify({'status': 401,'redirect': url_for("sign-in", msg="CSRF Token Expired")})
+            if not cookie:
+                return jsonify({'status': 401,'redirect': url_for("sign-in", msg="Cookie Expired")})
+            # decode payload
+            payload = jwt.decode(cookie, secretKey, algorithms=["HS256"])
+            
+            # ambil data password di database
+            password_db = db.users.find_one(
+                {
+                    "_id": ObjectId(payload["_id"]),
+                    "jobs": payload["jobs"],
+                    "role": payload["role"],
+                    'password': hashlib.sha256(request.form.get("old_password").encode("utf-8")).hexdigest()
+                }, {
+                    '_id': 0,
+                    "password": 1
+                }
+            )
+            # cek sama atau tidak
+            if not password_db:
+                raise Exception("password lama salah")
+            
+            # cek password baru dengan lama
+            if hashlib.sha256(request.form.get("new_password").encode("utf-8")).hexdigest() == password_db['password']:
+                raise Exception("password baru tidak boleh sama dengan lama")
+            
+            # update password
+            result = db.users.update_one({
+                    "_id": ObjectId(payload["_id"]),
+                    "jobs": payload["jobs"],
+                    "role": payload["role"],
+                },
+                {
+                    "$set": {
+                        "password": hashlib.sha256(request.form.get("new_password").encode("utf-8")).hexdigest()
+                    }
+                }
+            )
 
-@app.route("/data_karyawan/admin", methods=["GET"])
-def data_karyawan():
-    cookie = request.cookies.get("token_key")
-    request.cookies.get("csrf_token")
-
-    payload = jwt.decode(cookie, secretKey, algorithms=["HS256"])
-    data = db.users.find_one(
-        {
-            "_id": ObjectId(payload["_id"]),
-            "jobs": payload["jobs"],
-            "role": payload["role"],
-        }
-    )
-    if data["role"] == 1:
-        if data["jobs"] == "Admin":
-            return render_template("data_karyawan.html", data=data)
-
+            # cek berhasil atau tidak
+            if result.modified_count <= 0:
+                raise Exception("Gagal merubah password")
+            return jsonify({'status':200,'redirect': url_for('change_password', msg="Password Berhasil DIubah",result="success")})
+        # atasi error lainnya
+        except Exception as e: 
+            return jsonify({'status': 400,'redirect': url_for("change_password", msg=e.args[0])})       
+        # atasi error jwt   
+        except jwt.ExpiredSignatureError:
+            return jsonify({'status':401,'redirect': url_for("signIn", msg="Session Expired")})
+        except jwt.DecodeError:
+            return jsonify({'status':408,'redirect': url_for("signIn", msg="Anda telah logout")})
+        
+    # method get
+    try:
+        # ambil data
+        cookie = request.cookies.get("token_key")
+        csrf_token = request.cookies.get("csrf_token")
+        result = request.args.get("result")
+        msg = request.args.get("msg")
+        # cek ada ga?
+        if csrf_token == None or csrf_token == "":
+            return redirect(url_for("signIn", msg="csrf token expired"))
+        if cookie == None or cookie == "":
+            return redirect(url_for("signIn", msg="Cookie Expired"))
+        # konvert
+        cookie = uuid_like_to_string(cookie)
+        csrf_token = uuid_like_to_string(csrf_token)
+        # konvert ke 2
+        payload = jwt.decode(cookie, secretKey, algorithms=["HS256"])
+        data = db.users.find_one(
+            {
+                "_id": ObjectId(payload["_id"]),
+                "jobs": payload["jobs"],
+                "role": payload["role"],
+            }
+        )
+        data['heading_title_body']= "Change Password"
+        return render_template("change_password.html", data=data, result=result, msg=msg)
+    except jwt.ExpiredSignatureError:
+        return redirect(url_for("signIn", msg="Session Expired"))
+    except jwt.DecodeError:
+        return redirect(url_for("signIn", msg="Anda telah logout"))
+# integrasikan ke user dengan menambahakan di navbar
 
 # dasboard magang get
 @app.route("/dashboard/magang", methods=["GET"])
@@ -92,10 +177,22 @@ def dashboard():
     result = request.args.get("result")
     msg = request.args.get("msg")
     cookie = request.cookies.get("token_key")
-    csrf_token = request.cookies.get("csrf_token")
+    csrf_token = request.cookies.get("csrf_token")  
 
     try:
+        # cek ada cookie dan csrf token / tidak ?
+        if not cookie:
+            raise Exception("Cookie Expired")
+        if not csrf_token:
+            raise Exception("CSRF Token Expired")
+        # convet uuid
+        cookie = uuid_like_to_string(cookie)
+        csrf_token = uuid_like_to_string(csrf_token)
+        
+        # convert jwt
         payload = jwt.decode(cookie, secretKey, algorithms=["HS256"])
+        
+        # ambil data
         data = db.users.find_one(
             {
                 "_id": ObjectId(payload["_id"]),
@@ -109,9 +206,10 @@ def dashboard():
         if data["role"] == 3:
             # ambiltanggal sekarang
             data["tanggal_sekarang"] = (
-                datetime.datetime.now().strftime("%d %B %Y").lower()
+                get_time_zone_now().strftime("%d %B %Y").lower()
             )
 
+            # ambil data table absen
             table_hadir = db.absen_magang.find_one(
                 {
                     "user_id": ObjectId(payload["_id"]),
@@ -120,7 +218,9 @@ def dashboard():
             )
 
             # cek tanggal pelaksanan kerja
-            waktu_sekarang = datetime.datetime.now().time()
+            waktu_sekarang = get_time_zone_now()
+            waktu30menit = waktu_sekarang +  datetime.timedelta(minutes=30)
+            waktu_sekarang = waktu_sekarang.time()
             waktu_awal_kerja = datetime.datetime.strptime(
                 data["waktu_awal_kerja"].replace(".", ":"), "%H:%M"
             ).time()
@@ -144,21 +244,30 @@ def dashboard():
 
             # ambil anggka heading card dan customize button berdasarkan cek status hadir dan waktu
             if table_hadir:
-                # waktu hadir
+                # konversi waktu hadir
                 waktu_hadir = datetime.datetime.strptime(
                     table_hadir["waktu_hadir"].replace(".", ":"), "%H:%M"
                 ).time()
+                # membuat jumlah absen dalam rentang kontrak
                 data["heading-card"] = (
                     data["absen"]["hadir"] + data["absen"]["tidak_hadir"]
                 )
+                # saat jam awal dan sudah dapat melakukan absen
                 if (
                     table_hadir["status_hadir"] == "1"
                     and waktu_hadir <= waktu_akhir_kerja
                 ):
                     data["class-button-hadir"] = "btn-success disabled opacity-100"
                     data["text-button"] = "Hadir"
+                # saat jam akhir dan sudah dapat melakukan absen
+                elif(
+                    table_hadir["status_hadir"] == 2
+                    and waktu_hadir <= waktu_akhir_kerja
+                ):
+                    data["class-button-hadir"] = "btn-warning disabled opacity-100"
+                    data['text-button'] = "Telat"
                 elif (
-                    table_hadir["status_hadir"] == "1"
+                    table_hadir["status_hadir"] in ("1",2)
                     and waktu_hadir >= waktu_akhir_kerja
                 ):
                     data["class-button-hadir"] = "btn-secondary disabled"
@@ -180,13 +289,28 @@ def dashboard():
                     "borderLeft": "border-left-success",
                 },
                 {
+                    "titleCard": "Telat",
+                    "textColor": "text-warning",
+                    "angkaCard": data["absen"]["telat"],
+                    "icon": "fas fa-check fa-2x text-warning text-opacity-25",
+                    "borderLeft": "border-left-warning",
+                },
+                {
                     "titleCard": "Tidak Hadir",
                     "textColor": "text-danger",
                     "angkaCard": data["absen"]["tidak_hadir"],
                     "icon": "fa-regular fa-circle-xmark fa-2x text-danger text-opacity-25",
                     "borderLeft": "border-left-danger",
                 },
+                {
+                    "titleCard": "Liburan",
+                    "textColor": "text-danger-emphasis",
+                    "angkaCard": data["absen"]["libur"],
+                    "icon": "fa-regular fa-circle-xmark fa-2x text-danger-emphasis text-opacity-25",
+                    "borderLeft": "border-left-danger-emphasis",
+                },
             ]
+            # hanya untuk karywan dan magang
             if (data["jobs"] == "Magang") or (data["jobs"] == "Karyawan"):
                 return render_template(
                     "dashboard_magang.html",
@@ -232,7 +356,8 @@ def dashboard():
                 data["first_table"] = first_table  # table awal
                 data["table_length"] = table_length  # table akhir
                 data["count_data_karyawan_magang"] = count_data_karyawan_magang
-
+                
+                # fitur pencarian
                 if search != "" and search != None:
                     for data_karyawan in data_karyawan_magang:
                         # cek berdasarkan jobs,role,departement,nama,nik,email,tanggal_lahir,tempat_lahir
@@ -248,16 +373,20 @@ def dashboard():
                         ):
                             data_karyawan_magang_new.append(data_karyawan)
                         continue
+                    # cek datakaryawan ditemukan atau tidak
                     if len(data_karyawan_magang_new) <= 0:
                         return redirect(
                             url_for("dashboard", msg="Data tidak ditemukan")
                         )
+                    # ditemukan
                     data_karyawan_magang = data_karyawan_magang_new
                     end_index = len(data_karyawan_magang)
-
+                # editable showing
                 data["showing_table_karyawan"] = (
                     f"Showing {start_index} to {end_index} of {count_data_karyawan_magang} entries"
                 )
+                # judul
+                data['heading_title_body'] = 'Dashboard'
 
                 # render
                 return render_template(
@@ -273,12 +402,309 @@ def dashboard():
 
         else:
             return redirect(url_for("signIn", msg="Anda bukan bagian dari perusahaan"))
+    # handle error
+    except Exception as e:
+        return redirect(url_for("signIn", msg=e.args[0]))
+    except jwt.ExpiredSignatureError:
+        return redirect(url_for("signIn", msg="Session Expired"))
+    except jwt.DecodeError:
+        return redirect(url_for("signIn", msg="Anda telah logout"))
+    
+# riwayat kehadiran
+@app.route("/riwayat-kehadiran", methods=["GET"])
+def riwayat_kehadiran():
+    """
+    Handle route /riwayat-kehadiran, menampilkan riwayat kehadiran karyawan dan magang.
 
+    Returns:
+        str: render template riwayat_kehadiran.html
+    """
+    try:
+        # The above Python code is checking for the presence of a CSRF token and a token key in the
+        # request cookies. If the CSRF token is not found (i.e., None), it redirects the user to the
+        # "signIn" route with a message indicating that the CSRF token has expired. Similarly, if the
+        # token key is not found (i.e., None), it redirects the user to the "signIn" route with a
+        # message indicating that the user has been logged out. This code is likely part of a web
+        # application's security mechanism to ensure that valid CSRF tokens and user authentication
+        # tokens are present before allowing access
+        msg = request.args.get('msg')
+        result = request.args.get('result')
+        csrf_token = request.cookies.get("csrf_token")
+        cookies = request.cookies.get("token_key")
+        if csrf_token == None:
+            return redirect(url_for("signIn", msg="csrf token expired"))
+        if cookies == None:
+            return redirect(url_for("signIn", msg="Anda Telah logout"))
+        # The above Python code snippet is converting `cookies` and `csrf_token` variables from a
+        # UUID-like format to a string format using the `uuid_like_to_string` function. It then checks
+        # if the `csrf_token` or `cookies` are empty, and if so, it redirects the user to the "signIn"
+        # route with a message indicating that either the CSRF token has expired or the cookie has
+        # expired.
+        cookies = uuid_like_to_string(cookies)
+        csrf_token = uuid_like_to_string(csrf_token)
+        if not csrf_token:
+            return redirect(url_for("signIn", msg="CSRF Token Expired"))
+        if not cookies:
+            return redirect(url_for("signIn", msg="Cookie Expired"))
+        # The above Python code snippet is decoding a JSON Web Token (JWT) from the `cookies` using a
+        # `secretKey` with the HS256 algorithm. It then retrieves data from a MongoDB database based
+        # on the decoded payload. If the role in the payload is not equal to 1 and the job is not
+        # 'admin', it fetches the attendance history (`riwayat_absent`) for a specific user ID.
+        # Otherwise, if the conditions are not met, it fetches the attendance history for all users.
+        payloads = jwt.decode(cookies, secretKey, algorithms=["HS256"])
+        data = db.users.find_one({'_id':ObjectId(payloads['_id'])},{'_id':0,'jobs':1,'role':1,'nama':1,'photo_profile':1})
+        if not data:
+            return redirect(url_for("dashboard", msg="Terjadi kesalahan data"))
+        if payloads["role"] != 1 and payloads['jobs'] not in ('admin'):
+            riwayat_absent = list(db.absen_magang.find({'user_id':ObjectId(payloads['_id'])},{'_id':0,'status_hadir':1,'waktu_hadir':1,'tanggal_hadir':1}))
+        else:
+            # gabungkan data riwayat absen karyawan dan magang
+            riwayat_absent =list( db.absen_magang.aggregate([
+                {
+                    '$lookup':{
+                        'from':'users',
+                        'localField':'user_id',
+                        'foreignField':'_id',
+                        'as':'user'
+                    }
+                },
+                {
+                    '$unwind':'$user'
+                },
+                {
+                    '$match':{
+                        'user.role':{'$ne':1},
+                        'user.jobs':{'$nin':['admin']}
+                    }
+                },
+                {
+                    '$unset':['user_id','user._id','user.password']  
+                },
+                {
+                    '$project':{
+                        '_id':1,
+                        'status_hadir':1,
+                        'waktu_hadir':1,
+                        'tanggal_hadir':1,
+                        'user.nama': 1,  # Tampilkan `nama` dari `users`
+                        'user.jobs': 1,  # Tampilkan `jobs` dari `users`
+                        'user.departement': 1,  # Tampilkan `departement` dari `users`
+                        'user.role': 1,  # Tampilkan `role` dari `users`
+                        'user.email':1,
+                        'user.nik':1
+                    }
+                }
+            ]))
+            for i in riwayat_absent:
+                # decrypt id riwayat absen
+                i['_id'] = string_to_uuid_like(cipher.encrypt(str(i['_id']).encode()).decode())
+
+        # render template riwayat_kehadiran.html
+        return render_template("riwayat_kehadiran.html",riwayat_absent=riwayat_absent, data=data,msg=msg,result=result)
+    
+    # The above code is a Python snippet that includes multiple `except` blocks to handle different
+    # types of exceptions.
+    except Exception:
+        return redirect(url_for("signIn", msg="something went wrong!"))
     except jwt.ExpiredSignatureError:
         return redirect(url_for("signIn", msg="Session Expired"))
     except jwt.DecodeError:
         return redirect(url_for("signIn", msg="Anda telah logout"))
 
+# riwayat kehadiran post
+@app.route("/riwayat-kehadiran/<path1>",methods=['POST'])
+@app.route("/riwayat-kehadiran/<path1>/<path2>",methods=['POST'])
+def riwayat_kehadiran_post(path1=None,path2=None):
+    try:
+        # lakukan validasi cooke masih ada
+        csrf_token = request.cookies.get("csrf_token")
+        cookies = request.cookies.get("token_key")
+        if csrf_token == None:
+            return redirect(url_for("signIn", msg="csrf token expired"))
+        if cookies == None:
+            return redirect(url_for("signIn", msg="Anda Telah logout"))
+        
+        # lakukan decode uuid validasi cookie
+        cookies = uuid_like_to_string(cookies)
+        csrf_token = uuid_like_to_string(csrf_token)
+        if not csrf_token:
+            return redirect(url_for("signIn", msg="CSRF Token Expired"))
+        if not cookies:
+            return redirect(url_for("signIn", msg="Cookie Expired"))
+        
+        # lakukan encode payloads
+        payloads = jwt.decode(cookies, secretKey, algorithms=["HS256"])
+        if not payloads:
+            return redirect(url_for("signIn", msg="Anda Telah logout"))
+        
+        # jika pathnya edit
+        if path1 == 'edit' and payloads['role']==1 and payloads['jobs']=='Admin':
+            # method put
+            if request.form['__method'] == 'PUT':
+                # form csrf dimiliki
+                if request.form['__csrf_token'] != None or request.form['__csrf_token'] != '':
+                    
+                    # inisiasi form
+                    id_riwayat_absent = request.form['__id_riwayat_absent']
+                    nik = int(request.form['nik'])
+                    email = request.form['email']
+                    status_hadir = request.form['status_hadir']
+                    # status_hadir_referrer = request.form['status_hadir_referrer']
+                    
+                    # cek status hadir dimiliki dan konversi
+                    if status_hadir == None or status_hadir=='':
+                        raise Exception('Anda harus memilih status hadir')
+                    elif status_hadir != '1':
+                        status_hadir = int(status_hadir)
+
+                    # lakukan validasi nik dimikii
+                    if nik == None or nik=='':
+                        raise Exception('Anda harus mengisi profile terlebih dahulu')
+                    
+                    # lakukan validasi email dan id_riwayat_absent
+                    if '' in (email,id_riwayat_absent) or None in (email,id_riwayat_absent):
+                        raise Exception('This data is undefined please try again')
+                    
+                    # decript id riwayat absen
+                    absen_magang_id = cipher.decrypt(uuid_like_to_string(id_riwayat_absent).encode()).decode()
+                    
+                    # do change it absen_magang
+                    update_absen_magang = db.absen_magang.find_one_and_update({'_id':ObjectId(absen_magang_id)},{'$set':{'status_hadir':status_hadir}})
+                    
+                    # cek berhasil diupdate
+                    if not update_absen_magang:
+                        raise Exception('Gagal update status absent')
+                    
+                    # lakukan kondisi untuk perubahan status_hadir referrer user
+                    if update_absen_magang['status_hadir'] == '1':
+                        setting = {
+                            '$set':{
+                                'absen.hadir': db.users.find_one({'_id':update_absen_magang['user_id']})['absen']['hadir'] - 1
+                            }
+                        }
+                    elif update_absen_magang['status_hadir'] == 2:
+                        setting = {
+                            '$set':{
+                                'absen.telat': db.users.find_one({'_id':update_absen_magang['user_id']})['absen']['telat'] - 1
+                            }
+                        }
+                    elif update_absen_magang['status_hadir'] == 3:
+                        setting = {
+                            '$set':{
+                                'absen.libur': db.users.find_one({'_id':update_absen_magang['user_id']})['absen']['libur'] - 1
+                            }
+                        }
+                    else:
+                        setting = {
+                            '$set':{
+                                'absen.tidak_hadir': db.users.find_one({'_id':update_absen_magang['user_id']})['absen']['tidak_hadir'] - 1
+                            }
+                        }
+                        
+                    # tambahkan seting absen pada user untuk status
+                    if status_hadir=='1':
+                        setting['$set']['absen.hadir'] = db.users.find_one({'_id':update_absen_magang['user_id']})['absen']['hadir']+1
+                    elif status_hadir==2:
+                        setting['$set']['absen.telat'] = db.users.find_one({'_id':update_absen_magang['user_id']})['absen']['telat']+1
+                    elif status_hadir==3:
+                        setting['$set']['absen.libur'] = db.users.find_one({'_id':update_absen_magang['user_id']})['absen']['libur']+1
+                    else:
+                        setting['$set']['absen.tidak_hadir'] = db.users.find_one({'_id':update_absen_magang['user_id']})['absen']['tidak_hadir']+1
+
+                    # laukan perubahan absen pada user 
+                    update_absen_user = db.users.find_one_and_update({'_id':update_absen_magang['user_id']},setting)
+                    
+                    # cek berhasil melakukan update absen pada user
+                    if not update_absen_user:   
+                        raise Exception('Gagal update absent bagian user')
+                    
+                    return redirect(url_for('riwayat_kehadiran', msg=f'Riwayat absen atas nama {update_absen_user['nama']} berhasil diupdate', result='success'))
+                    
+                else:
+                    raise Exception('Please do with page web')
+            else:
+                raise Exception('This method is not allowed')
+            
+        # delete kehadiran kryawan / magang
+        elif path1 == 'delete' and payloads['role']==1 and payloads['jobs']=='Admin':
+            if request.form['_method'] == 'DELETE':
+                # form csrf dimiliki
+                if request.form['__csrf_token'] != None or request.form['__csrf_token'] != '':
+                    print(uuid_like_to_string(path2).encode())
+                    # inisiasi form yang diperlukan
+                    if path2 == None or path2=='':
+                        raise Exception('This data is undefined please try again')
+
+                    # decript id riwayat absen
+                    absen_magang_id = cipher.decrypt(uuid_like_to_string(path2).encode()).decode()
+                    
+                    # lakukan validasi email dan id_riwayat_absent
+                    if not absen_magang_id or absen_magang_id == '':
+                        raise Exception('This data decrypt is undefined please try again')
+                    
+                    # cari riwayat absen
+                    riwayat_absen = db.absen_magang.find_one_and_delete({'_id':ObjectId(absen_magang_id)})
+                    
+                    # lakukan pengurangan bagian user sesuai id riwayat absen
+                    if not riwayat_absen:
+                        raise Exception('Riwayat absen tidak ditemukan')
+                    
+                    # cari user berdasarkan id riwayat absen
+                    user = db.users.find_one({'_id':riwayat_absen['user_id']})
+                    
+                    # cek user didapatkan atau tidak
+                    if not user:
+                        raise Exception('User tidak ditemukan')
+                    
+                    # cek status hadir riwayat absen dalam bentuk angka dan string
+                    if riwayat_absen['status_hadir'] == '1':
+                        setting = {
+                            '$set':{
+                                'absen.hadir': user['absen']['hadir'] - 1
+                            }
+                        }
+                    elif riwayat_absen['status_hadir'] == 2:
+                        setting = {
+                            '$set':{
+                                'absen.telat': user['absen']['telat'] - 1
+                            }
+                        }
+                    elif riwayat_absen['status_hadir'] == 3:
+                        setting = {
+                            '$set':{
+                                'absen.libur': user['absen']['libur'] - 1
+                            }
+                        }
+                    else:
+                        setting = {
+                            '$set':{
+                                'absen.tidak_hadir': user['absen']['tidak_hadir'] - 1
+                            }
+                        }
+                        
+                    # lakukan pengurangan pada user
+                    delete_absen_user = db.users.find_one_and_update({'_id':riwayat_absen['user_id']},setting)
+                    
+                    # cek user didapatkan atau tidak
+                    if not delete_absen_user:
+                        raise Exception('Gagal update absent bagian user')
+                    
+                    return redirect(url_for('riwayat_kehadiran', msg=f'Riwayat absen atas nama {delete_absen_user['nama']} berhasil di hapus', result='success'))
+                raise Exception('Please do with page web')
+            else:
+                raise Exception('This method is not allowed')
+        else:
+            return redirect(url_for('signin', msg='Anda tidak memiliki akses terhadap halaman ini'))
+    except Exception as e:
+        if not e.args:
+            e.args = ('terjadi kesalahan data',)
+        return redirect(url_for('riwayat_kehadiran',msg=e.args[0]))
+    except jwt.ExpiredSignatureError:
+        return redirect(url_for("signIn", msg="Session Expired"))
+    except jwt.DecodeError:
+        return redirect(url_for("signIn", msg="Anda telah logout"))
+    except Fernet.InvalidToken:
+        return redirect(url_for("riwayat_kehadiran", msg="Token update invalid please refresh your page"))
 
 # dashboard absen
 @app.route("/dashboard/absen", methods=["POST"])
@@ -306,18 +732,32 @@ def dashboardAbsen():
     >>> response.json()
     {'result': 'success', 'redirect': '/dashboard/magang', 'msg': ''}
     """
-    now = datetime.datetime.now()
+    # ambil tanggal sekarang dan waktu sekarang
+    now = get_time_zone_now()
     time_now = now.time()
     try:
+        # ambil csrf token
         csrf_token = request.headers.get("X-CSRF-Token")
+        csrf = request.cookies.get("csrf_token")
+        # cek token
         if csrf_token == "" and csrf_token == None:
             raise Exception("csrf token expired")
+        if csrf == "" and csrf == None:
+            raise Exception("csrf token cookie expired")
+        csrf = uuid_like_to_string(csrf)
+        if not csrf:
+            raise Exception("CSRF decode error")
+        # ambil data dari form
         userId = request.form.get("user_id")
         status_hadir = request.form.get("status_hadir")
+        print(status_hadir)
+        
+        # ambil riwayat absen
         riwayat_absen = db.absen_magang.find_one(
             {"user_id": ObjectId(userId)}, sort={"_id": -1}
-        )  # cek riwayat absen
+        ) 
 
+        # cek absen / belum
         if (
             now.date()
             <= datetime.datetime.strptime(
@@ -352,13 +792,37 @@ def dashboardAbsen():
                 {
                     "user_id": ObjectId(userId),
                     "status_hadir": status_hadir,
-                    "waktu_hadir": datetime.datetime.now().strftime("%H.%M").lower(),
-                    "tanggal_hadir": datetime.datetime.now()
+                    "waktu_hadir": get_time_zone_now().strftime("%H.%M").lower(),
+                    "tanggal_hadir": get_time_zone_now()
                     .strftime("%d %B %Y")
                     .lower(),
                 }
             )
 
+            return jsonify({"result": "success", "redirect": "/dashboard/magang"})
+        # jika telat
+        elif status_hadir == '2':
+            db.users.find_one_and_update(
+                {"_id": ObjectId(userId)},
+                {
+                    "$set": {
+                        "absen.telat": db.users.find_one({"_id": ObjectId(userId)})[
+                            "absen"
+                        ]["telat"]
+                        + 1
+                    }
+                },
+            )
+            db.absen_magang.insert_one(
+                {
+                    "user_id": ObjectId(userId),
+                    "status_hadir": int(status_hadir),
+                    "waktu_hadir": get_time_zone_now().strftime("%H.%M").lower(),
+                    "tanggal_hadir": get_time_zone_now()
+                    .strftime("%d %B %Y")
+                    .lower(),
+                }
+            )
             return jsonify({"result": "success", "redirect": "/dashboard/magang"})
         # jika tidak hadir
         else:
@@ -377,45 +841,126 @@ def dashboardAbsen():
                 {
                     "user_id": ObjectId(userId),
                     "status_hadir": status_hadir,
-                    "waktu_hadir": datetime.datetime.now().strftime("%H.%M").lower(),
-                    "tanggal_hadir": datetime.datetime.now()
+                    "waktu_hadir": get_time_zone_now().strftime("%H.%M").lower(),
+                    "tanggal_hadir": get_time_zone_now()
                     .strftime("%d %B %Y")
                     .lower(),
                 }
             )
             return jsonify({"result": "unsuccess", "redirect": "/dashboard/magang"})
+    # handle error
     except Exception as e:
         return jsonify(
-            {"result": "Gagal", "redirect": "/dashboard/magang", "msg": str(e)}
+            {"result": "Gagal", "redirect": "/sign-in", "msg": str(e)}
         )
 
 
-# cek data waktu harus lebih atau kurang?kalo ga ga jalan samsek
-# gituin args get dari url ini berbahaya
-# riwayat absen masih none tidak nampilin waktu riwayat
-
+# add account admin / sub admin
+@app.route('/dashboard/admin/create-account', methods=['POST'])
+def dashboardAdminCreateAccount():
+    try:
+        # inisiasi cookie
+        cookies = request.cookies.get("token_key")
+        csrf = request.cookies.get("csrf_token")
+        # cek cookie
+        if cookies == "" or cookies == None:
+            raise Exception("cookie expired")
+        if csrf == "" or csrf == None:
+            raise Exception("csrf expired")
+        # decode cookie
+        cookies = uuid_like_to_string(cookies)
+        csrf = uuid_like_to_string(csrf)
+        # cek decode1
+        if not cookies:
+            raise Exception("CSRF decode error")
+        if not csrf:
+            raise Exception("CSRF decode error")
+        # decode payload
+        payload = jwt.decode(cookies, secretKey, algorithms=["HS256"])
+        # cek payload
+        if not payload:
+            raise Exception("Invalid token")
+        # cek hak akses selama cookie
+        if payload['role'] != 1 and payload['jobs'] not in ('Admin'):
+            raise Exception("Anda tidak memiliki akses")
+        
+        # inisiasi validasi inputan
+        csrf_token,nama,email,departement,jobs,password,password2 = request.form.values()
+        
+        # validasi terlebih dahulu kosong atau tidak
+        if csrf_token.strip() == '' or csrf_token == None:
+            raise Exception("Your request not in page")
+        if nama.strip() == '' or nama == None:
+            raise ValueError('your name is empty, please insert in')
+        if email.strip() == '' or email == None:
+            raise ValueError('your email is empty, please insert in')
+        if departement.strip() == '' or departement == None:
+            raise ValueError('your departement is empty, please insert in')
+        if jobs.strip() == '' or jobs == None:
+            raise ValueError('your jobs is empty, please insert in')
+        if password.strip() == '' or password == None:
+            raise ValueError('your password is empty, please insert in')
+        if password2.strip() == '' or password2 == None:
+            raise ValueError('your confirm password is empty, please insert in')
+        
+        # jika tidak lanjut kesini
+        # cek inputan password dengan konfirm password sama atau tidak
+        if password.strip() != password2.strip():
+            raise ValueError('your password and confirm password not same')
+        
+        # cek email apakah sudah ada di database
+        if db.users.find_one({'email': email.strip(),'nama':nama.strip()}):
+            raise ValueError('email or name already exist')
+        
+        result = db.users.insert_one({
+            'nama':nama.strip(),
+            'email':email.strip(),
+            'password':password.strip(),
+            'departement':departement.strip(),
+            'jobs':jobs.strip(),
+            'role':1,
+            'photo_profile':"img/default/user.png"
+        })
+        if not result:
+            raise ValueError("Data tidak berhasil disimpan")
+        return redirect(url_for('dashboard',msg='Data atas nama '+str(nama.strip())+' Berhasil Disimpan', result='success'))
+    # handling error
+    except ValueError as e:
+        return redirect(url_for("dashboard", msg=e.args[0]))
+    except Exception as e:
+        return redirect(url_for("signIn", msg=e.args[0]))
+    except jwt.ExpiredSignatureError:
+        return redirect(url_for("signIn", msg="Session Expired"))
+    except jwt.DecodeError:
+        return redirect(url_for("signIn", msg="Anda telah logout"))
 
 # mengedit data karyawan melalui admin
 @app.route("/dashboard/admin/edit", methods=["POST"])
 def dashboardAdminEdit():
+    # apakah method put /nukan
     if request.form.get("_method") != "PUT":
         return redirect(url_for("dashboard"))
 
+    # cek csrf token
     csrf_token = request.form.get("csrf_token")
+    # cek cookie token
+    cookies = request.cookies.get("token_key")
 
+    # ambil data
+    nama = request.form.get("nama")
+    email = request.form.get("email")
+    departement = request.form.get("departement")
+    jobs = request.form.get("jobs")
+    start_date = request.form.get("start_date")
+    end_date = request.form.get("end_date")
+    start_time = request.form.get("start_time")
+    end_time = request.form.get("end_time")
+
+    # cek kosong / tidak
     if csrf_token == "" or csrf_token == None:
         raise ValueError("csrf token expired")
     try:
-        jwt.decode(request.cookies.get("token_key"), secretKey, algorithms=["HS256"])
-        nama = request.form.get("nama")
-        email = request.form.get("email")
-        departement = request.form.get("departement")
-        jobs = request.form.get("jobs")
-        start_date = request.form.get("start_date")
-        end_date = request.form.get("end_date")
-        start_time = request.form.get("start_time")
-        end_time = request.form.get("end_time")
-
+        # cek string kosong atau tidak
         if (
             nama == ""
             or email == ""
@@ -429,7 +974,16 @@ def dashboardAdminEdit():
             return redirect(
                 url_for("dashboard", msg="data tidak boleh ada yang kosong")
             )
+        # decode uuid
+        cookies= uuid_like_to_string(cookies)
+        
+        # cek berhasul / tidak
+        if not cookies:
+            raise ValueError("CSRF decode error")
+        # decode jwt
+        jwt.decode(cookies, secretKey, algorithms=["HS256"])
 
+        # lakukan update
         result = db.users.update_one(
             {"email": email, "nama": nama},
             {
@@ -456,6 +1010,7 @@ def dashboardAdminEdit():
                 }
             },
         )
+        # berhasil atau tidak dalam melakukan update user
         if result.matched_count > 0:
             return redirect(
                 url_for(
@@ -467,8 +1022,9 @@ def dashboardAdminEdit():
         return redirect(
             url_for("dashboard", msg="data karyawan / magang gagal di edit")
         )
-    except ValueError as e:
-        return redirect(url_for("signIn", msg=e.args[0]))
+    # handle error
+    # except ValueError as e:
+    #     return redirect(url_for("signIn", msg=e.args[0]))
     except jwt.ExpiredSignatureError:
         return redirect(url_for("signIn", msg="Session Expired"))
     except jwt.DecodeError:
@@ -478,15 +1034,44 @@ def dashboardAdminEdit():
 # delete user karyawan / magang melalui admin
 @app.route("/dashboard/admin/delete/<id>", methods=["POST"])
 def adminDelete(id):
+    
+    # The above code is checking if the value of the "_method" key in the request form is not equal to
+    # "DELETE". If the condition is true, the code inside the if block will be executed.
     if request.form.get("_method") != "DELETE":
         return redirect(url_for("dashboard"))
-    if request.form.get("csrf_token") == "" or request.form.get("csrf_token") == None:
-        raise ValueError("csrf token expired")
+    # cek cookie token
+    cookies = request.cookies.get("token_key")
     try:
-        jwt.decode(request.cookies.get("token_key"), secretKey, algorithms=["HS256"])
+        # The above Python code is checking if the value of the "csrf_token" parameter in the form
+        # data is an empty string or None. If the value is empty or None, it raises a ValueError with
+        # the message "csrf token expired". This is a common security measure to ensure that a valid
+        # CSRF token is present in the form data to prevent CSRF attacks.
+        if request.form.get("csrf_token") == "" or request.form.get("csrf_token") == None:
+            raise ValueError("csrf token expired")
+        # decode uuid
+        cookies = uuid_like_to_string(cookies)
+
+        
+        # The code is checking if the variable `cookies` is falsy. If `cookies` is falsy, the
+        # condition will evaluate to `True`, otherwise it will evaluate to `False`.
+        if not cookies :
+            raise ValueError("decode error")
+        
+        # The above code is using the `jwt.decode` function to decode a JSON Web Token (JWT) stored in
+        # the `cookies` variable using the specified `secretKey` and algorithm "HS256". This function
+        # will verify the signature of the JWT and return the decoded payload if the signature is
+        # valid.
+        jwt.decode(cookies, secretKey, algorithms=["HS256"])
+        
+        # The above code is written in Python and it is performing two operations using MongoDB
+        # database:
         result1 = db.users.delete_one({"_id": ObjectId(id)})
         result2 = db.absen_magang.delete_many({"user_id": ObjectId(id)})
-        print(result1.deleted_count, result2.deleted_count)
+        
+        # The above Python code is checking if the `deleted_count` attribute of `result1` is greater
+        # than 0 and the `deleted_count` attribute of `result2` is greater than or equal to 0. If both
+        # conditions are met, it will redirect the user to the "dashboard" route with a success
+        # message indicating that employee/intern data has been successfully deleted.
         if result1.deleted_count > 0 and result2.deleted_count >= 0:
             return redirect(
                 url_for(
@@ -495,9 +1080,15 @@ def adminDelete(id):
                     result="success",
                 )
             )
+            
+        # The above code is a Python code snippet that is using the Flask framework. It is performing
+        # a redirect to the "dashboard" route with a message parameter "msg" set to "data karyawan /
+        # magang gagal di hapus". This means that it is redirecting the user to the dashboard route
+        # with a message indicating that the deletion of employee/intern data has failed.
         return redirect(
             url_for("dashboard", msg="data karyawan / magang gagal di hapus")
         )
+    # The above code is handling different exceptions that may occur in a Python application.
     except ValueError as e:
         return redirect(url_for("signIn", msg=e.args[0]))
     except jwt.ExpiredSignatureError:
@@ -508,6 +1099,7 @@ def adminDelete(id):
 
 # lakukan sign-in
 @app.route("/sign-in", methods=["GET", "POST"])
+@app.route('/sign-in/')
 def signIn():
     """
     Sign In Page
@@ -542,6 +1134,14 @@ def signIn():
                     "msg": "Password cannot empty",
                 }
             )
+        elif csrf_token == "":
+            return jsonify(
+                {
+                    "result": False,
+                    "redirect": "/sign-in",
+                    "msg": "CSRF Token cannot empty",
+                }
+            )
         elif jobs == "None":
             return jsonify(
                 {"result": False, "redirect": "/sign-in", "msg": "Jobs cannot empty"}
@@ -554,7 +1154,7 @@ def signIn():
                         "jobs": jobs,
                     }
                 )
-
+                csrf_token = string_to_uuid_like(csrf_token)
                 # cek user
                 if user:
                     if (
@@ -575,6 +1175,8 @@ def signIn():
                                         user["role"],
                                         datetime.timedelta(minutes=30),
                                     )
+                                    
+                                    token = string_to_uuid_like(token)
 
                                     resp = make_response(
                                         jsonify(
@@ -591,7 +1193,7 @@ def signIn():
                                         httponly=True,
                                         secure=True,
                                         samesite="Strict",
-                                        expires=datetime.datetime.now()
+                                        expires=get_time_zone_now()
                                         + datetime.timedelta(minutes=30),
                                     )  # ubah secure jadi true saat production
                                     resp.set_cookie(
@@ -600,7 +1202,7 @@ def signIn():
                                         httponly=True,
                                         secure=True,
                                         samesite="Lax",
-                                        expires=datetime.datetime.now()
+                                        expires=get_time_zone_now()
                                         + datetime.timedelta(minutes=30),
                                     )  # ubah secure jadi true saat production
                                     return resp
@@ -610,7 +1212,7 @@ def signIn():
                                         {
                                             "result": False,
                                             "redirect": "/sign-in",
-                                            "msg": "Your account expired",
+                                            "msg": "Your account expired or now is not your start work",
                                         }
                                     )
                             else:
@@ -637,13 +1239,14 @@ def signIn():
                                     }
                                 )
                             )
+                            token = string_to_uuid_like(token)
                             resp.set_cookie(
                                 "token_key",
                                 token,
                                 httponly=True,
                                 secure=True,
                                 samesite="Lax",
-                                expires=datetime.datetime.now()
+                                expires=get_time_zone_now()
                                 + datetime.timedelta(minutes=30),
                             )  # ubah secure jadi true saat production
                             resp.set_cookie(
@@ -652,7 +1255,7 @@ def signIn():
                                 httponly=True,
                                 secure=True,
                                 samesite="Lax",
-                                expires=datetime.datetime.now()
+                                expires=get_time_zone_now()
                                 + datetime.timedelta(minutes=30),
                             )  # ubah secure jadi true saat production
                             return resp
@@ -702,12 +1305,13 @@ def signOut():
     )
     resp.set_cookie("token_key", expires=0)
     resp.set_cookie("csrf_token", expires=0)
+    resp.set_cookie('session', expires=0)
     return resp
 
 @app.route("/sign-in/forget", methods=["GET", "POST"])
 def forgetPassword():
     if request.method == "POST":
-        # try:
+        try:
             # inisisasi data
             csrf_token, email, password_new, password2_new = request.form.values()
 
@@ -734,11 +1338,9 @@ def forgetPassword():
             Otp = OtpPasswordGenerator(email.lower(), result["nama"])
             jwt_otp = jwt.encode(
                 {
-                    "email": email.lower(),
                     "otp": Otp.otp,
                     "password_hash": password_hash,
                     "user": str(result["_id"]),
-                    "jobs": result["jobs"],
                     "exp": datetime.datetime.utcnow() + datetime.timedelta(minutes=5),
                 },
                 secretKey,
@@ -753,16 +1355,16 @@ def forgetPassword():
                 )
             )
 
-        # except ValueError as e:
-        #     return redirect(url_for("forgetPassword", msg=e.args[0]))
-        # except Exception as e:
-        #     return redirect(url_for("forgetPassword", msg=e.args[0]))
+        except ValueError as e:
+            return redirect(url_for("forgetPassword", msg=e.args[0]))
+        except Exception as e:
+            return redirect(url_for("forgetPassword", msg=e.args[0]))
 
     # request method get
     msg = request.args.get("msg")
     return render_template("forgetPassword.html", msg=msg)
 
-
+# bagian otp lupa password
 @app.route("/sign-in/forget/otp/<jwt_otp>", methods=["GET", "POST"])
 def forgetPasswordOtp(jwt_otp):
     if request.method == "POST":
@@ -789,7 +1391,6 @@ def forgetPasswordOtp(jwt_otp):
             
             result = db.users.update_one(
                 {
-                    "email": token_otp["email"].lower(),
                     "_id": ObjectId(token_otp["user"]),
                 },
                 {"$set": {"password": token_otp["password_hash"]}},
@@ -879,7 +1480,12 @@ def signUp():
                 "waktu_awal_kerja": "",
                 "waktu_akhir_kerja": "",
                 "work_hours": 0,
-                "absen": {"hadir": 0, "tidak_hadir": 0},
+                "absen": {
+                    "hadir": 0, 
+                    "telat":0,
+                    "tidak_hadir": 0,
+                    "libur": 0
+                },
             }
         )
         if result:
@@ -899,7 +1505,24 @@ def signUp():
 def myProfiles():
     if request.method == "POST":
         try:
+            # The above code is attempting to retrieve the value of the "token_key" cookie from the
+            # request object in a Python web application. It uses the `get` method on the `cookies`
+            # attribute of the `request` object to access the value of the "token_key" cookie. If the
+            # cookie is present in the request, its value will be stored in the `token_key` variable.
             token_key = request.cookies.get("token_key")
+            if token_key == None or token_key == "":
+                raise ValueError("Token cannot empty")
+            # The code snippet provided is attempting to convert a UUID-like object `token_key` to a
+            # string using the `uuid_like_to_string` function. If the resulting `token_key` string is
+            # empty, it raises a `ValueError` with the message "decode token error".
+            token_key = uuid_like_to_string(token_key)
+            if not token_key:
+                raise ValueError("decode token error")
+            # The above Python code snippet is decoding a JSON Web Token (JWT) using the `jwt.decode`
+            # function with the specified secret key and algorithm "HS256". It then checks if the
+            # decoded payload's "role" value is not equal to 3. If the condition is met, it retrieves
+            # values from the form data (csrf_token, email, nama, and possibly a profile picture file)
+            # using `request.form.values()` and `request.files.get("profile-pic")`.
             payloads = jwt.decode(token_key, secretKey, algorithms=["HS256"])
             if payloads["role"] != 3:
                 csrf_token, email, nama = request.form.values()
@@ -915,16 +1538,26 @@ def myProfiles():
                     .lower()
                 )
 
+            # The above code is checking if the variable `gambar` is falsy (e.g., None, empty string,
+            # 0). If `gambar` is falsy, it retrieves the `photo_profile` field from a document in the
+            # `users` collection in a MongoDB database based on the `_id` field provided in the
+            # `payloads` dictionary.
             if not gambar:
                 gambar = db.users.find_one(
                     {"_id": ObjectId(payloads["_id"])}, {"photo_profile": 1}
                 )["photo_profile"]
-            print(gambar)
 
             # cek csrf token
             if csrf_token == None or csrf_token == "":
                 raise ValueError("CSRF token tidak valid atau tidak ditemukan")
 
+            # The above Python code snippet is checking the type of the variable `gambar`. If `gambar`
+            # is a string, it sets the `filepath_db` variable to the value of `gambar`. If `gambar` is
+            # a `FileStorage` object (typically used for file uploads in Flask), it checks the file
+            # extension to ensure it is either ".png", ".jpg", or ".jpeg". If the extension is not
+            # valid, it redirects to a URL with a message indicating the extension is not allowed. If
+            # the file extension is valid, it secures the filename, saves the file to a specified
+            # folder
             if type(gambar) == str:
                 filepath_db = gambar
             elif type(gambar) == FileStorage:
@@ -935,7 +1568,6 @@ def myProfiles():
                     )
                 # Amankan nama file
                 filename = secure_filename(gambar.filename)
-                print(filename)
                 # Simpan file ke folder yang ditentukan
                 filepath = os.path.join(app.config["UPLOAD_FOLDER"], filename)
                 gambar.save(filepath)
@@ -943,6 +1575,11 @@ def myProfiles():
             else:
                 return redirect(url_for("myProfiles", msg="Something Wrong Files!"))
 
+            # The above code is updating user information in a MongoDB database based on the role of
+            # the user. If the user's role is 3, it updates the user's email, name, ID number, place
+            # of birth, date of birth, and profile photo. If the user's role is not 3, it updates the
+            # user's email, name, and profile photo. The code uses the `update_one` method from the
+            # `db.users` collection in MongoDB to update the user information.
             if payloads["role"] == 3:
                 result = db.users.update_one(
                     {
@@ -972,6 +1609,11 @@ def myProfiles():
                         }
                     },
                 )
+                
+            # The above Python code is checking the value of the variable `result`. If `result`
+            # evaluates to `True`, it will redirect the user to the "myProfiles" route with a success
+            # message "Update Profile Berhasil". If `result` is `False`, it will redirect the user to
+            # the "myProfiles" route with a failure message "Update Profile Gagal".
             if result:
                 return redirect(
                     url_for(
@@ -980,6 +1622,10 @@ def myProfiles():
                 )
             else:
                 return redirect(url_for("myProfiles", msg="Update Profile Gagal"))
+            
+        # The above code snippet is handling exceptions in a Python function. It is using a try-except
+        # block to catch specific exceptions and then redirecting the user to the "signIn" route with
+        # a specific message based on the type of exception caught.
         except ValueError as e:
             return redirect(url_for("signIn", msg=e.args[0]))
         except jwt.ExpiredSignatureError:
@@ -987,18 +1633,44 @@ def myProfiles():
         except jwt.DecodeError:
             return redirect(url_for("signIn", msg="Anda telah logout"))
 
+    # get method
+    # The above code snippet is written in Python and it seems to be part of a web application using a
+    # framework like Flask or Django. It is trying to retrieve the values of "msg" and "status"
+    # parameters from the request arguments. These values are typically passed in the URL query string
+    # when a user makes a request to the server. The retrieved values are stored in the variables
+    # `msg` and `status` respectively.
     msg = request.args.get("msg")
     status = request.args.get("status")
     try:
+        # The above Python code is checking for the presence and validity of CSRF token and token key
+        # retrieved from cookies in a web request. If either the CSRF token or token key is missing or
+        # empty, it raises a `ValueError` with a corresponding error message indicating that the CSRF
+        # token or token key is not valid or not found.
         token_key = request.cookies.get("token_key")
         csrf_token = request.cookies.get("csrf_token")
         if csrf_token == None or csrf_token == "":
             raise ValueError("CSRF token tidak valid atau tidak ditemukan")
+        if token_key == None or token_key == "":
+            raise ValueError("Token key tidak valid atau tidak ditemukan")
+
+        # decode uuid
+        token_key = uuid_like_to_string(token_key)
+        csrf_token = uuid_like_to_string(csrf_token)
+        if not csrf_token:
+            return redirect(url_for("signIn", msg="CSRF Token Expired"))
+        if not token_key:
+            return redirect(url_for("signIn", msg="Token Key Expired"))
+        
+        # decode jwt
         payloads = jwt.decode(token_key, secretKey, algorithms=["HS256"])
+        
+        # cek data user
         data = db.users.find_one({"_id": ObjectId(payloads["_id"])})
 
+        # tampilkan
         return render_template("myProfiles.html", data=data, msg=msg, status=status)
 
+    # The above code is handling different exceptions that may occur in a Python application.
     except ValueError as ve:
         return redirect(url_for("signIn", msg=ve.args[0]))
     except jwt.ExpiredSignatureError:
@@ -1009,13 +1681,25 @@ def myProfiles():
 
 @app.route("/task/magang", methods=["GET"])
 def task():
+    # The above Python code snippet is checking for the presence and validity of a CSRF token and a
+    # cookie in a web request. Here is a breakdown of the code:
     cookie = request.cookies.get("token_key")
     csrf_token = request.cookies.get("csrf_token")
     if csrf_token == None:
         return redirect(url_for("signIn", msg="csrf token expired"))
+    if cookie == None:
+        return redirect(url_for("signIn", msg="Anda Telah logout"))
+    cookie = uuid_like_to_string(cookie)
+    csrf_token = uuid_like_to_string(csrf_token)
+    if not csrf_token:
+        return redirect(url_for("signIn", msg="CSRF Token Expired"))
+    if not cookie:
+        return redirect(url_for("signIn", msg="Cookie Expired"))
 
     try:
+        # decode payload
         payload = jwt.decode(cookie, secretKey, algorithms=["HS256"])
+        # ambil data dari db
         data = db.users.find_one(
             {
                 "_id": ObjectId(payload["_id"]),
@@ -1023,7 +1707,14 @@ def task():
                 "role": payload["role"],
             }
         )
+        # tampilkan
         return render_template("task_magang.html", data=data)
+    # The above code is handling exceptions related to JWT (JSON Web Token) in a Python application.
+    # Specifically, it is catching `jwt.ExpiredSignatureError` and `jwt.DecodeError` exceptions. If
+    # either of these exceptions is raised, the code redirects the user to the "signIn" route with a
+    # message indicating either "Session Expired" or "Anda telah logout" (depending on the specific
+    # exception caught). This is likely part of a mechanism to handle expired or invalid JWT tokens
+    # during user authentication or authorization processes.
     except jwt.ExpiredSignatureError:
         return redirect(url_for("signIn", msg="Session Expired"))
     except jwt.DecodeError:
@@ -1032,18 +1723,32 @@ def task():
 
 @app.route("/dashboard/admin/<path>", methods=["GET"])
 def export(path):
-    if path not in ["excel", "csv", "pdf", "print"]:
+    if path not in ["excel", "pdf"]:
         return redirect(url_for("notFound", path=path))
     try:
         # ambil cookie dan payload
         cookie = request.cookies.get("token_key")
+        # if cookie == None or cookie == "":
+        #     return redirect(url_for("signIn", msg="Anda Telah logout"))
+        cookie = uuid_like_to_string(cookie)
+        if not cookie:
+            return redirect(url_for("signIn", msg="Cookie Expired"))
+        # decode payload
         payloads = jwt.decode(cookie, secretKey, algorithms=["HS256"])
+
+        # The above Python code is checking if certain conditions are met before raising an exception
+        # with the message "Anda tidak punya akses" which translates to "You do not have access" in
+        # English. The conditions being checked are:
+        # 1. The value of the "role" key in the payloads dictionary is not equal to 1.
+        # 2. The value of the "jobs" key in the payloads dictionary is not equal to "admin".
+        # 3. The value of the "departement" key in the payloads dictionary is not in the tuple
+        # ("Superuser", "Subuser").
         if (
             payloads["role"] != 1
             and payloads["jobs"] != "admin"
             and payloads["departement"] not in ("Superuser", "Subuser")
         ):
-            return Exception("Anda tidak punya akses")
+            raise Exception("Anda tidak punya akses")
         # cek database
         result = list(
             db.users.find(
@@ -1051,22 +1756,18 @@ def export(path):
                 {"_id": 0, "password": 0, "role": 0, "work_hours": 0},
             )
         )
-
         # save excel data
         file_path = os.path.join(app.root_path, "static", "doc")
         wb = load_workbook(file_path + "\\excel\\template_data_karyawan.xlsx")
         ws = wb.active
-
         column_widths, start, stop = convert_to_excel(ws, result=result)
-        # save for extractor pdf
+        # save for extractor excel
         wb.save(file_path + "\\excel\\data_karyawan.xlsx")
-
         # excel
         if path == "excel":
             # Save the modified workbook to BytesIO
             output = BytesIO()
             wb.save(output)
-
             # Mengirim file Excel sebagai response download
             output.seek(0)
             return send_file(
@@ -1077,25 +1778,29 @@ def export(path):
             )
         # pdf
         elif path == "pdf":
+            # The above code is written in Python and seems to be using a library called "PDF" to
+            # create a PDF document. It specifies the page size as A4 and then adds a new page to the
+            # PDF. Finally, it calls the `create_pdf` method with parameters `start - 1`, `stop`,
+            # `column_widths`, and `ws` to generate content in the PDF document.
             pdf = PDF("L", "mm", "A4")
             pdf.add_page()
             pdf.create_pdf(start - 1, stop, column_widths, ws)
             # Buat objek BytesIO
             output = BytesIO()
             pdf.output(file_path + "\\pdf\\data_karyawan.pdf")
-
             # Kirim file PDF sebagai attachment
             return send_file(
-                file_path + "\\pdf\\data_karyawan.pdf",
-                as_attachment=False,
+                file_path + '/pdf/data_karyawan.pdf',
+                mimetype='application/pdf',
+                as_attachment=True,
                 download_name="data_karyawan_winnicode.pdf",
-                mimetype="application/pdf",
             )
         else:
             return redirect(url_for("notFound", path=path))
-
-    # except Exception as e:
-    #     return redirect(url_for('dashboard',msg = e.args[0]))
+    # The above code is handling exceptions related to JWT (JSON Web Token) authentication. It catches
+    # different types of exceptions that can occur during JWT verification:
+    except Exception as e:
+        return redirect(url_for('dashboard',msg = e.args[0]))
     except jwt.ExpiredSignatureError:
         return redirect(url_for("signIn", msg="Session Expired"))
     except jwt.DecodeError:
@@ -1109,21 +1814,15 @@ def handle_csrf_error(e):
 
 
 # routing all
-@app.route("/<path>", methods=["GET"])
+@app.route("/<path>/", methods=["GET"])
 @app.route("/<path>/<argument>", methods=["GET"])
+@app.route("/<path>/<argument>/", methods=["GET"])
 @app.route("/<path>/<argument>/<argument2>", methods=["GET"])
+@app.route("/<path>/<argument>/<argument2>/", methods=["GET"])
 @app.route("/<path>/<argument>/<argument2>/<argument3>", methods=["GET"])
+@app.route("/<path>/<argument>/<argument2>/<argument3>/", methods=["GET"])
 def notFound(path=None, argument=None, argument2=None, argument3=None):
-    previous = request.referrer
-    
-    parsed_url = urlparse(previous)
-    print(parsed_url)
-    if type(parsed_url.path)==bytes:
-        print('jalan')
-        parsed_url = parsed_url.path.decode("utf-8")
-        parsed_url = ' '
-    data = {"next": "/", "previous": path}
-    print(data)
+    data = {"next": "/",'previous':"javascript:history.back()"}
     return render_template("notFound.html", data=data)
 
 
@@ -1132,11 +1831,11 @@ if __name__ == "__main__":
     # # Menjadwalkan pengecekan absensi setiap menit
     delete_absen = BackgroundScheduler()
     delete_absen.add_job(
-        func=unhadir_absensi, trigger="interval", minutes=30
+        func=unhadir_absensi, trigger="interval", minutes=1
     )  # interval hours/minute/second. date run_date .cron day_of_week,hours,minutes
     delete_absen.start()
-    app.run(port=900, debug=True)
+    app.run(port=8080, debug=True)
     # DEBUG is SET to TRUE. CHANGE FOR PROD
 
 
-# atur tanggal dan waktu saat ganti beda lagi bentukannya sama setintervalkan waktu 10 jam
+

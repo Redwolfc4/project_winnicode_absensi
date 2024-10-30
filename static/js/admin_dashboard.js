@@ -1,3 +1,4 @@
+// edit modal 
 $('#dashboard1 #triggerEditModal').on('click', function () {
   button_id =  $(this).attr('data-bs-target')
   // imput lama
@@ -47,6 +48,50 @@ $('#dashboard1 #triggerEditModal').on('click', function () {
       }
   }
 })
+// end
+
+// add modal 
+$('#addAccountAdmin #triggerAddModal').on('click', function () {
+  button_id =  $(this).attr('data-bs-target')
+  // imput lama
+  departement_lama = $(`${button_id} #departement`).val();
+  nama_lama = $(`${button_id} #nama`).val();
+  jobs_lama = $(`${button_id} #jobs`).val();
+  password_lama = $(`${button_id} #password`).val();
+  password2_lama = $(`${button_id} #password2`).val();
+  // Event listener untuk semua input
+  $(`${button_id} #departement`).on("input", checkChanges);
+  $(`${button_id} #jobs`).on("input", checkChanges);
+  $(`${button_id} #password`).on("input", checkChanges);
+  $(`${button_id} #password2`).on("input", checkChanges);
+  $(`${button_id} #nama`).on("input", checkChanges);
+
+  
+  // Fungsi untuk mengecek apakah ada perubahan
+  function checkChanges() {
+      // imput baru
+      departement_baru = $(`${button_id} #departement`).val();
+      nama_baru = $(`${button_id} #nama`).val();
+      jobs_baru = $(`${button_id} #jobs`).val();
+      password_baru = $(`${button_id} #password`).val();
+      password2_baru = $(`${button_id} #password2`).val();
+      // Jika salah satu input berubah, tombol akan diaktifkan
+      if (
+        departement_baru !== departement_lama ||
+        jobs_baru !== jobs_lama ||
+        password_baru !== password_lama ||
+        password2_baru !== password2_lama ||
+        nama_baru !== nama_lama 
+      ) {
+        $(`${button_id} #submit`).prop("disabled", false);
+      } else {
+        $(`${button_id} #submit`).prop("disabled", true);
+      }
+  }
+})
+// end
+
+
 
 table_length = $('#dashboard1 select#dataTable_length')
 table_length.on('change', function (e) {

@@ -216,3 +216,138 @@
   </div>
 </div>
 {% endblock %}
+
+
+{% if data.role==1 and data.jobs=='Admin' %}
+        <!-- trigger modal edit -->
+        <td class="poppins-regular">
+          <a
+            href="#"
+            type="button"
+            class="btn btn-success"
+            data-bs-toggle="modal"
+            id="triggerEditModal"
+            data-bs-target="#editModal{{ riwayat_absent[i]._id }}"
+            ><i class="fa-solid fa-xs text-white fa-user-pen"></i
+          ></a>
+        </td>
+        <!-- trigger delete edit -->
+        <td class="poppins-regular">
+          <a
+            href="#"
+            type="button"
+            class="btn btn-danger"
+            data-bs-toggle="modal"
+            data-bs-target="#deleteModal{{ riwayat_absent[i]._id }}"
+            ><i class="fa-solid fa-xs text-white fa-user-minus"></i
+          ></a>
+        </td>
+        {% endif %}
+      </tr>
+
+      
+      {% if data.role==1 and data.jobs=='Admin' %}
+      <!-- Modal edit -->
+      <div class="modal fade" id="editModal{{ riwayat_absent[i]._id }}" tabindex="-1"
+        aria-hidden="true">
+        <div class="modal-dialog">
+          <div class="modal-content">
+            <form action="/riwayat-kehadiran/edit" method="post">
+              <!-- modal header -->
+              <div class="modal-header">
+                <h1 class="modal-title fs-5 poppins-medium">Edit Karyawan / Magang {{ i+1
+                  }}</h1>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+              </div>
+              <!-- body modal -->
+              <div class="modal-body">
+                <div class="form-floating">
+                  <!-- Input Hidden for Method Override -->
+                  <input type="hidden" name="_method" value="PUT">
+                  <!-- csrf token -->
+                  <input type="hidden" id="csrf_token" name="csrf_token" value="{{ csrf_token() }}" />
+                  
+                  
+                  <!-- Status Perusahaan -->
+                  <div class="form-floating mb-3">
+                    <select id="status_hadir" name="status_hadir" class="form-select">
+                      <option value=None {{'selected' if riwayat_absent[i].status_hadir=='' else '' }}>
+                        --Select
+                        Jobs--</option>
+                      <option value="1" {{'selected' if riwayat_absent[i].status_hadir=='1'
+                        else '' }}>Hadir</option>
+                      <option value="0" {{'selected' if riwayat_absent[i].status_hadir==0 else ''
+                        }}>Tidak Hadir</option>
+                      </select>
+                      <label class="poppins-regular" for="staus_hadir">Status Hadir</label>
+                  </div>
+                </div>
+              </div>
+              <div class="modal-footer">
+                <button type="button" type="reset" id="reset" class="btn btn-danger poppins-regular"
+                  data-bs-dismiss="modal">Close</button>
+                  <input role="button" type="submit" type="submit" id="submit"
+                  class="btn btn-primary poppins-regular"" disabled="true" value="Save Changes"></input>
+              </div>
+            </form>
+          </div>
+        </div>
+      </div>
+      <!-- end modal -->
+
+      <!-- delete modal -->
+      <div
+        class="modal fade"
+        id="deleteModal{{ riwayat_absent[i]._id }}"
+        tabindex="-1"
+        role="dialog"
+        aria-labelledby="deleteModalLabel"
+        aria-hidden="true"
+        >
+        <div class="modal-dialog" role="document">
+          <div class="modal-content">
+            <form
+            action="/riwayat_kehadiran/delete/{{riwayat_absent[i]._id}}"
+            method="post"
+            >
+              <div class="modal-header">
+                <h5 class="modal-title poppins-regular" id="deleteModalLabel">
+                  Delete Confirmation
+                </h5>
+                <button
+                  type="button"
+                  class="btn-close"
+                  data-bs-dismiss="modal"
+                  aria-label="Close"
+                ></button>
+              </div>
+              <div class="modal-body">
+                Are you sure want to delete this person data?
+                <input type="hidden" name="_method" value="DELETE" />
+                <input
+                  type="hidden"
+                  name="csrf_token"
+                  value="{{ csrf_token() }}"
+                />
+              </div>
+              <div class="modal-footer">
+                <button
+                  type="button"
+                  class="btn btn-secondary poppins-regular"
+                  data-bs-dismiss="modal"
+                >
+                  Close
+                </button>
+                <input
+                  type="submit"
+                  role="button"
+                  class="btn btn-danger poppins-regular"
+                  value="Delete"
+                />
+              </div>
+            </form>
+          </div>
+        </div>
+      </div>
+      <!-- end delete modal -->
+      {% endif %}

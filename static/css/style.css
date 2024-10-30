@@ -222,16 +222,11 @@ body{
   text-align: center;
 }
 
-@media (min-width) {
-  
-}
-
 #guide #book-wrapper:hover #paper {
   transform: rotateY(43deg) skewY(15deg) scaleY(.9);
   transition: .5s ease-out 0s;
   z-index: 10;
 }
-
 
 #btn-back-to-top{
   opacity: 0;
@@ -247,6 +242,8 @@ body{
 }
 /* end home */
 
+/* dashboard */
+/* navbar */
 .divider:after,
 .divider:before {
 content: "";
@@ -285,7 +282,10 @@ img#winnicode-navbar-logo{
   object-fit: cover;
   object-position: center;
 }
+/* end */
 
+
+/* utilities custom */
 .text-gray-800 {
   color: #5a5c69!important
 }
@@ -301,6 +301,12 @@ img#winnicode-navbar-logo{
 .border-left-danger {
   border-left: .25rem solid #dc3545 !important;
 }
+.border-left-warning {
+  border-left: .25rem solid #ffc107 !important;
+}
+.border-left-danger-emphasis {
+  border-left: .25rem solid #58151c !important;
+}
 
 .btn-pink{
   --bs-btn-color: #fff;
@@ -315,7 +321,9 @@ img#winnicode-navbar-logo{
   --bs-btn-active-border-color: var(--primary-color);
   --bs-btn-active-shadow: inset 0 3px 5px rgba(0, 0, 0, 0.125);
 }
+/* end */
 
+/* profile */
 #profile :is([type='text'],[type='email'],[type='date'],[type='number']):focus{
   outline: none;
 }
@@ -338,6 +346,7 @@ img#winnicode-navbar-logo{
 #profile .hover-camera:hover .icon-camera{
   opacity: .6;
 }
+/* end */
 
 /* admin dashboard */
 #dashboard1 .custom-select {
@@ -372,7 +381,13 @@ img#winnicode-navbar-logo{
 #dashboard1 #generate-report :is(.dropdown-menu){
   --bs-dropdown-min-width: 0;
   width: 100%;
+}
 
+#addAccountAdmin{
+  position:fixed;
+  bottom:1rem;
+  right:1rem;
+  transition: none;
 }
 
 .table-winniCode{
@@ -451,3 +466,47 @@ a:link {
 #profile-view .h1, .h2, .h3, .h4, .h5, .h6, h1, h2, h3, h4, h5, h6{
   line-height: normal;
 }
+
+/* custom tooltip */
+.custom-tooltip {
+  --bs-tooltip-bg: rgb(184, 52, 245);
+  --bs-tooltip-color: var(--bs-white);
+}
+
+/* end */
+
+/* riwayat kehadiran */
+#riwayat .table thead{
+  --bs-table-bg:var(--primary-color);
+  vertical-align: middle;
+}
+#riwayat #table-riwayat_wrapper > *{
+  margin-bottom: 1em;
+}
+#riwayat .dt-paging{
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+#riwayat table.dataTable {
+  border: 1px solid black;
+}
+#riwayat table.dataTable th, #riwayat table.dataTable td {
+  border: 1px solid black;
+  text-align: center;
+}
+#riwayat table.dataTable th.dt-orderable-desc {
+  text-align: center;
+}
+#riwayat table.dataTable :is(td,td.dt-type-numeric) {
+  text-align: center;
+}
+
+#riwayat .dt-length::before{
+  content: 'Select';
+  display: inline-block;
+  vertical-align: middle;
+  margin-right: .5rem;
+}
+
+/* end */

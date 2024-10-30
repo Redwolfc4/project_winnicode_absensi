@@ -63,7 +63,7 @@ class PDF(FPDF):
                     str(header_cell.value) if header_cell.value else ""
                 )  # Nilai sel sebagai string
                 self.cell(
-                    self.__column_widths[column] + 3.5,
+                    self.__column_widths[column] + 3.1,
                     5,
                     header_cell_value,
                     1,
@@ -118,7 +118,7 @@ class PDF(FPDF):
                     img_path = os.path.join(app.root_path, "static/") + str(
                         data_cell_value
                     )
-                    cell_width = self.__column_widths[column] + 3.5
+                    cell_width = self.__column_widths[column] + 3.1
                     cell_height = 10  # Tinggi sel
                     x = self.get_x()
                     y = self.get_y()
@@ -129,9 +129,9 @@ class PDF(FPDF):
                         # tambahkan image
                         self.image(img_path, x + 2, y + 1, cell_width - 4, 8)
                         # Geser posisi X untuk sel berikutnya
-                        self.set_xy(x + self.__column_widths[column] + 3.5, y)
+                        self.set_xy(x + self.__column_widths[column] + 3.1, y)
                         continue
-
+                
                 # If the text is too long, use multi_cell to wrap it
                 if (
                     len(data_cell_value.strip()) > self.__column_widths[column]
@@ -140,7 +140,7 @@ class PDF(FPDF):
                     x = self.get_x()
                     y = self.get_y()
                     self.multi_cell(
-                        self.__column_widths[column] + 3.5,
+                        self.__column_widths[column] + 3.1,
                         5,
                         data_cell_value,
                         1,
@@ -148,18 +148,18 @@ class PDF(FPDF):
                         split_only=False,
                     )
                     # # Move to the right for the next cell in the same row
-                    self.set_xy(x + self.__column_widths[column] + 3.5, y)
+                    self.set_xy(x + self.__column_widths[column] + 3.1, y)
                 else:
                     # For shorter texts, use cell (no wrapping needed)
                     self.cell(
-                        self.__column_widths[column] + 3.5,
+                        self.__column_widths[column] + 3.1,
                         10,
                         data_cell_value,
                         1,
                         0,
                         "C",
                     )
-            self.ln(row_height - 1.6)
+            self.ln(10)
 
         return self
 
@@ -206,7 +206,9 @@ def convert_to_excel(ws, result, start=None, stop=None):
         cleaned_data = [item for item in x.values() if not isinstance(item, dict)]
         cleaned_data.insert(0, i + 1)
         cleaned_data.append(x["absen"]["hadir"])
+        cleaned_data.append(x["absen"]["telat"])
         cleaned_data.append(x["absen"]["tidak_hadir"])
+        cleaned_data.append(x["absen"]["libur"])
 
         ws.append(cleaned_data)  # menambhkan ke ws
         row = ws.max_row  # mencari row mana yang ditambah
