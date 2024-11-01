@@ -1,4 +1,19 @@
 $(document).ready(function () {
+  const cookieName = ['token_key','csrf_token']
+  for (const key in cookieName) {
+    const cookieValue = $.cookie(key);
+    
+    if (cookieValue) {
+      // Jika cookie ada, lakukan sesuatu
+      console.log("Cookie ditemukan:", cookieValue);
+      // Tambahkan logika yang ingin dijalankan jika cookie ada
+    } else {
+      // Jika cookie tidak ada, lakukan aksi lain
+      console.log("Cookie tidak ditemukan. Menjalankan aksi alternatif.");
+      // Tambahkan logika yang ingin dijalankan jika cookie tidak ada
+    }
+  }
+
   // membuat saat lebar lebih dari 992 akan toggle clas
   if ($(this).width() >= 992) {
     $("section#signin form").toggleClass("border");
@@ -41,6 +56,7 @@ $(document).ready(function () {
       dataType: "json",
       success: function (response) {
         if (response.result == "success") {
+          
           Swal.fire({
             icon: "success",
             title: "Login Success",
@@ -85,7 +101,17 @@ $(document).ready(function () {
   setInterval(updateClock, 1000);
 
   // notifikasi
-  notifAbsen();
+  // Cek apakah notifikasi sudah pernah ditampilkan
+  const notificationShown = localStorage.getItem("notificationShown");
+
+  // Jika notifikasi belum pernah ditampilkan
+  if (!notificationShown) {
+      // Tampilkan notifikasi (gunakan fungsi notifikasi di sini)
+      notifAbsen();
+
+      // Set nilai di Local Storage agar notifikasi tidak tampil lagi
+      localStorage.setItem("notificationShown", "true");
+  } 
 });
 
 let tepatWaktu;

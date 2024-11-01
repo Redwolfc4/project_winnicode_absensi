@@ -1,0 +1,444 @@
+{% extends "dashboard_magang.html" %} {% block title %}
+<title>AbsensiKu | Kelola Admin dan Sub Admin</title>
+{% endblock %} {% block cdn_custom_css %}
+<!-- datatables css link -->
+<link
+  href="https://cdn.datatables.net/v/bs5/jq-3.7.0/jszip-3.10.1/dt-2.1.8/af-2.7.0/b-3.1.2/b-colvis-3.1.2/b-html5-3.1.2/b-print-3.1.2/cr-2.0.4/date-1.5.4/fc-5.0.3/fh-4.0.1/kt-2.12.1/r-3.0.3/rg-1.5.0/rr-1.5.0/sc-2.4.3/sb-1.8.1/sp-2.3.3/sl-2.1.0/sr-1.4.1/datatables.min.css"
+  rel="stylesheet"
+/>
+
+{% endblock %} {% block navbar %}
+<ul class="navbar-nav me-auto mb-2 mb-lg-0">
+  <li class="nav-item">
+    <a
+      class="nav-link poppins-regular"
+      aria-current="page"
+      href="/dashboard/magang"
+      >Dashboard</a
+    >
+  </li>
+  <li class="nav-item">
+    <a class="nav-link poppins-regular" href="/change-password"
+      >Ubah Password</a
+    >
+  </li>
+  <li class="nav-item">
+    <a class="nav-link poppins-regular" href="/riwayat-kehadiran"
+      >Riwayat Kehadiran Karyawan</a>
+  </li>
+  {% if data.role==1 %}
+  <li class="nav-item">
+    <a class="nav-link poppins-regular active" href="/kelola-admin">Kelola Admin</a>
+  </li> 
+  {% endif %}
+    
+  {% if data.role !=1 %}
+  <li class="nav-item">
+    <a class="nav-link poppins-regular" href="/task/magang">Task</a>
+  </li>
+  {% endif %}
+</ul>
+{% endblock %}{% block content %}
+
+<div id="kelolaAdmin" class="container-fluid" style="margin-top: 1.5rem">
+  <!-- Page Heading -->
+  <div class="d-sm-flex align-items-center justify-content-between mb-4">
+    <h1
+      class="h3 poppins-regular mb-md-0 mb-sm-2 text-gray-800"
+      data-aos="zoom-in-right"
+      data-aos-delay="200"
+      data-aos-duration="800"
+    >
+      Kelola Admin dan Sub Admin Akun
+    </h1>
+    <h1
+      id="clock"
+      class="h6 border border-1 rounded border-secondary-subtle p-1 px-2 poppins-regular mb-0 text-gray-800"
+      data-aos="zoom-in-left"
+      data-aos-delay="200"
+      data-aos-duration="800"
+    ></h1>
+  </div>
+
+  <table
+    id="table-admin"
+    class="table table-striped display no-wrap table-winnicode"
+    style="width: 100%"
+    data-aos="zoom-in"
+    data-aos-delay="400"
+    data-aos-duration="800"
+  >
+    {% if data_user_admin %}
+    <thead>
+      <tr>
+        <th rowspan=2 class="poppins-semibold">No</th>
+        <th rowspan=2 class="poppins-semibold">Nama</th>
+        <th rowspan=2 class="poppins-semibold">Email</th>
+        <th rowspan=2 class="poppins-semibold">Departement</th>
+        <th rowspan=2 class="poppins-semibold">Jobs</th>
+        <th rowspan=2 class="poppins-semibold">Foto Profile</th>
+        <th colspan=2 class="poppins-semibold">Action</th>
+      </tr>
+      <tr>
+        <th>Edit</th>
+        <th>Delete</th>
+      </tr>
+    </thead>
+    <tbody>
+      {% for i in range(1,(data_user_admin|length)+1)%} 
+      <tr
+        id="{{data_user_admin[i-1]._id}}"
+        data-aos="slide-right"
+        data-aos-delay="{{ 400+(i%26*100) }}"
+        data-aos-duration="800"
+      >
+        <td class="poppins-regular align-middle">{{ i }}</td>
+        <td class="poppins-regular align-middle">{{ data_user_admin[i-1].nama }}</td>
+        <td class="poppins-regular align-middle">{{ data_user_admin[i-1].email }}</td>
+        <td class="poppins-regular align-middle">{{ data_user_admin[i-1].departement }}</td>
+        <td class="poppins-regular align-middle">{{ data_user_admin[i-1].jobs }}</td>
+        <td class="poppins-regular align-middle"><img src="{{ url_for('static',filename=data_user_admin[i-1].photo_profile) }}" alt="{{ data_user_admin[i-1].nama }}.png" width="50em"
+          height="50em"></td>
+        {% if data.role==1 and data.jobs=='Admin' and data.departement=='Superuser' %}
+        <!-- trigger modal edit -->
+        <td class="poppins-regular align-middle">
+          <a
+            href="#"
+            type="button"
+            class="btn btn-success"
+            data-bs-toggle="modal"
+            id="triggerEditModal"
+            data-bs-target="#editModal{{ data_user_admin[i-1]._id }}"
+            ><i class="fa-solid fa-xs text-white fa-user-pen"></i
+          ></a>
+        </td>
+        <!-- trigger delete edit -->
+        <td class="poppins-regular align-middle">
+          <a
+            href="#"
+            type="button"
+            class="btn btn-danger"
+            data-bs-toggle="modal"
+            data-bs-target="#deleteModal{{ data_user_admin[i-1]._id }}"
+            ><i class="fa-solid fa-xs text-white fa-user-minus"></i
+          ></a>
+        </td>
+        {% endif %}
+      </tr>
+
+      <!-- Modal edit -->
+      <div class="modal fade" id="editModal{{ data_user_admin[i-1]._id }}" tabindex="-1"
+        aria-hidden="true">
+        <div class="modal-dialog">
+          <div class="modal-content">
+            <form action="/kelola-admin/edit" method="post">
+              <!-- modal header -->
+              <div class="modal-header">
+                <h1 class="modal-title fs-5 poppins-medium">Edit Admin / Sub Admin {{ i
+                  }}</h1>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+              </div>
+              <!-- body modal -->
+              <div class="modal-body">
+                <div class="form-floating">
+                  <!-- Input Hidden for Method Override -->
+                  <input type="hidden" name="__method" value="PUT">
+                  <!-- csrf token -->
+                  <input type="hidden" id="__csrf_token" name="__csrf_token" value="{{ csrf_token() }}" />
+                  <!-- id -->
+                  <input type="hidden" name="__id_data_user_admin" id="__id_data_user_admin" value="{{ data_user_admin[i-1]._id }}">
+
+                  <!-- nama -->
+                  <div class="form-floating mb-3">
+                    <input type="text" class="form-control" name="nama" id="nama"
+                      value="{{ data_user_admin[i-1].nama }}" placeholder="Masukkan Nama Lengkap Anda">
+                    <label class="poppins-regular" for="nama">Nama Lengkap</label>
+                  </div>
+
+                  <!-- email -->
+                  <div class="form-floating mb-3">
+                    <input type="email" class="form-control" name="email" id="email"
+                      value="{{ data_user_admin[i-1].email }}" placeholder="Masukkan Email Anda" readonly>
+                    <label class="poppins-regular" for="email">Email</label>
+                  </div>
+
+                  <!-- departement -->
+                  <div class="form-floating mb-3">
+                    <select class="form-select" id="departement" name="departement"
+                      aria-label="Floating label select example">
+                      <option value='' {{ 'selected' if data_user_admin[i-1].departement=='' else '' }}>
+                        --Pilih
+                        Departement--</option>
+                      <option value="Superuser" {{ 'selected' if data_user_admin[i-1].departement=='Superuser' else '' }}>Superuser</option>
+                      <option value="Mentor" {{ 'selected' if data_user_admin[i-1].departement=='Mentor' else '' }}>Mentor</option>
+                    </select>
+                    <label class="poppins-regular" for="departement">Pilih
+                      Departement</label>
+                  </div>
+                
+                  <!-- Status Perusahaan -->
+                  <div class="form-floating mb-3">
+                    <select id="jobs" name="jobs" class="form-select">
+                      <option value='' {{ 'selected' if data_user_admin[i-1].jobs=='' else '' }}>
+                        --Select
+                        Jobs--</option>
+                      <option value="Admin" {{ 'selected' if data_user_admin[i-1].jobs=='Admin' else '' }}>Admin</option>
+                      <option value="Sub Admin" {{ 'selected' if data_user_admin[i-1].jobs=='Sub Admin' else '' }}>Sub Admin</option>
+                    </select>
+                    <label class="poppins-regular" for="jobs">Status Perusahan</label>
+                  </div>
+                </div>
+              </div>
+              <div class="modal-footer">
+                <button type="button" type="reset" id="reset" class="btn btn-danger poppins-regular"
+                  data-bs-dismiss="modal">Close</button>
+                  <input role="button" type="submit" type="submit" id="submit"
+                  class="btn btn-primary poppins-regular"" disabled="true" value="Save Changes"></input>
+              </div>
+            </form>
+          </div>
+        </div>
+      </div>
+      <!-- end modal -->
+
+      <!-- delete modal -->
+      <div
+        class="modal fade"
+        id="deleteModal{{ data_user_admin[i-1]._id }}"
+        tabindex="-1"
+        role="dialog"
+        aria-labelledby="deleteModalLabel"
+        aria-hidden="true"
+        >
+        <div class="modal-dialog" role="document">
+          <div class="modal-content">
+            <form
+            action="/kelola-admin/delete/{{data_user_admin[i-1]._id}}"
+            method="post"
+            >
+              <div class="modal-header">
+                <h5 class="modal-title poppins-regular" id="deleteModalLabel">
+                  Delete Confirmation
+                </h5>
+                <button
+                  type="button"
+                  class="btn-close"
+                  data-bs-dismiss="modal"
+                  aria-label="Close"
+                ></button>
+              </div>
+              <div class="modal-body">
+                Are you sure want to delete this riwayat absent?
+                <input type="hidden" name="_method" value="DELETE" />
+                <input
+                  type="hidden"
+                  name="__csrf_token"
+                  value="{{ csrf_token() }}"
+                />
+              </div>
+              <div class="modal-footer">
+                <button
+                  type="button"
+                  class="btn btn-secondary poppins-regular"
+                  data-bs-dismiss="modal"
+                >
+                  Close
+                </button>
+                <input
+                  type="submit"
+                  role="button"
+                  class="btn btn-danger poppins-regular"
+                  value="Delete"
+                />
+              </div>
+            </form>
+          </div>
+        </div>
+      </div>
+      <!-- end delete modal -->
+      {% endfor %}
+    </tbody>
+    {% endif %}
+  </table>
+</div>
+<div id="addAccountAdmin">
+  <button class="btn btn-pink p-2 rounded" data-bs-toggle="modal" data-bs-title="Create Account Admin"
+  id="triggerAddModal" data-bs-target="#addModal"><i class="fa-solid fa-user-plus fa-lg"></i></button>
+</div>
+<!-- Modal add -->
+<div class="modal fade" id="addModal" tabindex="-1"
+aria-hidden="true">
+  <div class="modal-dialog">
+    <div class="modal-content">
+      <form action="/dashboard/admin/create-account" method="post">
+        <!-- modal header -->
+        <div class="modal-header">
+          <h1 class="modal-title fs-5 poppins-medium text-pink">Add Admin / Sub Admin</h1>
+          <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+        </div>
+        <!-- body modal -->
+        <div class="modal-body">
+          <div class="form-floating">
+            <!-- csrf token -->
+            <input type="hidden" id="csrf_token_add" name="csrf_token" value="{{ csrf_token() }}" />
+          
+            <!-- nama -->
+            <div class="form-floating mb-3">
+              <input type="text" class="form-control" name="nama" id="nama"
+                placeholder="Masukkan Nama Lengkap admin / sub admin">
+              <label class="poppins-regular" for="nama">Nama Lengkap</label>
+            </div>
+          
+            <!-- email -->
+            <div class="form-floating mb-3">
+              <input type="email" class="form-control" name="email" id="email"
+                placeholder="Masukkan Email admin / sub admin">
+              <label class="poppins-regular" for="email">Email address</label>
+            </div>
+          
+            <!-- departement -->
+            <div class="form-floating mb-3">
+              <select class="form-select" id="departement" name="departement"
+                aria-label="Floating label select example">
+                <option value=None>
+                  --Pilih
+                  Departement--</option>
+                <option value="Superuser">Superuser</option>
+                <option value="Mentor">Mentor</option>
+              </select>
+              <label class="poppins-regular" for="departement">Pilih
+                Departement</label>
+            </div>
+          
+            <!-- Status Perusahaan -->
+            <div class="form-floating mb-3">
+              <select id="jobs" name="jobs" class="form-select">
+                <option value=None>
+                  --Select
+                  Jobs--</option>
+                <option value="Admin">Admin</option>
+                <option value="Sub Admin">Sub Admin</option>
+              </select>
+              <label class="poppins-regular" for="jobs">Status Perusahan</label>
+            </div>
+
+            <!-- password -->
+            <div class="form-floating mb-3">
+              <input type="password" class="form-control" name="password" id="password"
+                placeholder="Masukkan Password admin / sub admin">
+              <label class="poppins-regular" for="password">Password</label>
+            </div>
+
+            <!-- confirm password -->
+            <div class="form-floating mb-3">
+              <input type="password" class="form-control" name="password2" id="password2"
+                placeholder="Masukkan Konfirmasi Password admin / sub admin">
+              <label class="poppins-regular" for="password2">Konfirmasi
+                Password</label>
+            </div>
+          </div>
+        </div>
+        <div class="modal-footer">
+          <button type="button" type="reset" id="reset" class="btn btn-danger poppins-regular"
+            data-bs-dismiss="modal">Close</button>
+          <input role="button" type="submit" type="submit" id="submit"
+            class="btn btn-primary poppins-regular" disabled=" true" value="Save Changes"></input>
+        </div>
+      </form>
+    </div>
+  </div>
+</div>
+<!-- end modal -->
+
+{% endblock %}
+
+<!-- cdn js custom -->
+{% block cdn_custom_js %}
+<!-- datatables cdn js -->
+<script src="https://cdnjs.cloudflare.com/ajax/libs/pdfmake/0.2.7/pdfmake.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/pdfmake/0.2.7/vfs_fonts.js"></script>
+<script src="https://cdn.datatables.net/v/bs5/jq-3.7.0/jszip-3.10.1/dt-2.1.8/af-2.7.0/b-3.1.2/b-colvis-3.1.2/b-html5-3.1.2/b-print-3.1.2/cr-2.0.4/date-1.5.4/fc-5.0.3/fh-4.0.1/kt-2.12.1/r-3.0.3/rg-1.5.0/rr-1.5.0/sc-2.4.3/sb-1.8.1/sp-2.3.3/sl-2.1.0/sr-1.4.1/datatables.min.js"></script>
+{% endblock %} {% block js_custom %}
+<!-- js custom -->
+<script src="{{ url_for('static', filename='js/index.js') }}"></script>
+<script>
+  $(document).ready(function () {
+
+    $("#table-admin").DataTable({
+      dom: "Blfrtip",
+      buttons: [
+        {
+          extend: "copy",
+          text: '<i class="fas fa-copy"></i> Copy', // Tambahkan ikon FontAwesome
+          className: "btn btn-primary",
+        },
+        {
+          extend: "csv",
+          text: '<i class="fas fa-file-csv"></i> CSV',
+          className: "btn btn-warning",
+        },
+        {
+          extend: "excel",
+          text: '<i class="fas fa-file-excel"></i> Excel',
+          className: "btn btn-success",
+        },
+        {
+          extend: "pdf",
+          text: '<i class="fas fa-file-pdf"></i> PDF',
+          className: "btn btn-danger",
+        },
+        {
+          extend: "print",
+          text: '<i class="fas fa-print"></i> Print',
+          className: "btn btn-info",
+        },
+      ],
+      scrollX: true, // Enable horizontal scrolling
+      keys: true,
+      scrollCollapse: true, // Allow the table to reduce in height if there are fewer rows
+      fixedHeader: true,
+      lengthMenu: [5, 10, 25, 50, 75, { label: "All", value: -1 }],
+      pageLength: 10,
+    });
+  });
+</script>
+<script src="{{ url_for('static',filename='js/riwayat_kehadiran.js') }}"></script>
+<!-- tooltip -->
+<script>
+  const tooltipTriggerList = document.querySelectorAll('[data-bs-title]');
+  const tooltipList = [...tooltipTriggerList].map(tooltipTriggerEl => new bootstrap.Tooltip(tooltipTriggerEl, {
+    placement: 'left',
+    customClass: 'custom-tooltip',  // Kelas kustom untuk tooltip
+    trigger: 'hover focus' // Pemicu tooltip
+  }));
+</script>
+{% endblock js_custom %}
+<!-- message js -->
+{% block message %} {% if (result and msg) %}
+<script>
+  Swal.fire({
+    icon: "success",
+    title: "Sukses!",
+    text: "{{ msg }}",
+    timer: 3000,
+    willClose: () => {
+      window.location.replace("/kelola-admin");
+    },
+  });
+</script>
+{% elif msg %}
+<script>
+  Swal.fire({
+    icon: "error",
+    title: "OOPS!",
+    text: "{{ msg }}",
+    timer: 3000,
+    willClose: () => {
+      window.location.replace("/kelola-admin");
+    },
+  });
+</script>
+{% endif %} {% endblock %}
+
+
+

@@ -510,3 +510,39 @@ a:link {
 }
 
 /* end */
+
+/* kelola admin */
+#kelolaAdmin .table thead{
+  --bs-table-bg:var(--primary-color);
+  vertical-align: middle;
+}
+#kelolaAdmin #table-admin_wrapper > *{
+  margin-bottom: 1em;
+}
+#kelolaAdmin .dt-paging{
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+#kelolaAdmin table.dataTable {
+  border: 1px solid black;
+}
+#kelolaAdmin table.dataTable th, #kelolaAdmin table.dataTable td {
+  border: 1px solid black;
+  text-align: center;
+}
+#kelolaAdmin table.dataTable th.dt-orderable-desc {
+  text-align: center;
+}
+#kelolaAdmin table.dataTable :is(td,td.dt-type-numeric) {
+  text-align: center;
+}
+
+#kelolaAdmin .dt-length::before{
+  content: 'Select';
+  display: inline-block;
+  vertical-align: middle;
+  margin-right: .5rem;
+}
+
+/* end */

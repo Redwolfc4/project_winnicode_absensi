@@ -43,11 +43,17 @@
         <li class="nav-item">
           <a class="nav-link poppins-regular" href="/riwayat-kehadiran">Riwayat Kehadiran Karyawan</a>
         </li>
+        
+        {% if data.departement == 'Superuser' %}
+        <li class="nav-item">
+          <a class="nav-link poppins-regular" href="/kelola-admin">Kelola Admin</a>
+        </li>
+        {% endif %}
       </ul>
       {% endif %}
         
       {% endblock navbar%}
-      <a role="button" href="/myProfiles " id="page-user"
+      <a role="button" href="/myProfiles" id="page-user"
         class="d-flex justify-content-center align-items-center gap-2 text-decoration-none">
         <img src="{{url_for('static',filename=data.photo_profile)}}" class="img-fluid rounded rounded-circle" alt />
         <div class="vr"></div>
@@ -227,8 +233,8 @@
                 </thead>
                 <tbody>
                   {% for i in range(0,(data_karyawan_magang|length)) %}
-                  <tr id="{{ data_karyawan_magang[i]._id }}" data-aos='slide-right' data-aos-delay='{{ 400+(i*100) if i<26 else 400+((i-26)*100) }}' data-aos-duration='800'>
-                    <td class="poppins-regular">{{ (data.first_table - 1) * data.table_length + i+1 }}</td>
+                  <tr id="{{ data_karyawan_magang[i]._id }}" data-aos='slide-right' data-aos-delay='{{ 400+((i+1)%26*100) }}' data-aos-duration='800'>
+                    <td class="poppins-regular">{{ (data.first_table - 1) * data.table_length + (i+1) }}</td>
                     <td class="poppins-regular">{{ data_karyawan_magang[i].nik }}</td>
                     <td class="poppins-regular">{{ data_karyawan_magang[i].nama}}</td>
                     <td class="poppins-regular">{{ data_karyawan_magang[i].email }}</td>
@@ -609,95 +615,6 @@
   </div>
   {% endblock %}
 </div>
-<div id="addAccountAdmin">
-  <button class="btn btn-pink p-2 rounded" data-bs-toggle="modal" data-bs-title="Create Account Admin"
-  id="triggerAddModal" data-bs-target="#addModal"><i class="fa-solid fa-user-plus fa-lg"></i></button>
-</div>
-<!-- Modal edit -->
-<div class="modal fade" id="addModal" tabindex="-1"
-aria-hidden="true">
-  <div class="modal-dialog">
-    <div class="modal-content">
-      <form action="/dashboard/admin/create-account" method="post">
-        <!-- modal header -->
-        <div class="modal-header">
-          <h1 class="modal-title fs-5 poppins-medium text-pink">Add Admin / Sub Admin</h1>
-          <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
-        </div>
-        <!-- body modal -->
-        <div class="modal-body">
-          <div class="form-floating">
-            <!-- csrf token -->
-            <input type="hidden" id="csrf_token_add" name="csrf_token" value="{{ csrf_token() }}" />
-          
-            <!-- nama -->
-            <div class="form-floating mb-3">
-              <input type="text" class="form-control" name="nama" id="nama"
-                placeholder="Masukkan Nama Lengkap admin / sub admin">
-              <label class="poppins-regular" for="nama">Nama Lengkap</label>
-            </div>
-          
-            <!-- email -->
-            <div class="form-floating mb-3">
-              <input type="email" class="form-control" name="email" id="email"
-                placeholder="Masukkan Email admin / sub admin">
-              <label class="poppins-regular" for="email">Email address</label>
-            </div>
-          
-            <!-- departement -->
-            <div class="form-floating mb-3">
-              <select class="form-select" id="departement" name="departement"
-                aria-label="Floating label select example">
-                <option value=None>
-                  --Pilih
-                  Departement--</option>
-                <option value="Superuser">Superuser</option>
-                <option value="Mentor">Mentor</option>
-              </select>
-              <label class="poppins-regular" for="departement">Pilih
-                Departement</label>
-            </div>
-          
-            <!-- Status Perusahaan -->
-            <div class="form-floating mb-3">
-              <select id="jobs" name="jobs" class="form-select">
-                <option value=None>
-                  --Select
-                  Jobs--</option>
-                <option value="Admin">Admin</option>
-                <option value="Sub Admin">Sub Admin</option>
-              </select>
-              <label class="poppins-regular" for="jobs">Status Perusahan</label>
-            </div>
-
-            <!-- password -->
-            <div class="form-floating mb-3">
-              <input type="password" class="form-control" name="password" id="password"
-                placeholder="Masukkan Password admin / sub admin">
-              <label class="poppins-regular" for="password">Password</label>
-            </div>
-
-            <!-- confirm password -->
-            <div class="form-floating mb-3">
-              <input type="password" class="form-control" name="password2" id="password2"
-                placeholder="Masukkan Konfirmasi Password admin / sub admin">
-              <label class="poppins-regular" for="password2">Konfirmasi
-                Password</label>
-            </div>
-          </div>
-        </div>
-        <div class="modal-footer">
-          <button type="button" type="reset" id="reset" class="btn btn-danger poppins-regular"
-            data-bs-dismiss="modal">Close</button>
-          <input role="button" type="submit" type="submit" id="submit"
-            class="btn btn-primary poppins-regular" disabled=" true" value="Save Changes"></input>
-        </div>
-      </form>
-    </div>
-  </div>
-</div>
-<!-- end modal -->
-
 {% endif %}
 {% endblock content %}
 {% endblock value_body%}
@@ -707,15 +624,7 @@ aria-hidden="true">
 <script src="{{ url_for('static', filename='js/index.js') }}"></script>
 <!-- akan membentuk static/js/admin_dashboard.js -->
 <script src="{{ url_for('static', filename='js/admin_dashboard.js') }}"></script>
-<!-- tooltip -->
-<script>
-  const tooltipTriggerList = document.querySelectorAll('[data-bs-title]');
-  const tooltipList = [...tooltipTriggerList].map(tooltipTriggerEl => new bootstrap.Tooltip(tooltipTriggerEl, {
-    placement: 'left',
-    customClass: 'custom-tooltip',  // Kelas kustom untuk tooltip
-    trigger: 'hover focus' // Pemicu tooltip
-  }));
-</script>
+
 {% endblock js_custom %}
 
 {% block message %}

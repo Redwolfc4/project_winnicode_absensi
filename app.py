@@ -99,7 +99,7 @@ def change_password():
                     "_id": ObjectId(payload["_id"]),
                     "jobs": payload["jobs"],
                     "role": payload["role"],
-                    'password': hashlib.sha256(request.form.get("old_password").encode("utf-8")).hexdigest()
+                    'password': hashlib.sha256(request.form.get("old_password").encode()).hexdigest()
                 }, {
                     '_id': 0,
                     "password": 1
@@ -110,7 +110,7 @@ def change_password():
                 raise Exception("password lama salah")
             
             # cek password baru dengan lama
-            if hashlib.sha256(request.form.get("new_password").encode("utf-8")).hexdigest() == password_db['password']:
+            if hashlib.sha256(request.form.get("new_password").encode()).hexdigest() == password_db['password']:
                 raise Exception("password baru tidak boleh sama dengan lama")
             
             # update password
@@ -121,7 +121,7 @@ def change_password():
                 },
                 {
                     "$set": {
-                        "password": hashlib.sha256(request.form.get("new_password").encode("utf-8")).hexdigest()
+                        "password": hashlib.sha256(request.form.get("new_password").encode()).hexdigest()
                     }
                 }
             )
@@ -323,7 +323,7 @@ def dashboard():
                 return redirect(url_for("signIn", msg="Anda bukan Magang / Karyawan"))
         # bagian admin
         elif data["role"] == 1:
-            if data["jobs"] == "Admin" or data["jobs"] == "Manager":
+            if data["jobs"] == "Admin" or data["jobs"] == "Sub Admin":
                 # panjang table awal
                 first_table = request.args.get("page_awal", 1, type=int)
                 # panjang table
@@ -410,6 +410,181 @@ def dashboard():
     except jwt.DecodeError:
         return redirect(url_for("signIn", msg="Anda telah logout"))
     
+@app.route("/kelola-admin", methods=['GET'])
+@app.route("/kelola-admin/", methods=['GET'])
+@app.route("/kelola-admin/<path1>", methods=['POST'])
+@app.route("/kelola-admin/<path1>/<path2>", methods=['POST'])
+def kelola_admin(path1=None,path2=None):
+    try:
+        # The above Python code is checking for the presence of a CSRF token and a token key in the
+        # request cookies. If the CSRF token is not found (i.e., None), it redirects the user to the
+        # "signIn" route with a message indicating that the CSRF token has expired. Similarly, if the
+        # token key is not found (i.e., None), it redirects the user to the "signIn" route with a
+        # message indicating that the user has been logged out. This code is likely part of a web
+        # application's security mechanism to ensure that valid CSRF tokens and user authentication
+        # tokens are present before allowing access
+        csrf_token = request.cookies.get("csrf_token")
+        cookies = request.cookies.get("token_key")
+        if csrf_token == None:
+            return redirect(url_for("signIn", msg="csrf token expired"))
+        if cookies == None:
+            return redirect(url_for("signIn", msg="Anda Telah logout"))
+        # The above Python code snippet is converting `cookies` and `csrf_token` variables from a
+        # UUID-like format to a string format using the `uuid_like_to_string` function. It then checks
+        # if the `csrf_token` or `cookies` are empty, and if so, it redirects the user to the "signIn"
+        # route with a message indicating that either the CSRF token has expired or the cookie has
+        # expired.
+        cookies = uuid_like_to_string(cookies)
+        csrf_token = uuid_like_to_string(csrf_token)
+        if not csrf_token:
+            return redirect(url_for("signIn", msg="CSRF Token Expired"))
+        if not cookies:
+            return redirect(url_for("signIn", msg="Cookie Expired"))
+        # The above Python code snippet is decoding a JSON Web Token (JWT) from the `cookies` using a
+        # `secretKey` with the HS256 algorithm. It then retrieves data from a MongoDB database based
+        # on the decoded payload. If the role in the payload is not equal to 1 and the job is not
+        # 'admin', it fetches the attendance history (`riwayat_absent`) for a specific user ID.
+        # Otherwise, if the conditions are not met, it fetches the attendance history for all users.
+        payloads = jwt.decode(cookies, secretKey, algorithms=["HS256"])
+        
+        # The above Python code is checking the HTTP request method. If the method is 'POST', it then
+        # checks the value of the variable `path1`. If `path1` is equal to 'edit', it executes some
+        # code (not shown in the snippet). If `path1` is equal to 'delete', it executes some other
+        # code (not shown in the snippet). If `path1` is not equal to 'edit' or 'delete', it does
+        # nothing.
+        if request.method == 'POST':
+            # ubah data
+            if path1 == 'edit':
+                # The above code is unpacking the values from the `request.form` object into the
+                # variables `method`, `csrf_form`, `id_data_user_admin`, `nama`, `email`,
+                # `departement`, and `jobs`. This allows you to access the form data submitted in a
+                # Python web application using Flask or a similar framework.
+                method,csrf_form,id_data_user_admin,nama,email,departement,jobs = request.form.values()
+                
+                # The above Python code snippet is performing input validation and conditional checks
+                # based on certain conditions. Here is a breakdown of what the code is doing:
+                if method != 'PUT':
+                    return redirect(url_for("kelola_admin", msg="This method form not allowed"))
+                if csrf_form == None or csrf_form == "":
+                    return redirect(url_for("kelola_admin", msg="Your request not in page"))
+                if id_data_user_admin == None or id_data_user_admin == "":
+                    raise Exception('This data is invalid')
+                if nama == None or nama == "":
+                    raise ValueError('Your name cannot be empty')
+                if email == None or nama == "":
+                    raise ValueError('Your email cannot be empty')
+                if departement == None or departement == "":
+                    raise ValueError('Your departement cannot be selected')
+                if jobs == None or jobs == "":
+                    raise ValueError('Your jobs cannot be selected')
+                if payloads['role'] != 1 and payloads['jobs'] not in ('Admin'):
+                    raise Exception('Anda tidak memiliki hak akses')
+                
+                # cari departement
+                departement_payloads = db.users.find_one({'_id': ObjectId(payloads['_id'])}, {'_id': 0, 'departement': 1})
+                # jika bukan departemen superuser
+                if departement_payloads['departement'] not in ('Superuser'):
+                    raise Exception('Anda tidak memiliki hak akses')
+                
+                # decript id riwayat absen
+                user_admin_id = cipher.decrypt(uuid_like_to_string(id_data_user_admin).encode()).decode()
+                
+                # cek ada / tidak
+                if not user_admin_id:
+                    raise ValueError("Terjadi kesalahan dalam encode decrypt")
+                
+                # update database
+                result = db.users.find_one_and_update({'_id':ObjectId(user_admin_id)},{'$set':{'nama':nama,'email':email,'jobs':jobs,'departement':departement}}, {'_id':0, 'nama':1})
+                
+                # lakukan pengecekan dalam perubahan data
+                if not result:
+                    raise ValueError("Data atas nama "+nama+" failed patch")
+                return redirect(url_for("kelola_admin", msg="Data atas nama "+result['nama']+" success patch", result='success'))
+                
+            # delete data  
+            elif path1 == 'delete':
+                # jika path2 tidak diinisialisasi
+                if path2 == None:
+                    return redirect(url_for("notFound"))
+                
+                # cari departement
+                departement_payloads = db.users.find_one({'_id': ObjectId(payloads['_id'])}, {'_id': 0, 'departement': 1})
+                # jika bukan departemen superuser
+                if departement_payloads['departement'] not in ('Superuser'):
+                    raise('Anda tidak memiliki hak akses')
+                
+                # cek role=1 dan jobs = admin
+                if payloads['role'] != 1 and payloads['jobs'] not in ('Admin'):
+                    raise('Anda tidak memiliki hak akses')
+                
+                # ambil form data
+                method, csrf_form = request.form.values()
+                
+                # The code snippet provided is written in Python and it checks two conditions.
+                if method != 'DELETE':
+                    return redirect(url_for('notFound'))
+                if csrf_form == None or csrf_form == "":
+                    return redirect(url_for("signIn", msg="Your request not in page"))
+                
+                # decript id user admin id
+                user_admin_id_delete = cipher.decrypt(uuid_like_to_string(path2).encode()).decode()
+                
+                # cek ada / tidak
+                if not user_admin_id_delete:
+                    raise ValueError("Terjadi kesalahan dalam encode decrypt")
+                
+                # delete data
+                result = db.users.find_one_and_delete({'_id':ObjectId(user_admin_id_delete)})
+                
+                # lakukan pengecekan dalam perubahan data
+                if not result:
+                    raise Exception("Data atas nama "+result['nama']+" failed delete")
+                return redirect(url_for("kelola_admin", msg="Data atas nama "+result['nama']+" success delete", result='success'))
+                
+                
+            # selain itu
+            else:
+                raise Exception('this path url doesnt exist')
+            
+        # The above code is attempting to retrieve a value from the query parameters of a request in a
+        # web application. It is trying to get the value associated with the key 'msg' from the
+        # request arguments.
+        msg = request.args.get('msg')
+        result = request.args.get('result')
+        
+        # ambil data untuk navbar
+        data = db.users.find_one({'_id':ObjectId(payloads['_id'])},{'_id':0,'jobs':1,'role':1,'nama':1,'photo_profile':1,'departement':1})
+        if not data:
+            raise Exception("Terjadi kesalahan data")
+        
+        # cek apakah dia bukan tipe admin
+        if payloads["role"] != 1 and payloads['jobs'] not in ('Admin'):
+            return redirect(url_for('notFound'))
+        # cari data admin
+        data_admin_all = list(db.users.find({'jobs': {'$in': ['Admin', 'Sub Admin']}, 'role': 1}, {'password': 0, 'role': 0}))
+        
+        # cek data admin_all
+        if data_admin_all:
+            for i in data_admin_all:
+                i['_id'] = string_to_uuid_like(cipher.encrypt(str(i['_id']).encode()).decode())
+                if not i['_id']:
+                    raise Exception("Terjadi Kesalahan Data dalam encrypt")
+
+        return render_template('kelolaAdmin.html', data=data, data_user_admin = data_admin_all,msg=msg,result=result)
+    
+    except ValueError as e:
+        return redirect(url_for('kelola_admin', msg=e.args[0]))
+    except Exception as e:
+        return redirect(url_for('dashboard', msg=e.args[0]))
+    except jwt.ExpiredSignatureError:
+        return redirect(url_for("signIn", msg="Session Expired"))
+    except jwt.DecodeError:
+        return redirect(url_for("signIn", msg="Anda telah logout"))
+    except Fernet.InvalidToken:
+        return redirect(url_for("kelola_admin", msg="Token update invalid please refresh your page"))
+    except IndexError as e:
+        return redirect(url_for('kelola_admin', msg=e.args[0]))
+    
 # riwayat kehadiran
 @app.route("/riwayat-kehadiran", methods=["GET"])
 def riwayat_kehadiran():
@@ -452,7 +627,7 @@ def riwayat_kehadiran():
         # 'admin', it fetches the attendance history (`riwayat_absent`) for a specific user ID.
         # Otherwise, if the conditions are not met, it fetches the attendance history for all users.
         payloads = jwt.decode(cookies, secretKey, algorithms=["HS256"])
-        data = db.users.find_one({'_id':ObjectId(payloads['_id'])},{'_id':0,'jobs':1,'role':1,'nama':1,'photo_profile':1})
+        data = db.users.find_one({'_id':ObjectId(payloads['_id'])},{'_id':0,'jobs':1,'role':1,'nama':1,'departement':1,'photo_profile':1})
         if not data:
             return redirect(url_for("dashboard", msg="Terjadi kesalahan data"))
         if payloads["role"] != 1 and payloads['jobs'] not in ('admin'):
@@ -495,9 +670,10 @@ def riwayat_kehadiran():
                     }
                 }
             ]))
-            for i in riwayat_absent:
-                # decrypt id riwayat absen
-                i['_id'] = string_to_uuid_like(cipher.encrypt(str(i['_id']).encode()).decode())
+            if riwayat_absent:
+                for i in riwayat_absent:
+                    # decrypt id riwayat absen
+                    i['_id'] = string_to_uuid_like(cipher.encrypt(str(i['_id']).encode()).decode())
 
         # render template riwayat_kehadiran.html
         return render_template("riwayat_kehadiran.html",riwayat_absent=riwayat_absent, data=data,msg=msg,result=result)
@@ -859,23 +1035,35 @@ def dashboardAbsen():
 @app.route('/dashboard/admin/create-account', methods=['POST'])
 def dashboardAdminCreateAccount():
     try:
-        # inisiasi cookie
+        # The above Python code is checking for the presence of a CSRF token and a token key in the
+        # request cookies. If the CSRF token is not found (i.e., None), it redirects the user to the
+        # "signIn" route with a message indicating that the CSRF token has expired. Similarly, if the
+        # token key is not found (i.e., None), it redirects the user to the "signIn" route with a
+        # message indicating that the user has been logged out. This code is likely part of a web
+        # application's security mechanism to ensure that valid CSRF tokens and user authentication
+        # tokens are present before allowing access
+        csrf_token = request.cookies.get("csrf_token")
         cookies = request.cookies.get("token_key")
-        csrf = request.cookies.get("csrf_token")
-        # cek cookie
-        if cookies == "" or cookies == None:
-            raise Exception("cookie expired")
-        if csrf == "" or csrf == None:
-            raise Exception("csrf expired")
-        # decode cookie
+        if csrf_token == None:
+            return redirect(url_for("signIn", msg="csrf token expired"))
+        if cookies == None:
+            return redirect(url_for("signIn", msg="Anda Telah logout"))
+        # The above Python code snippet is converting `cookies` and `csrf_token` variables from a
+        # UUID-like format to a string format using the `uuid_like_to_string` function. It then checks
+        # if the `csrf_token` or `cookies` are empty, and if so, it redirects the user to the "signIn"
+        # route with a message indicating that either the CSRF token has expired or the cookie has
+        # expired.
         cookies = uuid_like_to_string(cookies)
-        csrf = uuid_like_to_string(csrf)
-        # cek decode1
+        csrf_token = uuid_like_to_string(csrf_token)
+        if not csrf_token:
+            return redirect(url_for("signIn", msg="CSRF Token Expired"))
         if not cookies:
-            raise Exception("CSRF decode error")
-        if not csrf:
-            raise Exception("CSRF decode error")
-        # decode payload
+            return redirect(url_for("signIn", msg="Cookie Expired"))
+        # The above Python code snippet is decoding a JSON Web Token (JWT) from the `cookies` using a
+        # `secretKey` with the HS256 algorithm. It then retrieves data from a MongoDB database based
+        # on the decoded payload. If the role in the payload is not equal to 1 and the job is not
+        # 'admin', it fetches the attendance history (`riwayat_absent`) for a specific user ID.
+        # Otherwise, if the conditions are not met, it fetches the attendance history for all users.
         payload = jwt.decode(cookies, secretKey, algorithms=["HS256"])
         # cek payload
         if not payload:
@@ -915,7 +1103,7 @@ def dashboardAdminCreateAccount():
         result = db.users.insert_one({
             'nama':nama.strip(),
             'email':email.strip(),
-            'password':password.strip(),
+            'password':hashlib.sha256(password.strip().encode()).hexdigest(),
             'departement':departement.strip(),
             'jobs':jobs.strip(),
             'role':1,
@@ -923,12 +1111,12 @@ def dashboardAdminCreateAccount():
         })
         if not result:
             raise ValueError("Data tidak berhasil disimpan")
-        return redirect(url_for('dashboard',msg='Data atas nama '+str(nama.strip())+' Berhasil Disimpan', result='success'))
+        return redirect(url_for('kelola_admin',msg='Data atas nama '+str(nama.strip())+' Berhasil Disimpan', result='success'))
     # handling error
     except ValueError as e:
-        return redirect(url_for("dashboard", msg=e.args[0]))
+        return redirect(url_for("kelola_admin", msg=e.args[0]))
     except Exception as e:
-        return redirect(url_for("signIn", msg=e.args[0]))
+        return redirect(url_for("dashboard", msg=e.args[0]))
     except jwt.ExpiredSignatureError:
         return redirect(url_for("signIn", msg="Session Expired"))
     except jwt.DecodeError:
@@ -1173,7 +1361,7 @@ def signIn():
                                         user["_id"],
                                         user["jobs"],
                                         user["role"],
-                                        datetime.timedelta(minutes=30),
+                                        get_time_zone_now().timedelta(minutes=30),
                                     )
                                     
                                     token = string_to_uuid_like(token)
@@ -1184,6 +1372,7 @@ def signIn():
                                                 "result": "success",
                                                 "redirect": "/dashboard/magang",
                                                 "msg": "Login successful",
+                                                'token': 1
                                             }
                                         )
                                     )
@@ -1228,7 +1417,7 @@ def signIn():
                                 user["_id"],
                                 user["jobs"],
                                 user["role"],
-                                datetime.timedelta(hours=24),
+                                get_time_zone_now().timedelta(hours=24),
                             )
                             resp = make_response(
                                 jsonify(
@@ -1236,6 +1425,7 @@ def signIn():
                                         "result": "success",
                                         "redirect": "/dashboard/magang",
                                         "msg": "Login successful",
+                                        'token': 1
                                     }
                                 )
                             )
@@ -1324,7 +1514,7 @@ def forgetPassword():
                 raise ValueError("Email not valid")
 
             # eksekusi pasword
-            password_hash = hashlib.sha256(password_new.encode("utf-8")).hexdigest()
+            password_hash = hashlib.sha256(password_new.encode()).hexdigest()
             result = db.users.find_one(
                 {"email": email.lower(), "jobs": {"$in": ["Magang", "Karyawan"]}}
             )
@@ -1469,7 +1659,7 @@ def signUp():
                 "departement": departement,
                 "jobs": jobs,
                 "email": email.lower(),
-                "password": hashlib.sha256(password.encode("utf-8")).hexdigest(),
+                "password": hashlib.sha256(password.encode()).hexdigest(),
                 "role": 3,
                 "nik": "",
                 "photo_profile": "img/default/user.png",
@@ -1746,7 +1936,7 @@ def export(path):
         if (
             payloads["role"] != 1
             and payloads["jobs"] != "admin"
-            and payloads["departement"] not in ("Superuser", "Subuser")
+            and payloads["departement"] not in ("Superuser", "Sub user")
         ):
             raise Exception("Anda tidak punya akses")
         # cek database

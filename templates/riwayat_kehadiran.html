@@ -24,12 +24,22 @@
   </li>
   <li class="nav-item">
     <a class="nav-link poppins-regular active" href="/riwayat-kehadiran"
-      >Riwayat Kehadiran</a
+      >Riwayat Kehadiran Karyawan</a
     >
   </li>
+  {% if data.role==1 %}
+  {% if data.departement == 'Superuser' %}
+  <li class="nav-item">
+    <a class="nav-link poppins-regular" href="/kelola-admin">Kelola Admin</a>
+  </li>
+  {% endif %}
+  {% endif %}
+    
+  {% if data.role !=1 %}
   <li class="nav-item">
     <a class="nav-link poppins-regular" href="/task/magang">Task</a>
   </li>
+  {% endif %}
 </ul>
 {% endblock %} {% block content %}
 
@@ -64,7 +74,7 @@
     {% if riwayat_absent %}
     <thead>
       <tr>
-        <th {{ 'rowspan=2' if data.role==1 else '' }}  class="poppins-semibold">No</th>
+        <th {{ 'rowspan=2' if data.role==1 else '' }} class="poppins-semibold">No</th>
         {% if data.role==1 and data.jobs=='Admin' %}
         <th rowspan="2" class="poppins-semibold">Nik</th>
         <th rowspan="2" class="poppins-semibold">Email</th>
@@ -85,22 +95,22 @@
       {% endif %}
     </thead>
     <tbody>
-      {% for i in range(1,(riwayat_absent|length))%}
+      {% for i in range(1,(riwayat_absent|length)+1)%}
       <tr
-        id="{{riwayat_absent[i]._id if (data.role==1 and data.jobs=='Admin') else '' }}"
+        id="{{riwayat_absent[i-1]._id if (data.role==1 and data.jobs=='Admin') else '' }}"
         data-aos="slide-right"
         data-aos-delay="{{ 400+(i%26*100) }}"
         data-aos-duration="800"
       >
-        <td class="poppins-regular">{{ i }}</td>
+        <td class="poppins-regular align-middle">{{ i }}</td>
         <!-- jika data role admin -->
         {% if data.role==1 and data.jobs=='Admin' %}
-        <td class="poppins-regular">{{ riwayat_absent[i-1].user.nik }}</td>
-        <td class="poppins-regular">{{ riwayat_absent[i-1].user.email }}</td>
-        <td class="poppins-regular">{{ riwayat_absent[i-1].user.nama }}</td>
+        <td class="poppins-regular align-middle">{{ riwayat_absent[i-1].user.nik }}</td>
+        <td class="poppins-regular align-middle">{{ riwayat_absent[i-1].user.email }}</td>
+        <td class="poppins-regular align-middle">{{ riwayat_absent[i-1].user.nama }}</td>
         {% endif %}
-        <td class="poppins-regular">{{ riwayat_absent[i-1].tanggal_hadir }}</td>
-        <td class="poppins-regular">{{ riwayat_absent[i-1].waktu_hadir }}</td>
+        <td class="poppins-regular align-middle">{{ riwayat_absent[i-1].tanggal_hadir }}</td>
+        <td class="poppins-regular align-middle">{{ riwayat_absent[i-1].waktu_hadir }}</td>
         <td>
           <button
             class="btn btn-{{'success' if riwayat_absent[i-1].status_hadir == '1' else 'warning' if riwayat_absent[i-1].status_hadir == 2 else 'danger' if riwayat_absent[i-1].status_hadir == 0 else 'secondary' }} poppins-regular"
@@ -110,7 +120,7 @@
         </td>
         {% if data.role==1 and data.jobs=='Admin' %}
         <!-- trigger modal edit -->
-        <td class="poppins-regular">
+        <td class="poppins-regular align-middle">
           <a
             href="#"
             type="button"
@@ -122,7 +132,7 @@
           ></a>
         </td>
         <!-- trigger delete edit -->
-        <td class="poppins-regular">
+        <td class="poppins-regular align-middle">
           <a
             href="#"
             type="button"
@@ -337,6 +347,3 @@
   });
 </script>
 {% endif %} {% endblock %}
-
-<!-- cara kerja 1  -->
-<!-- Melakukan ituin ui dalam bentuk table sama seperti data karyawan tablenya -->
