@@ -78,13 +78,11 @@ class OtpPasswordGenerator:
         self.__token_uri = os.getenv('GOOGLE_TOKEN_URI')
         self.__auth_uri = os.getenv('GOOGLE_AUTH_URI')
         self.__auth_provider_cert_url = os.getenv('GOOGLE_AUTH_PROVIDER_CERT_URL')
-        
         result = db.gmail_service.find_one({},{'_id':0})
         if result:
             self.__creds = Credentials.from_authorized_user_info(
                 result, self.SCOPES
             )
-
         
         # If there are no (valid) credentials available, let the user log in.
         if not self.__creds or not self.__creds.valid: 
@@ -94,8 +92,19 @@ class OtpPasswordGenerator:
                 # update the credentials for the next run
                 data = json.loads(self.__creds.to_json())
                 result = db.gmail_service.find_one({},{'_id':1})
-                db.gmail_service.update_one({'_id':result['_id']},data) 
+                db.gmail_service.update_one({'_id':result['_id']}, {'$set': data}) 
             else:
+                
+                print('data', {
+                        "installed": {
+                            "client_id": self.__client_id,
+                            "client_secret": self.__client_secret,
+                            "auth_uri": self.__auth_uri,
+                            "token_uri": self.__token_uri,
+                            "auth_provider_x509_cert_url": self.__auth_provider_cert_url,
+                            "redirect_uris": self.__redirect_uris,
+                        }
+                    })
                 self.__flow = InstalledAppFlow.from_client_config(
                     {
                         "installed": {

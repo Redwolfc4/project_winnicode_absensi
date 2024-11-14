@@ -1648,7 +1648,6 @@ def forgetPassword():
                 raise Exception("Email not found or jobs not Magang or Karyawan")
             if result["password"] == password_hash:
                 raise ValueError("Password is same")
-
             Otp = OtpPasswordGenerator(email.lower(), result["nama"])
             jwt_otp = jwt.encode(
                 {
@@ -1671,8 +1670,8 @@ def forgetPassword():
 
         except ValueError as e:
             return redirect(url_for("forgetPassword", msg=e.args[0]))
-        except Exception as e:
-            return redirect(url_for("forgetPassword", msg=e.args[0]))
+        # except Exception as e:
+        #     return redirect(url_for("forgetPassword", msg=e.args[0]))
 
     # request method get
     msg = request.args.get("msg")

@@ -203,11 +203,6 @@ notifAbsen = () => {
       // jalankan setiap 1 detik
       const countdown = setInterval(() => {
         countdownTime--;
-        console.log(countdownTime);
-        console.log(Notification.permission);
-        console.log(tepatWaktu)
-        console.log(-5>-10)
-        console.log('jalan')
         // Jika waktu tersisa 30 menit,sebelum absensi dibuka kirim notifikasi browser
         if (countdownTime == 30 * 60 && Notification.permission === "granted" && tepatWaktu != true) {
           tepatWaktu = true
@@ -230,11 +225,25 @@ notifAbsen = () => {
           });
           clearInterval(countdown);
         }
+        // Jika waktu tersisa 20 menit setelah absensi dibuka, kirim notifikasi browser
+        else if (countdownTime >= -10 * 60 && Notification.permission === "granted" && tepatWaktu != false) {
+          tepatWaktu = true;
+          new Notification("Absensi Alert!", {
+            body: "Waktu absensi sudah memasuki 10 menitan, segera lakukan absensi!",
+          });
+        }
+        // Jika waktu tersisa 20 menit setelah absensi dibuka, kirim notifikasi browser
+        else if (countdownTime >= -15 * 60 && Notification.permission === "granted" && tepatWaktu != true) {
+          tepatWaktu = true;
+          new Notification("Absensi Alert!", {
+            body: "Waktu absensi sudah memasuki 15 menitan, segera lakukan absensi!",
+          });
+        }
         // Jika waktu tersisa 5 menit setelah absensi dibuka, kirim notifikasi browser
         else if (countdownTime >= -5 * 60 && Notification.permission === "granted" && tepatWaktu != true) {
           tepatWaktu = true;
           new Notification("Absensi Alert!", {
-            body: "Waktu sudah dalam 5 menit, segera lakukan absensi!",
+            body: "Waktu sudah dalam kurang dari 5 menit, segera lakukan absensi!",
           });
         }
         // Jika waktu tersisa >5 menit setelah absensi dibuka, kirim notifikasi browser
