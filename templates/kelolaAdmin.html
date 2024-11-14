@@ -65,6 +65,20 @@
     ></h1>
   </div>
 
+  <!-- trigger add acoount -->
+  <div class="row mb-3">
+    <div id="generate-report" class="col-12">
+      <div class="dropdown btn-group w-100 float-end" style="max-width: 15rem;">
+        <button type="button" class="text-truncate btn w-100 btn-info dropdown-toggle text-white" data-bs-toggle="dropdown"><i class="fa-solid fa-download fa-lg me-2"></i><span>Generate Report</span></button>
+        <ul class="dropdown-menu w-100">
+          <li><a class="dropdown-item text-truncate" href="/kelola-admin/excel">Excel</a></li>
+          <li><hr class="dropdown-divider"></li>
+          <li><a class="dropdown-item text-truncate" href="/kelola-admin/pdf" id="triggerPdf">PDF</a></li>
+        </ul>
+      </div>
+    </div>
+  </div>
+
   <table
     id="table-admin"
     class="table table-striped display no-wrap table-winnicode"
@@ -370,34 +384,7 @@ aria-hidden="true">
   $(document).ready(function () {
 
     $("#table-admin").DataTable({
-      dom: "Blfrtip",
-      buttons: [
-        {
-          extend: "copy",
-          text: '<i class="fas fa-copy"></i> Copy', // Tambahkan ikon FontAwesome
-          className: "btn btn-primary",
-        },
-        {
-          extend: "csv",
-          text: '<i class="fas fa-file-csv"></i> CSV',
-          className: "btn btn-warning",
-        },
-        {
-          extend: "excel",
-          text: '<i class="fas fa-file-excel"></i> Excel',
-          className: "btn btn-success",
-        },
-        {
-          extend: "pdf",
-          text: '<i class="fas fa-file-pdf"></i> PDF',
-          className: "btn btn-danger",
-        },
-        {
-          extend: "print",
-          text: '<i class="fas fa-print"></i> Print',
-          className: "btn btn-info",
-        },
-      ],
+      dom: '<"d-flex flex-column flex-md-row gap-3 justify-content-center justify-content-md-between"<l><f>>tip',
       scrollX: true, // Enable horizontal scrolling
       keys: true,
       scrollCollapse: true, // Allow the table to reduce in height if there are fewer rows

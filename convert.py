@@ -11,7 +11,7 @@ class PDF(FPDF):
     Class ini digunakan untuk membuat pdf dari data excel
     """
 
-    def create_pdf(self, start_row: int, end_row: int, column_widths: list, ws):
+    def create_pdf(self, start_row: int, end_row: int, column_widths: list, ws, currentPage=None):
         from app import app
         """
         Fungsi ini digunakan untuk membuat pdf dari data excel
@@ -43,9 +43,15 @@ class PDF(FPDF):
         # tambahkan judul
         self.set_font("Times", "B", 14)
         self.set_text_color(255, 102, 196)
-        self.cell(self.__page_width, 10, "Data Karyawan / Magang", 0, 1, "C")
-        self.cell(self.__page_width, 10, "PT. Winnicode Garuda Teknologi", 0, 1, "C")
-        self.set_margins(self.__margin_x, self.__margin_x, self.__margin_x)
+        if currentPage=='Kelola Admin':
+            self.cell(self.__page_width-10, 10, "Data Admin / Sub Admin", 0, 1, "C")
+        else:
+            self.cell(self.__page_width, 10, "Data Karyawan / Magang", 0, 1, "C")
+        self.cell(self.__page_width-10 if currentPage=='Kelola Admin' else self.__page_width, 10, "PT. Winnicode Garuda Teknologi", 0, 1, "C")
+        if currentPage=='Kelola Admin':
+            self.set_margins(self.__margin_x+55, self.__margin_x, self.__margin_x)
+        else:
+            self.set_margins(self.__margin_x, self.__margin_x, self.__margin_x)
         self.ln(10)
 
         # buat table heading
@@ -164,7 +170,7 @@ class PDF(FPDF):
         return self
 
 # convert ke excel
-def convert_to_excel(ws, result, start=None, stop=None):
+def convert_to_excel(ws, result, currentPage=None, start=None, stop=None):
     from app import app
     """
     Converts data to Excel format and writes it to the provided worksheet.
@@ -205,10 +211,12 @@ def convert_to_excel(ws, result, start=None, stop=None):
         # Convert dict_values to list and remove dictionaries
         cleaned_data = [item for item in x.values() if not isinstance(item, dict)]
         cleaned_data.insert(0, i + 1)
-        cleaned_data.append(x["absen"]["hadir"])
-        cleaned_data.append(x["absen"]["telat"])
-        cleaned_data.append(x["absen"]["tidak_hadir"])
-        cleaned_data.append(x["absen"]["libur"])
+
+        if currentPage !='Kelola Admin':
+            cleaned_data.append(x["absen"]["hadir"])
+            cleaned_data.append(x["absen"]["telat"])
+            cleaned_data.append(x["absen"]["tidak_hadir"])
+            cleaned_data.append(x["absen"]["libur"])
 
         ws.append(cleaned_data)  # menambhkan ke ws
         row = ws.max_row  # mencari row mana yang ditambah
@@ -277,7 +285,7 @@ def convert_to_excel(ws, result, start=None, stop=None):
     # Sesuaikan lebar kolom berdasarkan panjang maksimum
     for col, width in column_widths.items():
         # Tambahkan padding agar tidak terlalu sempit
-        ws.column_dimensions[col].width = width + 1
+        ws.column_dimensions[col].width = width + 2
 
     for row in range(start, stop + 1):
         ws.row_dimensions[row].height = int(row_heights)

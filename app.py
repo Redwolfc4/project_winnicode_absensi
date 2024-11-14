@@ -631,7 +631,7 @@ def kelola_admin_export(path1):
         result = list(
             db.users.find(
                 {"jobs": {"$in": ["Admin", "Sub Admin"]}},
-                {"_id": 0, "password": 0, "role": 0, "work_hours": 0},
+                {"_id": 0, "password": 0, "role": 0},
             )
         )
         if result == None or result == '' or not result:
@@ -663,17 +663,17 @@ def kelola_admin_export(path1):
             # create a PDF document. It specifies the page size as A4 and then adds a new page to the
             # PDF. Finally, it calls the `create_pdf` method with parameters `start - 1`, `stop`,
             # `column_widths`, and `ws` to generate content in the PDF document.
-            pdf = PDF("L", "mm", "A4")
+            pdf = PDF("portrait", "mm", "A4")
             pdf.add_page()
             pdf.create_pdf(start - 1, stop, column_widths, ws, currentPage='Kelola Admin')
             # Buat objek BytesIO
-            output = BytesIO()
+            outputs = BytesIO()
             pdf.output(file_path + "\\pdf\\data_karyawan.pdf")
             # Kirim file PDF sebagai attachment
             return send_file(
                 file_path + '/pdf/data_karyawan.pdf',
                 mimetype='application/pdf',
-                as_attachment=False,
+                as_attachment=True,
                 download_name="data_karyawan_winnicode.pdf",
             )
             
