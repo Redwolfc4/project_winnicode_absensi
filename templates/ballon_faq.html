@@ -1,0 +1,192 @@
+<!-- FAQ Balloon Button -->
+<section
+  id="faq"
+  class="position-fixed w-100 h-100 rounded-circle shadow overflow-hidden bg-body-secondary"
+  style="bottom: 2.5em; right: 0.5em; max-width: 3em; max-height: 3em"
+  data-aos="fade-up"
+  data-aos-duration="500"
+  data-aos-delay="0"
+  data-aos-easing="ease-in-out"
+>
+  <img
+    class="img-fluid object-fit-cover"
+    src="{{ url_for('static', filename='img/faq.png') }}"
+    alt="faq.png"
+    style="object-position: center; aspect-ratio: 1/1"
+  />
+</section>
+
+<!-- FAQ Form -->
+<section
+  id="faqForm"
+  class="d-flex rounded flex-column justify-content-center align-items-center bg-body d-none"
+>
+  <!-- Form Header with Close Icon -->
+  <div
+    class="header poppins-semibold d-flex justify-content-between align-items-center w-100 text-white p-2"
+  >
+    <span>FAQ Form</span>
+    <span class="close-icon" id="closeFaqForm" style="cursor: pointer"
+      >&minus;</span
+    >
+  </div>
+  <!-- Form Body -->
+  <form id="faqForm" class="p-2">
+    <!-- csrf_token -->
+    <input
+      type="hidden"
+      name="csrf_token"
+      id="csrf_token"
+      value="{{ csrf_token() }}"
+    />
+    <!-- Nama -->
+    <div class="mb-3">
+      <label for="name" class="form-label poppins-medium">Nama</label>
+      <input
+        type="text"
+        id="name"
+        class="form-control poppins-light"
+        placeholder="Masukkan nama Anda"
+        required
+      />
+    </div>
+    <!-- Email -->
+    <div class="mb-3">
+      <label for="email" class="form-label poppins-medium"
+        >Email yang Didaftarkan</label
+      >
+      <input
+        type="email"
+        id="email"
+        class="form-control poppins-light"
+        placeholder="Masukkan email Anda yang sesuai dengan akun"
+        required
+      />
+    </div>
+    <!-- Select Jobs -->
+    <div class="mb-3">
+      <label for="jobs" class="form-label poppins-medium">Jobs</label>
+      <select id="jobs" class="form-select" required>
+        <option class="poppins-light" value="" disabled selected>
+          Pilih pekerjaan
+        </option>
+        <option class="poppins-light" value="karyawan">Karyawan</option>
+        <option class="poppins-light" value="magang">Magang</option>
+      </select>
+    </div>
+    <!-- Select Department -->
+    <div class="mb-3">
+      <label for="department" class="form-label poppins-medium"
+        >Departemen</label
+      >
+      <select id="department" class="form-select" required>
+        <option class="poppins-light" value="" disabled selected>
+          Pilih departemen
+        </option>
+        <option class="poppins-light" value="web-developer">
+          Web Developer
+        </option>
+        <option class="poppins-light" value="copywriting">Copywriting</option>
+        <option class="poppins-light" value="fullstack-developer">
+          Fullstack Developer
+        </option>
+      </select>
+    </div>
+    <!-- Text Area for Kendala -->
+    <div class="mb-3">
+      <label for="issue" class="form-label poppins-medium">Kendala</label>
+      <textarea
+        id="issue"
+        class="form-control poppins-light"
+        rows="3"
+        placeholder="Jelaskan kendala yang Anda alami"
+        required
+      ></textarea>
+    </div>
+
+    <!-- Submit Button -->
+    <div class="mb-3 d-flex justify-content-end align-items-center">
+      <button type="submit" class="btn btn-primary poppins-medium">
+        Kirim
+      </button>
+    </div>
+  </form>
+</section>
+
+<!-- AOS Initialization Script -->
+<script>
+  document.addEventListener("DOMContentLoaded", function () {
+    // Force AOS to trigger on load
+    const faqElement = document.getElementById("faq");
+    faqElement.classList.add("aos-init", "aos-animate");
+
+    // Add event listener to the button
+    faqElement.addEventListener("click", function () {
+      // Toggle the visibility of the form
+      $(this).removeClass("aos-animate");
+      setTimeout(() => {
+        $("#faqForm").removeClass("d-none");
+      }, 500);
+    });
+
+    $("#closeFaqForm").click(function () {
+      $("#faqForm").addClass("d-none");
+      $("#faq").addClass("aos-animate");
+    });
+
+    const faqForm = document.querySelector("#faqForm form");
+
+    // Add overflow-y-scroll on mouseenter
+    faqForm.addEventListener("mouseenter", function () {
+      faqForm.classList.add("overflow-y-scroll");
+    });
+
+    // Remove overflow-y-scroll and add overflow-y-hidden on mouseleave
+    faqForm.addEventListener("mouseleave", function () {
+      faqForm.classList.remove("overflow-y-scroll");
+    });
+
+    //kirim form
+    $("section#faqForm form#faqForm").submit(function (event) {
+      event.preventDefault();
+      // Ambil data dari form
+      const csrf_token = $("form#faqForm #csrf_token").val();
+      const name = $("form#faqForm #name").val().trim();
+      const email = $("form#faqForm #email").val().trim(); // Pastikan ini sesuai
+      const jobs = $("form#faqForm #jobs").val();
+      const department = $("form#faqForm #department").val();
+      const issue = $("form#faqForm #issue").val().trim();
+
+      // Validasi input kosong
+      if (!name || !email || !jobs || !department || !issue) {
+        return window.location.replace("/signin?msg=ada data yang kosong");
+      }
+
+      // Data yang dikirim
+      const data = {
+        name: name,
+        email: email,
+        jobs: jobs,
+        department: department,
+        issue: issue,
+      };
+
+      $.ajax({
+        type: "POST", // Jenis permintaan HTTP, misalnya "GET" atau "POST".
+        url: "/ask", // URL endpoint yang akan dikirimi permintaan.
+        data: JSON.stringify(data), // Data yang dikirimkan ke server, misalnya objek `{ key: value }` atau string.
+        dataType: "json", // Jenis data yang diharapkan sebagai respon, misalnya "json" atau "html".
+        headers: {
+          "X-CSRF-TOKEN": csrf_token,
+        },
+        contentType:'application/json',
+        success: function (response) {
+          window.location.replace(response.redirect);
+        },
+        error: function (err) {
+          window.location.replace(`/signin?msg=Terjadi kesalahan, silahkan coba lagi`);
+        },
+      });
+    });
+  });
+</script>

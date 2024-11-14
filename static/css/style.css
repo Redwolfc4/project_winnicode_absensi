@@ -546,3 +546,101 @@ a:link {
 }
 
 /* end */
+
+/* ballon faq */
+section#faqForm{
+  border: 2px solid var(--primary-color);
+  position: fixed;
+  bottom: 2.5em; 
+  right: 0.5em; 
+  max-height: 200px; /* Adjust to match the height of the hidden state */
+  transition: max-height 1s ease;
+  border-color:var(--primary-color);
+}
+
+section#faqForm:hover{
+  max-height:300px /* Adjust to the height of the visible state */
+}
+
+section#faqForm form{
+  overflow-y: hidden;
+}
+
+section#faqForm form.overflow-y-scroll{
+  overflow-y: scroll;
+}
+
+section#faqForm .header{
+  background-color: var(--primary-color);
+}
+
+/* Firefox (uncomment to work in Firefox, although other properties will not work!)  */
+section#faqForm form {
+  scrollbar-width: thin;
+  scrollbar-color: var(--primary-color) #FFFFFF;
+}
+
+/* Chrome, Edge and Safari */
+section#faqForm form::-webkit-scrollbar {
+  height: 5px;
+  width: 5px;
+}
+section#faqForm form::-webkit-scrollbar-track {
+  border-radius: 20px;
+  background-color: #FFFFFF;
+}
+
+section#faqForm form::-webkit-scrollbar-track:hover {
+  background-color: #FFFFFF;
+}
+
+section#faqForm form::-webkit-scrollbar-track:active {
+  background-color: #FFFFFF;
+}
+
+section#faqForm form::-webkit-scrollbar-thumb {
+  border-radius: 5px;
+  background-color: var(--primary-color);
+}
+/* end */
+/* end */
+
+/* riwayat bantuan */
+#riwayat_bantuan .table thead{
+  --bs-table-bg:var(--primary-color);
+  vertical-align: middle;
+}
+#riwayat_bantuan #table-bantuan_wrapper > *{
+  margin-bottom: 1em;
+}
+#riwayat_bantuan .dt-paging{
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+#riwayat_bantuan table.dataTable {
+  border: 1px solid black;
+}
+#riwayat_bantuan table.dataTable th, #riwayat_bantuan table.dataTable td {
+  border: 1px solid black;
+  text-align: center;
+}
+#riwayat_bantuan table.dataTable th.dt-orderable-desc {
+  text-align: center;
+}
+#riwayat_bantuan table.dataTable :is(td,td.dt-type-numeric) {
+  text-align: center;
+}
+
+#riwayat_bantuan .dt-length::before{
+  content: 'Select';
+  display: inline-block;
+  vertical-align: middle;
+  margin-right: .5rem;
+}
+
+#riwayat_bantuan select#status:focus-visible{
+  outline: 0;
+}
+
+/* end *

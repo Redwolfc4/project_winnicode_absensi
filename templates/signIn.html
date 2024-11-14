@@ -15,8 +15,6 @@
       <!-- bagian form -->
       <div class="col-md-7 col-lg-5 col-xl-5 offset-xl-1 m-lg-0 mb-4" data-aos='fade-left' data-aos-delay='800' data-aos-duration='1600' data-aos-easing='ease-in-sine'>
         <form
-          action="/sign-in"
-          method="post"
           class="row border border-3 rounded-2 border-purple"
         >
           <div
@@ -94,6 +92,7 @@
     </div>
   </div>
 </section>
+{% include 'ballon_faq.html' %}
 {% endblock %} 
 
 {% block message %}
@@ -102,7 +101,7 @@
 Swal.fire({
   icon: "success",
   title: "{{ title }}",
-  text: "{{ msg }}",
+  html: '{{ msg|safe }}',
   timer:3000,
   willClose: ()=>{
     window.location.replace('/sign-in');
@@ -114,7 +113,7 @@ Swal.fire({
   Swal.fire({
     icon: "error",
     title: "OOPS!",
-    text: "{{ msg }}",
+    html: '{{ msg|safe }}',
     timer: 3000,
     willClose:()=>{
       window.location.replace('/sign-in');

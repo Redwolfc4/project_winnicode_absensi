@@ -25,7 +25,9 @@ from io import BytesIO
 from openpyxl import load_workbook
 from werkzeug.utils import secure_filename
 from werkzeug.datastructures import FileStorage
-from generate_otp import OtpPasswordGenerator
+from generate_otp import OtpPasswordGenerator,FaqGmailSender
+from markupsafe import Markup
+import certifi
 
 # buat request post sesuai datetime
 
@@ -35,7 +37,7 @@ url = os.getenv("MONGODB_URL")
 secretKey = os.getenv("SECRET_KEY")
 
 # connecting to mongodb
-client = MongoClient(url)
+client = MongoClient(url, tls=True, tlsCAFile=certifi.where())
 db = client["absen"]
 
 # inisiasi app
@@ -130,14 +132,14 @@ def change_password():
             if result.modified_count <= 0:
                 raise Exception("Gagal merubah password")
             return jsonify({'status':200,'redirect': url_for('change_password', msg="Password Berhasil DIubah",result="success")})
-        # atasi error lainnya
-        except Exception as e: 
-            return jsonify({'status': 400,'redirect': url_for("change_password", msg=e.args[0])})       
         # atasi error jwt   
         except jwt.ExpiredSignatureError:
             return jsonify({'status':401,'redirect': url_for("signIn", msg="Session Expired")})
         except jwt.DecodeError:
             return jsonify({'status':408,'redirect': url_for("signIn", msg="Anda telah logout")})
+        # atasi error lainnya
+        except Exception as e: 
+            return jsonify({'status': 400,'redirect': url_for("change_password", msg=e.args[0])})       
         
     # method get
     try:
@@ -346,7 +348,11 @@ def dashboard():
                     {"jobs": {"$in": ["Magang", "Karyawan"]}}
                 )
                 # Hitung showing
-                start_index = skip + 1
+                if count_data_karyawan_magang == 0:
+                    start_index = skip
+                else:
+                    start_index = skip + 1
+                    
                 end_index = min(skip + table_length, count_data_karyawan_magang)
 
                 # tambah data indeks
@@ -403,12 +409,12 @@ def dashboard():
         else:
             return redirect(url_for("signIn", msg="Anda bukan bagian dari perusahaan"))
     # handle error
-    except Exception as e:
-        return redirect(url_for("signIn", msg=e.args[0]))
     except jwt.ExpiredSignatureError:
         return redirect(url_for("signIn", msg="Session Expired"))
     except jwt.DecodeError:
         return redirect(url_for("signIn", msg="Anda telah logout"))
+    except Exception as e:
+        return redirect(url_for("signIn", msg=e.args[0]))
     
 @app.route("/kelola-admin", methods=['GET'])
 @app.route("/kelola-admin/", methods=['GET'])
@@ -572,18 +578,116 @@ def kelola_admin(path1=None,path2=None):
 
         return render_template('kelolaAdmin.html', data=data, data_user_admin = data_admin_all,msg=msg,result=result)
     
-    except ValueError as e:
-        return redirect(url_for('kelola_admin', msg=e.args[0]))
-    except Exception as e:
-        return redirect(url_for('dashboard', msg=e.args[0]))
     except jwt.ExpiredSignatureError:
         return redirect(url_for("signIn", msg="Session Expired"))
     except jwt.DecodeError:
         return redirect(url_for("signIn", msg="Anda telah logout"))
     except Fernet.InvalidToken:
         return redirect(url_for("kelola_admin", msg="Token update invalid please refresh your page"))
+    except ValueError as e:
+        return redirect(url_for('kelola_admin', msg=e.args[0]))
+    except Exception as e:
+        return redirect(url_for('dashboard', msg=e.args[0]))
     except IndexError as e:
         return redirect(url_for('kelola_admin', msg=e.args[0]))
+    
+@app.route("/kelola-admin/<path1>", methods=['GET'])
+@app.route("/kelola-admin/<path1>/", methods=['GET'])
+def kelola_admin_export(path1):
+    if path1 not in ["excel", "pdf"]:
+        return redirect(url_for("notFound", path=path1))
+    try:
+        # ambil cookie dan payload
+        cookie = request.cookies.get("token_key")
+        csrf_token = request.cookies.get("csrf_token")
+        if csrf_token == None:
+            return redirect(url_for("signIn", msg="csrf token expired"))
+        if cookie == None or cookie == "":
+            return redirect(url_for("signIn", msg="Anda Telah logout"))
+        cookie = uuid_like_to_string(cookie)
+        if not cookie:
+            return redirect(url_for("signIn", msg="Cookie Expired"))
+        csrf_token = uuid_like_to_string(csrf_token)
+        if not csrf_token:
+            return redirect(url_for("signIn", msg="CSRF Token Expired"))
+        # decode payload
+        payloads = jwt.decode(cookie, secretKey, algorithms=["HS256"])
+
+        # The above Python code is checking if certain conditions are met before raising an exception
+        # with the message "Anda tidak punya akses" which translates to "You do not have access" in
+        # English. The conditions being checked are:
+        # 1. The value of the "role" key in the payloads dictionary is not equal to 1.
+        # 2. The value of the "jobs" key in the payloads dictionary is not equal to "admin".
+        # 3. The value of the "departement" key in the payloads dictionary is not in the tuple
+        # ("Superuser", "Subuser").
+        if (
+            payloads["role"] != 1
+            and payloads["jobs"] != "admin"
+            and payloads["departement"] not in ("Superuser", "Sub user")
+        ):
+            raise Exception("Anda tidak punya akses")
+        
+        # cek database
+        result = list(
+            db.users.find(
+                {"jobs": {"$in": ["Admin", "Sub Admin"]}},
+                {"_id": 0, "password": 0, "role": 0, "work_hours": 0},
+            )
+        )
+        if result == None or result == '' or not result:
+            return redirect(url_for('kelola_admin', msg="Data user not found"))
+        # save excel data
+        file_path = os.path.join(app.root_path, "static", "doc")
+        wb = load_workbook(file_path + "\\excel\\template_kelola_admin.xlsx")
+        ws = wb.active
+        column_widths, start, stop = convert_to_excel(ws, result=result, currentPage='Kelola Admin')
+        # save for extractor excel
+        wb.save(file_path + "\\excel\\data_karyawan.xlsx")
+        # excel
+        if path1 == "excel":
+            # Save the modified workbook to BytesIO
+            output = BytesIO()
+            wb.save(output)
+            # Mengirim file Excel sebagai response download
+            output.seek(0)
+            return send_file(
+                output,
+                mimetype="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+                as_attachment=True,
+                download_name="data_karyawan_winnicode.xlsx",
+        )
+        
+        # pdf
+        elif path1 == "pdf":
+            # The above code is written in Python and seems to be using a library called "PDF" to
+            # create a PDF document. It specifies the page size as A4 and then adds a new page to the
+            # PDF. Finally, it calls the `create_pdf` method with parameters `start - 1`, `stop`,
+            # `column_widths`, and `ws` to generate content in the PDF document.
+            pdf = PDF("L", "mm", "A4")
+            pdf.add_page()
+            pdf.create_pdf(start - 1, stop, column_widths, ws, currentPage='Kelola Admin')
+            # Buat objek BytesIO
+            output = BytesIO()
+            pdf.output(file_path + "\\pdf\\data_karyawan.pdf")
+            # Kirim file PDF sebagai attachment
+            return send_file(
+                file_path + '/pdf/data_karyawan.pdf',
+                mimetype='application/pdf',
+                as_attachment=False,
+                download_name="data_karyawan_winnicode.pdf",
+            )
+            
+        else:
+            return redirect(url_for("notFound", path=path1))
+
+    # handle error
+    except jwt.ExpiredSignatureError:
+        return redirect(url_for("signIn", msg="Session Expired"))
+    except jwt.DecodeError:
+        return redirect(url_for("signIn", msg="Anda telah logout"))
+    except Exception as e:
+        return redirect(url_for('dashboard',msg = e.args[0]))
+        
     
 # riwayat kehadiran
 @app.route("/riwayat-kehadiran", methods=["GET"])
@@ -680,12 +784,12 @@ def riwayat_kehadiran():
     
     # The above code is a Python snippet that includes multiple `except` blocks to handle different
     # types of exceptions.
-    except Exception:
-        return redirect(url_for("signIn", msg="something went wrong!"))
     except jwt.ExpiredSignatureError:
         return redirect(url_for("signIn", msg="Session Expired"))
     except jwt.DecodeError:
         return redirect(url_for("signIn", msg="Anda telah logout"))
+    except Exception:
+        return redirect(url_for("signIn", msg="something went wrong!"))
 
 # riwayat kehadiran post
 @app.route("/riwayat-kehadiran/<path1>",methods=['POST'])
@@ -871,16 +975,16 @@ def riwayat_kehadiran_post(path1=None,path2=None):
                 raise Exception('This method is not allowed')
         else:
             return redirect(url_for('signin', msg='Anda tidak memiliki akses terhadap halaman ini'))
-    except Exception as e:
-        if not e.args:
-            e.args = ('terjadi kesalahan data',)
-        return redirect(url_for('riwayat_kehadiran',msg=e.args[0]))
     except jwt.ExpiredSignatureError:
         return redirect(url_for("signIn", msg="Session Expired"))
     except jwt.DecodeError:
         return redirect(url_for("signIn", msg="Anda telah logout"))
     except Fernet.InvalidToken:
         return redirect(url_for("riwayat_kehadiran", msg="Token update invalid please refresh your page"))
+    except Exception as e:
+        if not e.args:
+            e.args = ('terjadi kesalahan data',)
+        return redirect(url_for('riwayat_kehadiran',msg=e.args[0]))
 
 # dashboard absen
 @app.route("/dashboard/absen", methods=["POST"])
@@ -1029,6 +1133,10 @@ def dashboardAbsen():
         return jsonify(
             {"result": "Gagal", "redirect": "/sign-in", "msg": str(e)}
         )
+    except jwt.ExpiredSignatureError:
+        return redirect(url_for("signIn", msg="Session Expired"))
+    except jwt.DecodeError:
+        return redirect(url_for("signIn", msg="Anda telah logout"))
 
 
 # add account admin / sub admin
@@ -1102,7 +1210,7 @@ def dashboardAdminCreateAccount():
         
         result = db.users.insert_one({
             'nama':nama.strip(),
-            'email':email.strip(),
+            'email':email.strip().lower(),
             'password':hashlib.sha256(password.strip().encode()).hexdigest(),
             'departement':departement.strip(),
             'jobs':jobs.strip(),
@@ -1113,14 +1221,14 @@ def dashboardAdminCreateAccount():
             raise ValueError("Data tidak berhasil disimpan")
         return redirect(url_for('kelola_admin',msg='Data atas nama '+str(nama.strip())+' Berhasil Disimpan', result='success'))
     # handling error
-    except ValueError as e:
-        return redirect(url_for("kelola_admin", msg=e.args[0]))
-    except Exception as e:
-        return redirect(url_for("dashboard", msg=e.args[0]))
     except jwt.ExpiredSignatureError:
         return redirect(url_for("signIn", msg="Session Expired"))
     except jwt.DecodeError:
         return redirect(url_for("signIn", msg="Anda telah logout"))
+    except ValueError as e:
+        return redirect(url_for("kelola_admin", msg=e.args[0]))
+    except Exception as e:
+        return redirect(url_for("dashboard", msg=e.args[0]))
 
 # mengedit data karyawan melalui admin
 @app.route("/dashboard/admin/edit", methods=["POST"])
@@ -1211,12 +1319,12 @@ def dashboardAdminEdit():
             url_for("dashboard", msg="data karyawan / magang gagal di edit")
         )
     # handle error
-    # except ValueError as e:
-    #     return redirect(url_for("signIn", msg=e.args[0]))
     except jwt.ExpiredSignatureError:
         return redirect(url_for("signIn", msg="Session Expired"))
     except jwt.DecodeError:
         return redirect(url_for("signIn", msg="Anda telah logout"))
+    except ValueError as e:
+        return redirect(url_for("signIn", msg=e.args[0]))
 
 
 # delete user karyawan / magang melalui admin
@@ -1277,12 +1385,12 @@ def adminDelete(id):
             url_for("dashboard", msg="data karyawan / magang gagal di hapus")
         )
     # The above code is handling different exceptions that may occur in a Python application.
-    except ValueError as e:
-        return redirect(url_for("signIn", msg=e.args[0]))
-    except jwt.ExpiredSignatureError:
-        return redirect(url_for("signIn", msg="Session Expired"))
     except jwt.DecodeError:
         return redirect(url_for("signIn", msg="Anda telah logout"))
+    except jwt.ExpiredSignatureError:
+        return redirect(url_for("signIn", msg="Session Expired"))
+    except ValueError as e:
+        return redirect(url_for("signIn", msg=e.args[0]))
 
 
 # lakukan sign-in
@@ -1361,7 +1469,7 @@ def signIn():
                                         user["_id"],
                                         user["jobs"],
                                         user["role"],
-                                        get_time_zone_now().timedelta(minutes=30),
+                                        datetime.timedelta(minutes=30),
                                     )
                                     
                                     token = string_to_uuid_like(token)
@@ -1371,8 +1479,7 @@ def signIn():
                                             {
                                                 "result": "success",
                                                 "redirect": "/dashboard/magang",
-                                                "msg": "Login successful",
-                                                'token': 1
+                                                "msg": "Login successful"
                                             }
                                         )
                                     )
@@ -1412,20 +1519,19 @@ def signIn():
                                         "msg": "date is empty, please contact admin / manager",
                                     }
                                 )
-                        elif user["jobs"] == "Admin":
+                        elif user["jobs"] in ("Admin",'Sub Admin'):
                             token = signInPayload(
                                 user["_id"],
                                 user["jobs"],
                                 user["role"],
-                                get_time_zone_now().timedelta(hours=24),
+                                datetime.timedelta(minutes=30),
                             )
                             resp = make_response(
                                 jsonify(
                                     {
                                         "result": "success",
                                         "redirect": "/dashboard/magang",
-                                        "msg": "Login successful",
-                                        'token': 1
+                                        "msg": "Login successful"
                                     }
                                 )
                             )
@@ -1482,6 +1588,24 @@ def signIn():
     msg = request.args.get("msg")
     status = request.args.get("status")
     title = request.args.get("title")
+    
+    # ambil dat aadmin keseluruhan
+    admin_user_cek = db.users.find({
+        'jobs': 'Admin',
+        'departemen':'Superuser'
+    })
+    # cek apakah memiliki user admin / tidak?
+    # jika tidak buat default awalan untuk superuser
+    if not admin_user_cek:
+        result = db.users.insert_one({
+            'nama':'admin',
+            'email':'admin@gmail.com'.lower(),
+            'password':hashlib.sha256('123'.strip().encode()).hexdigest(),
+            'departement':'Superuser'.strip(),
+            'jobs':'Admin'.strip(),
+            'role':1,
+            'photo_profile':"img/default/user.png"
+        })
     return render_template("signIn.html", msg=msg, status=status, title=title)
 
 
@@ -1816,12 +1940,12 @@ def myProfiles():
         # The above code snippet is handling exceptions in a Python function. It is using a try-except
         # block to catch specific exceptions and then redirecting the user to the "signIn" route with
         # a specific message based on the type of exception caught.
-        except ValueError as e:
-            return redirect(url_for("signIn", msg=e.args[0]))
         except jwt.ExpiredSignatureError:
             return redirect(url_for("signIn", msg="Session Expired"))
         except jwt.DecodeError:
             return redirect(url_for("signIn", msg="Anda telah logout"))
+        except ValueError as e:
+            return redirect(url_for("signIn", msg=e.args[0]))
 
     # get method
     # The above code snippet is written in Python and it seems to be part of a web application using a
@@ -1861,12 +1985,12 @@ def myProfiles():
         return render_template("myProfiles.html", data=data, msg=msg, status=status)
 
     # The above code is handling different exceptions that may occur in a Python application.
-    except ValueError as ve:
-        return redirect(url_for("signIn", msg=ve.args[0]))
     except jwt.ExpiredSignatureError:
         return redirect(url_for("signIn", msg="Session Expired"))
     except jwt.DecodeError:
         return redirect(url_for("signIn", msg="Anda telah logout"))
+    except ValueError as ve:
+        return redirect(url_for("signIn", msg=ve.args[0]))
 
 
 @app.route("/task/magang", methods=["GET"])
@@ -1918,11 +2042,17 @@ def export(path):
     try:
         # ambil cookie dan payload
         cookie = request.cookies.get("token_key")
-        # if cookie == None or cookie == "":
-        #     return redirect(url_for("signIn", msg="Anda Telah logout"))
+        csrf_token = request.cookies.get("csrf_token")
+        if csrf_token == None:
+            return redirect(url_for("signIn", msg="csrf token expired"))
+        if cookie == None or cookie == "":
+            return redirect(url_for("signIn", msg="Anda Telah logout"))
         cookie = uuid_like_to_string(cookie)
         if not cookie:
             return redirect(url_for("signIn", msg="Cookie Expired"))
+        csrf_token = uuid_like_to_string(csrf_token)
+        if not csrf_token:
+            return redirect(url_for("signIn", msg="CSRF Token Expired"))
         # decode payload
         payloads = jwt.decode(cookie, secretKey, algorithms=["HS256"])
 
@@ -1946,6 +2076,8 @@ def export(path):
                 {"_id": 0, "password": 0, "role": 0, "work_hours": 0},
             )
         )
+        if result == None or result == '' or not result:
+            raise Exception('Data user not found')
         # save excel data
         file_path = os.path.join(app.root_path, "static", "doc")
         wb = load_workbook(file_path + "\\excel\\template_data_karyawan.xlsx")
@@ -1989,31 +2121,212 @@ def export(path):
             return redirect(url_for("notFound", path=path))
     # The above code is handling exceptions related to JWT (JSON Web Token) authentication. It catches
     # different types of exceptions that can occur during JWT verification:
-    except Exception as e:
-        return redirect(url_for('dashboard',msg = e.args[0]))
     except jwt.ExpiredSignatureError:
         return redirect(url_for("signIn", msg="Session Expired"))
     except jwt.DecodeError:
         return redirect(url_for("signIn", msg="Anda telah logout"))
+    except Exception as e:
+        return redirect(url_for('dashboard',msg = e.args[0]))
+
+# ballon_faq post   
+@app.route("/ask",methods=['POST'])
+def ask():
+    """
+    Fungsi ini digunakan untuk menghandle form balonFAQ yang dikirimkan melalui metode POST.
+
+    Fungsi ini akan mengambil nilai dari form yang dikirimkan dan menyimpannya ke dalam collection
+    `faq` di database. Jika ada error selama proses, maka fungsi ini akan mengembalikan response
+    dengan status 404 dan isi pesan error.
+
+    Parameters:
+        csrf_token (str): Token csrf yang dikirimkan melalui form
+        name (str): Nama yang dikirimkan melalui form
+        email (str): Email yang dikirimkan melalui form
+        jobs (str): Jabatan yang dikirimkan melalui form
+        departement (str): Departemen yang dikirimkan melalui form
+        kendala (str): Kendala yang dikirimkan melalui form
+
+    Returns:
+        Response: Response dengan status 200 dan isi pesan success jika proses berhasil, atau response
+        dengan status 404 dan isi pesan error jika terjadi error
+    """
+    try:
+        csrf_token = request.headers.get('X-CSRF-TOKEN')
+        name,email,jobs,departement,kendala = request.json.values()
+        
+        # cek csrf token valid atau tidak
+        if csrf_token == '' or csrf_token == None:
+            return make_response(jsonify(
+                {
+                    'status':'error',
+                    'msg': 'your csrf is None'
+                }
+            ),404)
+        
+        # The above code is performing input validation for the variables `name`, `email`, `jobs`, and
+        # `departement`. It checks if any of these variables are empty or None after stripping any
+        # leading or trailing whitespaces. If any of the variables are empty or None, it raises an
+        # Exception with a corresponding error message indicating that the respective field is empty
+        # and prompts the user to enter the required information.
+        if name.strip() == '' or name.strip() == None:
+            raise Exception('Nama anda Kosong, silahkan masukkan nama anda')
+        if email.strip() == '' or email.strip() == None:
+            raise Exception('email anda Kosong, silahkan masukkan email anda')
+        if jobs.strip() == '' or jobs.strip() == None:
+            raise Exception('jobs anda Kosong, silahkan masukkan jobs anda')
+        if departement.strip() == '' or departement.strip() == None:
+            raise Exception('departement anda Kosong, silahkan masukkan departement anda')
+        if kendala.strip() == '' or kendala.strip() == None:
+            raise Exception('kendala anda Kosong, silahkan masukkan kendala anda')
+        # melakukan pengiroman kendala ke gmail
+        result_kirim_email = FaqGmailSender(email.strip(),name.strip(),jobs.strip(),departement=departement.strip(),kendala=kendala.strip())
+        if not result_kirim_email:
+            raise Exception('Gagal mengirim email')
+        
+        # tambahakan faq baru ke database
+        add_faq_to_db = db.faq.insert_one({
+            'message_id':result_kirim_email.message_id,
+            'no_ticket': result_kirim_email.uuid_ticket,
+            'email': email.strip(),
+            'name': name.strip(),
+            'jobs': jobs.strip(),
+            'departement': departement.strip(),
+            'kendala': kendala.strip(),
+            'status': 'Pending'
+        })
+        if not add_faq_to_db:
+            raise Exception('Gagal menambahkan faq ticket ke database')
+        
+        # render sigin dengan status success
+        return jsonify({'redirect':url_for('signIn', msg=Markup('Pengaduan anda dengan no ticket <b class="poppins-semibold">#' + result_kirim_email.uuid_ticket + '</b> telah kami terima'), status='success',title='Pengaduan berhasil!')}),200
+    # The above code is handling exceptions related to JWT (JSON Web Token) authentication. It catches
+    # different types of exceptions that can occur during JWT verification:
+    except Exception as e:
+        return jsonify({'redirect':url_for('signIn',msg = e.args[0])}),500
+    
+
+# 
+@app.route("/riwayat-bantuan", methods=["GET"])
+def riwayat_bantuan():
+    # The above Python code snippet is checking for the presence and validity of a CSRF token and a
+    # cookie in a web request. Here is a breakdown of the code:
+    cookie = request.cookies.get("token_key")
+    csrf_token = request.cookies.get("csrf_token")
+    if csrf_token == None:
+        return redirect(url_for("signIn", msg="csrf token expired"))
+    if cookie == None:
+        return redirect(url_for("signIn", msg="Anda Telah logout"))
+    
+    # convert this to data real and check if success or not
+    cookie = uuid_like_to_string(cookie)
+    csrf_token = uuid_like_to_string(csrf_token)
+    if not csrf_token:
+        return redirect(url_for("signIn", msg="CSRF Token Expired"))
+    if not cookie:
+        return redirect(url_for("signIn", msg="Cookie Expired"))
+    
+    try:
+        status = request.args.get('status')
+        msg = request.args.get('msg')
+        
+        # decode payload
+        payloads = jwt.decode(cookie, secretKey, algorithms=["HS256"])
+        if payloads['role']!=1:
+            return redirect(url_for('dashboard',msg="Anda tidak memiliki akses"))
+        data = db.users.find_one({'_id':ObjectId(payloads['_id'])},{'_id':0,'jobs':1,'role':1,'nama':1,'departement':1,'photo_profile':1})
+        if not data:
+            return redirect(url_for("dashboard", msg="Terjadi kesalahan data"))
+        # take data all
+        data_faq_all = list(db.faq.find({}))
+        if data_faq_all:
+            for i in data_faq_all:
+                    i['_id'] = string_to_uuid_like(cipher.encrypt(str(i['_id']).encode()).decode())
+                    if not i['_id']:
+                        raise Exception("Terjadi Kesalahan Data dalam encrypt")
+                    if i['status'] == 'Pending':
+                        i['selectClass'] = 'border-warning border-2 rounded p-2 bg-transparent text-warning'   
+                    elif i['status'] == 'Diproses':
+                        i['selectClass'] = 'border-info border-2 rounded p-2 bg-transparent text-info'
+                    elif i['status'] == 'Selesai':
+                        i['selectClass'] = 'border-success border-2 rounded p-2 bg-transparent text-success'
+        return render_template('riwayat_bantuan.html',data=data, riwayat_bantuan=data_faq_all, result=status, msg=msg)
+    
+    # The above code is handling exceptions related to JWT (JSON Web Token) authentication. It catches
+    # different types of exceptions that can occur during JWT verification:
+    except jwt.ExpiredSignatureError:
+        return redirect(url_for("signIn", msg="Session Expired"))
+    except jwt.DecodeError:
+        return redirect(url_for("signIn", msg="Anda telah logout"))
+    except Fernet.InvalidToken:
+        return redirect(url_for("riwayat_bantuan", msg="Token update invalid please refresh your page"))
+    except IndexError as e:
+        return redirect(url_for('riwayat_bantuan', msg=e.args[0]))
+    except Exception as e:
+        return redirect(url_for('riwayat_bantuan',msg = e.args[0]))
+
+@app.route('/update-status-bantuan',methods=['POST'])
+def riwayat_bantuan_post():
+    # The above Python code snippet is checking for the presence and validity of a CSRF token and a
+    # cookie in a web request. Here is a breakdown of the code:
+    cookie = request.cookies.get("token_key")
+    csrf_token = request.cookies.get("csrf_token")
+    if csrf_token == None:
+        return jsonify({'redirect':url_for("signIn", msg="csrf token expired")})
+    if cookie == None:
+        return jsonify({'redirect':url_for("signIn", msg="Anda Telah logout")})
+    
+    # convert this to data real and check if success or not
+    cookie = uuid_like_to_string(cookie)
+    csrf_token = uuid_like_to_string(csrf_token)
+    if not csrf_token or not cookie:
+        return jsonify({'redirect':url_for("signIn", msg="convert token failed!")})
+    try:
+        # ambil data headers terlebih dahulu
+        x_request,x_csrf = (request.headers.get('X-Requested-With'), request.headers.get('X-CSRF-TOKEN'))
+        if not x_request or not x_csrf or x_request != 'XMLHttpRequest':
+            return jsonify({'redirect':url_for('signIn', msg="Terjadi kesalahan data")})
+        
+        status,id_status = request.json.values()
+        if not status and not id_status and type(status)!=str and type(id_status)!=str:
+            raise Exception('Terjadi Kesalahan dalam pengiriman data')
+        
+        # decode payload
+        payloads = jwt.decode(cookie, secretKey, algorithms=["HS256"])
+        if payloads['role']!=1:
+            return jsonify({'redirect':url_for('dashboard',msg="Anda tidak memiliki akses")})
+        
+        # decript id riwayat absen
+        status_id = cipher.decrypt(uuid_like_to_string(id_status).encode()).decode()
+        
+        result = db.faq.find_one_and_update({'_id':ObjectId(status_id)},{'$set':{'status':status}},{'_id':0,'no_ticket':1,'name':1})
+        print(result)
+        if not result:
+            raise Exception('Data status gagal di update')
+        return jsonify({'redirect':url_for('riwayat_bantuan', msg=Markup(f"Status dengan no <span class='poppins-semibold'>'#{result['no_ticket']}'</span> bernama <span class='poppins-semibold'>{result['name']}</span> berhasil di update"), status='success')}),200
+    # The above code is handling exceptions related to JWT (JSON Web Token) authentication. It catches
+    # different types of exceptions that can occur during JWT verification:
+    except jwt.ExpiredSignatureError:
+        return jsonify({'redirect':url_for("signIn", msg="Session Expired")})
+    except jwt.DecodeError:
+        return jsonify({'redirect':url_for("signIn", msg="Anda telah logout")})
+    except Fernet.InvalidToken:
+        return jsonify({'redirect':url_for("riwayat_bantuan", msg="Token update invalid please refresh your page")}),500
+    except IndexError as e:
+        return jsonify({'redirect':url_for('riwayat_bantuan', msg=e.args[0])}),500    
+    except Exception as e:
+        return jsonify({'redirect':url_for('riwayat_bantuan', msg=e.args[0])}),500    
+    
 
 
 # melakukan error handler csrf
 @app.errorhandler(400)
 def handle_csrf_error(e):
-    return jsonify({"error": "CSRF token tidak valid atau tidak ditemukan"}), 400
+    return jsonify({"error": e}), 400
 
-
-# routing all
-@app.route("/<path>/", methods=["GET"])
-@app.route("/<path>/<argument>", methods=["GET"])
-@app.route("/<path>/<argument>/", methods=["GET"])
-@app.route("/<path>/<argument>/<argument2>", methods=["GET"])
-@app.route("/<path>/<argument>/<argument2>/", methods=["GET"])
-@app.route("/<path>/<argument>/<argument2>/<argument3>", methods=["GET"])
-@app.route("/<path>/<argument>/<argument2>/<argument3>/", methods=["GET"])
-def notFound(path=None, argument=None, argument2=None, argument3=None):
+@app.errorhandler(404)
+def notFound(error):
     data = {"next": "/",'previous':"javascript:history.back()"}
-    return render_template("notFound.html", data=data)
+    return render_template("notFound.html", data=data),200
 
 
 # stating app
@@ -2021,10 +2334,10 @@ if __name__ == "__main__":
     # # Menjadwalkan pengecekan absensi setiap menit
     delete_absen = BackgroundScheduler()
     delete_absen.add_job(
-        func=unhadir_absensi, trigger="interval", minutes=1
+        func=unhadir_absensi, trigger="interval", minutes=30
     )  # interval hours/minute/second. date run_date .cron day_of_week,hours,minutes
     delete_absen.start()
-    app.run(port=8080, debug=True)
+    app.run(port=8080, debug=True) # adhoc adalah sertifikat self signed
     # DEBUG is SET to TRUE. CHANGE FOR PROD
 
 

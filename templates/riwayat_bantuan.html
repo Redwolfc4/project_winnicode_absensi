@@ -1,0 +1,217 @@
+{% extends "dashboard_magang.html" %} {% block title %}
+<title>AbsensiKu | Riwayat Absen Karyawan / Magang</title>
+{% endblock %} {% block cdn_custom_css %}
+<!-- datatables css link -->
+<link
+  href="https://cdn.datatables.net/v/bs5/jq-3.7.0/jszip-3.10.1/dt-2.1.8/af-2.7.0/b-3.1.2/b-colvis-3.1.2/b-html5-3.1.2/b-print-3.1.2/cr-2.0.4/date-1.5.4/fc-5.0.3/fh-4.0.1/kt-2.12.1/r-3.0.3/rg-1.5.0/rr-1.5.0/sc-2.4.3/sb-1.8.1/sp-2.3.3/sl-2.1.0/sr-1.4.1/datatables.min.css"
+  rel="stylesheet"
+/>
+
+{% endblock %} {% block navbar %}
+<ul class="navbar-nav me-auto mb-2 mb-lg-0">
+  <li class="nav-item">
+    <a
+      class="nav-link poppins-regular"
+      aria-current="page"
+      href="/dashboard/magang"
+      >Dashboard</a
+    >
+  </li>
+  <li class="nav-item">
+    <a class="nav-link poppins-regular" href="/change-password"
+      >Ubah Password</a
+    >
+  </li>
+  <li class="nav-item">
+    <a class="nav-link poppins-regular" href="/riwayat-kehadiran"
+      >Riwayat Kehadiran Karyawan</a
+    >
+  </li>
+  {% if data.role==1 %}
+  <li class="nav-item">
+    <a class="nav-link poppins-regular active" href="/riwayat-bantuan"
+      >Riwayat Bantuan</a
+    >
+  </li>
+  {% if data.departement == 'Superuser' %}
+  <li class="nav-item">
+    <a class="nav-link poppins-regular" href="/kelola-admin">Kelola Admin</a>
+  </li>
+  {% endif %} {% endif %} {% if data.role !=1 %}
+  <li class="nav-item">
+    <a class="nav-link poppins-regular" href="/task/magang">Task</a>
+  </li>
+  {% endif %}
+</ul>
+{% endblock %} {% block content %}
+
+<div id="riwayat_bantuan" class="container-fluid" style="margin-top: 1.5rem">
+  <!-- Page Heading -->
+  <div class="d-sm-flex align-items-center justify-content-between mb-4">
+    <h1
+      class="h3 poppins-regular mb-md-0 mb-sm-2 text-gray-800"
+      data-aos="zoom-in-right"
+      data-aos-delay="200"
+      data-aos-duration="800"
+    >
+      Riwayat Bantuan
+    </h1>
+    <h1
+      id="clock"
+      class="h6 border border-1 rounded border-secondary-subtle p-1 px-2 poppins-regular mb-0 text-gray-800"
+      data-aos="zoom-in-left"
+      data-aos-delay="200"
+      data-aos-duration="800"
+    ></h1>
+  </div>
+
+  <table
+    id="table-bantuan"
+    class="table table-striped display no-wrap table-winnicode"
+    style="width: 100%"
+    data-aos="zoom-in"
+    data-aos-delay="400"
+    data-aos-duration="800"
+  >
+    {% if riwayat_bantuan and data.role==1%}
+    <thead>
+      <tr>
+        <th class="poppins-semibold">No</th>
+        <th class="poppins-semibold">No Ticket</th>
+        <th class="poppins-semibold">Nama</th>
+        <th class="poppins-semibold">Email</th>
+        <th class="poppins-semibold">Jobs</th>
+        <th class="poppins-semibold">Departement</th>
+        <th class="poppins-semibold">Kendala</th>
+        <th class="poppins-semibold">Status</th>
+      </tr>
+    </thead>
+    <tbody>
+      {% for i in range(1,(riwayat_bantuan|length)+1)%}
+      <tr
+        id="{{riwayat_bantuan[i-1]._id  }}"
+        data-aos="slide-right"
+        data-aos-delay="{{ 400+(i%26*100) }}"
+        data-aos-duration="800"
+      >
+        <td class="poppins-regular align-middle">{{ i }}</td>
+        <td class="poppins-regular align-middle">
+          {{ riwayat_bantuan[i-1].no_ticket }}
+        </td>
+        <td class="poppins-regular align-middle">
+          {{ riwayat_bantuan[i-1].name }}
+        </td>
+        <td class="poppins-regular align-middle">
+          {{ riwayat_bantuan[i-1].email }}
+        </td>
+        <td class="poppins-regular align-middle">
+          {{ riwayat_bantuan[i-1].jobs }}
+        </td>
+        <td class="poppins-regular align-middle">
+          {{ riwayat_bantuan[i-1].departement }}
+        </td>
+        <td class="poppins-regular align-middle">
+          {{ riwayat_bantuan[i-1].kendala }}
+        </td>
+        <td class="poppins-regular align-middle">
+          <select class="{{ riwayat_bantuan[i-1].selectClass }}" name="status" id="status" style="-webkit-appearance: none; -moz-appearance: none; appearance: none; background-image: none;">
+            <option class='text-warning' value="Pending" {% if riwayat_bantuan[i-1].status == 'Pending' %}selected{% endif %}>Pending</option>
+            <option class='text-info' value="Diproses" {% if riwayat_bantuan[i-1].status == 'Diproses' %}selected{% endif %}>Diproses</option>
+            <option class='text-success' value="Selesai" {% if riwayat_bantuan[i-1].status == 'Selesai' %}selected{% endif %}>Selesai</option>
+          </select>
+        </td>
+      </tr>
+      {% endfor %}
+    </tbody>
+    {% endif %}
+  </table>
+</div>
+{% endblock %}
+
+<!-- cdn js custom -->
+{% block cdn_custom_js %}
+<!-- datatables cdn js -->
+<script src="https://cdnjs.cloudflare.com/ajax/libs/pdfmake/0.2.7/pdfmake.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/pdfmake/0.2.7/vfs_fonts.js"></script>
+<script src="https://cdn.datatables.net/v/bs5/jq-3.7.0/jszip-3.10.1/dt-2.1.8/af-2.7.0/b-3.1.2/b-colvis-3.1.2/b-html5-3.1.2/b-print-3.1.2/cr-2.0.4/date-1.5.4/fc-5.0.3/fh-4.0.1/kt-2.12.1/r-3.0.3/rg-1.5.0/rr-1.5.0/sc-2.4.3/sb-1.8.1/sp-2.3.3/sl-2.1.0/sr-1.4.1/datatables.min.js"></script>
+{% endblock %} {% block js_custom %}
+<!-- js custom -->
+<script src="{{ url_for('static', filename='js/index.js') }}"></script>
+<script>
+  $(document).ready(function () {
+    try {
+      $("#table-bantuan").DataTable({
+        dom: '<"d-flex flex-column flex-md-row gap-3 justify-content-center justify-content-md-between"<l><f>>tip',
+        scrollX: true, // Enable horizontal scrolling
+        keys: true,
+        scrollCollapse: true, // Allow the table to reduce in height if there are fewer rows
+        fixedHeader: true,
+        lengthMenu: [5, 10, 25, 50, 75, { label: "All", value: -1 }],
+        pageLength: 10,
+      });
+    } catch (error) {
+      Swal.fire({
+        icon: "error",
+        title: "Error!",
+        text: "Table gagal dimuat!",
+        willClose: () => {
+          window.location.replace("/riwayat-bantuan");
+        },
+      });
+      console.error("Error initializing DataTable:", error); // Untuk debugging
+    }
+
+    $('select#status').on('change', function () {
+      const selectedValue = $(this).val(); // Ambil nilai yang dipilih
+      // Cari elemen parent <tr> terdekat
+      const parentId = $(this).closest("tr").attr("id");
+      const dataToSend = { status: selectedValue, status_id:parentId }; // Data yang akan dikirimkan
+  
+      $.ajax({
+        url: '/update-status-bantuan', // Endpoint Flask
+        type: 'POST',
+        contentType: 'application/json', // Tanda koma ditambahkan
+        data: JSON.stringify(dataToSend), // Kirim data dalam format JSON
+        // dataType: "json", // (Opsional) Tambahkan ini jika Anda mengembalikan JSON dari server
+        headers: {
+          "X-CSRF-TOKEN": '{{ csrf_token() }}', // Perbaikan tanda kutip
+          "X-Requested-With": 'XMLHttpRequest'
+        },
+        success: function (response) {
+          window.location.replace(response.redirect),200
+        },
+        error: function (xhr, status, error) {
+          // Tindakan jika gagal
+          window.location.replace('/riwayat-bantuan?msg=error'),500
+        },
+      });
+    });
+  });
+</script>
+{% endblock js_custom %}
+<!-- message js -->
+{% block message %} {% if (result and msg) %}
+<script>
+  Swal.fire({
+    icon: "success",
+    title: "Sukses!",
+    html: "{{ msg|safe }}",
+    timer: 3000,
+    willClose: () => {
+      window.location.replace("/riwayat-bantuan");
+    },
+  });
+</script>
+{% elif msg %}
+<script>
+  Swal.fire({
+    icon: "error",
+    title: "OOPS!",
+    html: "{{ msg|safe }}",
+    timer: 3000,
+    willClose: () => {
+      window.location.replace("/riwayat-bantuan");
+    },
+  });
+</script>
+{% endif %} {% endblock %}
