@@ -2629,7 +2629,16 @@ def riwayat_bantuan_post():
         if not response:
             raise Exception('Terjadi Kesalahan dalam reply email')
         
-        result = db.faq.update_one({'_id':ObjectId(status_id)},{'$set':{'status':status}},{'_id':0,'no_ticket':1,'name':1})
+        result = db.faq.update_one(
+            {'_id':ObjectId(status_id)} ,
+            {'$set':{
+                'status':status,
+                'message_id':{
+                    'id':response['id'],
+                    'threadId':response['threadId']
+                }
+            }}
+        )
         if not result:
             raise Exception('Data status gagal di update')
         return jsonify({'redirect':url_for('riwayat_bantuan', msg=Markup(f"Status dengan no <span class='poppins-semibold'>'#{result['no_ticket']}'</span> bernama <span class='poppins-semibold'>{result['name']}</span> berhasil di update"), status='success')}),200
