@@ -161,7 +161,8 @@
       console.error("Error initializing DataTable:", error); // Untuk debugging
     }
 
-    $('select#status').on('change', function () {
+    $('#table-bantuan tbody').on('change', 'select#status', function () {
+      console.log($(this))
       const selectedValue = $(this).val(); // Ambil nilai yang dipilih
       // Cari elemen parent <tr> terdekat
       const parentId = $(this).closest("tr").attr("id");

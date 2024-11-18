@@ -25,7 +25,7 @@ from io import BytesIO
 from openpyxl import load_workbook
 from werkzeug.utils import secure_filename
 from werkzeug.datastructures import FileStorage
-from generate_otp import OtpPasswordGenerator,FaqGmailSender
+from generate_otp import FaqGmailSender, OtpPasswordGenerator, replyGmailSender
 from markupsafe import Markup
 import certifi
 
@@ -71,6 +71,26 @@ def home():
 # change password
 @app.route("/change-password", methods=["GET", 'POST'])
 def change_password():
+    """
+    Change Password
+    ===============
+
+    This function handles requests to the '/change-password' route, which allows users to change their password. It performs the following tasks:
+
+    - GET request: Renders the 'change_password.html' template.
+    - POST request: Validates CSRF token and authentication cookies, checks for the presence of X-CSRFToken header, and processes the password change if valid.
+
+    If any validation fails (e.g., expired token, missing cookies), the function returns a JSON response with a status code indicating failure and redirects to the sign-in page with an appropriate message.
+
+    Usage:
+    ------
+    This function is automatically called when a GET or POST request is made to the '/change-password' route. It requires valid authentication cookies and a CSRF token to process the request successfully.
+
+    Returns:
+    --------
+    - Renders the 'change_password.html' template on a GET request.
+    - On a POST request, returns a JSON response with a status code and redirect URL if validation fails.
+    """
     # method post
     if request.method == "POST":
         try:
@@ -176,6 +196,28 @@ def change_password():
 # dasboard magang get
 @app.route("/dashboard/magang", methods=["GET"])
 def dashboard():
+    """
+    Dashboard Magang
+    ================
+
+    This function handles requests to the '/dashboard/magang' route, which is used to display the dashboard for interns. It performs the following tasks:
+
+    - Retrieves the 'result' and 'msg' parameters from the request.
+    - Checks for the presence and validity of CSRF token and authentication cookies.
+    - Decodes JWT token from the cookies to get the user's payload.
+    - Retrieves user data from the database based on the payload.
+    - Renders the 'change_password.html' template with the user data, result, and message.
+
+    If any validation fails (e.g., expired token, missing cookies), the function redirects the user to the sign-in page with an appropriate message.
+
+    Usage:
+    ------
+    This function is automatically called when a GET request is made to the '/dashboard/magang' route. It requires valid authentication cookies and a CSRF token to process the request successfully. If the user has the proper role, they can access the intern dashboard.
+
+    Returns:
+    --------
+    Redirects to the sign-in page with a message if validation fails, or renders the 'change_password.html' template with user data if successful.
+    """
     result = request.args.get("result")
     msg = request.args.get("msg")
     cookie = request.cookies.get("token_key")
@@ -421,6 +463,32 @@ def dashboard():
 @app.route("/kelola-admin/<path1>", methods=['POST'])
 @app.route("/kelola-admin/<path1>/<path2>", methods=['POST'])
 def kelola_admin(path1=None,path2=None):
+    """
+    Kelola Admin
+    ===========
+
+    Fungsi ini digunakan untuk mengelola data admin, berikut adalah cara penggunaannya:
+
+    - Jika request method GET, maka akan menampilkan data admin.
+    - Jika request method POST, maka akan mengupdate atau menambahkan data admin.
+    - Jika parameter path1 bernilai "create", maka akan menambahkan data admin.
+    - Jika parameter path1 bernilai "update", maka akan mengupdate data admin.
+    - Jika parameter path1 bernilai "delete", maka akan menghapus data admin.
+    - Jika parameter path1 bernilai "show", maka akan menampilkan data admin berdasarkan parameter path2.
+
+    Contoh pemakaiannya:
+    >>> import requests
+    >>> url = 'http://localhost:5000/kelola-admin'
+    >>> data = {
+    ...     'nama':'admin baru',
+    ...     'email':'adminbaru@example.com',
+    ...     'password':'password',
+    ...     'role':1
+    ... }
+    >>> response = requests.post(url, data=data)
+    >>> response.url
+    'http://localhost:5000/kelola-admin?msg=data+admin+berhasil+ditambahkan&result=success'
+    """
     try:
         # The above Python code is checking for the presence of a CSRF token and a token key in the
         # request cookies. If the CSRF token is not found (i.e., None), it redirects the user to the
@@ -591,9 +659,49 @@ def kelola_admin(path1=None,path2=None):
     except IndexError as e:
         return redirect(url_for('kelola_admin', msg=e.args[0]))
     
+# kelola admin export
 @app.route("/kelola-admin/<path1>", methods=['GET'])
 @app.route("/kelola-admin/<path1>/", methods=['GET'])
 def kelola_admin_export(path1):
+    """
+    Kelola Admin Export
+    ===================
+
+    Functionality:
+    --------------
+    This function handles requests to the '/kelola-admin/<path1>' route, enabling admin users to export 
+    data in either Excel or PDF format. It validates user permissions and checks for valid cookies and 
+    CSRF tokens before processing the export request.
+
+    Parameters:
+    ------------
+    - path1 (str): The export format, either 'excel' or 'pdf'.
+
+    Validations:
+    ------------
+    - Ensures the user has the 'admin' role.
+    - Confirms the user's department is either 'Superuser' or 'Subuser'.
+    - Validates the presence of a valid CSRF token and authentication cookie.
+
+    Returns:
+    --------
+    - Redirects to 'notFound' if the path is not 'excel' or 'pdf'.
+    - Redirects to 'signIn' with appropriate messages if validation fails.
+    - Returns the generated export file if successful.
+
+    Usage:
+    ------
+    >>> import requests
+    >>> url = 'http://localhost:5000/kelola-admin/excel'
+    >>> response = requests.get(url)
+    >>> response.status_code
+    200
+
+    >>> url = 'http://localhost:5000/kelola-admin/pdf'
+    >>> response = requests.get(url)
+    >>> response.status_code
+    200
+    """
     if path1 not in ["excel", "pdf"]:
         return redirect(url_for("notFound", path=path1))
     try:
@@ -795,6 +903,19 @@ def riwayat_kehadiran():
 @app.route("/riwayat-kehadiran/<path1>",methods=['POST'])
 @app.route("/riwayat-kehadiran/<path1>/<path2>",methods=['POST'])
 def riwayat_kehadiran_post(path1=None,path2=None):
+    """
+    Handle route /riwayat-kehadiran/<path1> and /riwayat-kehadiran/<path1>/<path2> to edit riwayat kehadiran.
+
+    Args:
+        path1 (str): The first path parameter.
+        path2 (str): The second path parameter.
+
+    Returns:
+        str: redirect to /riwayat-kehadiran if success, otherwise redirect to signIn with appropriate message.
+
+    Usage:
+        /riwayat-kehadiran/edit/<id_riwayat_absent> to edit riwayat kehadiran with id <id_riwayat_absent>
+    """
     try:
         # lakukan validasi cooke masih ada
         csrf_token = request.cookies.get("csrf_token")
@@ -1142,6 +1263,32 @@ def dashboardAbsen():
 # add account admin / sub admin
 @app.route('/dashboard/admin/create-account', methods=['POST'])
 def dashboardAdminCreateAccount():
+    """
+    Create new account admin / sub admin
+
+    Parameters:
+    - nama (str): nama dari akun yang akan dibuat
+    - email (str): email dari akun yang akan dibuat
+    - password (str): password dari akun yang akan dibuat
+    - role (int): role dari akun yang akan dibuat, 1 untuk admin dan 2 untuk sub admin
+
+    Returns:
+    - redirect to dashboard with message "akun berhasil dibuat" if success
+    - redirect to dashboard with message "akun gagal dibuat" if failed
+
+    Pemakaian:
+    >>> import requests
+    >>> url = 'http://localhost:5000/dashboard/admin/create-account'
+    >>> data = {
+    ...     'nama':'admin baru',
+    ...     'email':'adminbaru@example.com',
+    ...     'password':'password',
+    ...     'role':1
+    ... }
+    >>> response = requests.post(url, data=data)
+    >>> response.url
+    'http://localhost:5000/dashboard?msg=akun+berhasil+dibuat&result=success'
+    """
     try:
         # The above Python code is checking for the presence of a CSRF token and a token key in the
         # request cookies. If the CSRF token is not found (i.e., None), it redirects the user to the
@@ -1233,6 +1380,41 @@ def dashboardAdminCreateAccount():
 # mengedit data karyawan melalui admin
 @app.route("/dashboard/admin/edit", methods=["POST"])
 def dashboardAdminEdit():
+    """
+    Mengedit data karyawan melalui admin
+    ====================================
+
+    Fungsi ini digunakan untuk mengedit data karyawan melalui admin. Data yang dapat diubah
+    meliputi nama, email, departemen, pekerjaan, tanggal mulai dan akhir kerja, serta waktu
+    mulai dan akhir kerja. 
+
+    Cara Penggunaan:
+    ----------------
+    1. Pastikan method form adalah PUT.
+    2. Kirimkan data yang akan diubah melalui form dengan field: 
+        - nama (str): Nama karyawan yang akan diedit.
+        - email (str): Email karyawan yang akan diedit.
+        - departement (str): Departemen karyawan.
+        - jobs (str): Pekerjaan karyawan.
+        - start_date (str): Tanggal mulai kerja dalam format 'YYYY-MM-DD'.
+        - end_date (str): Tanggal akhir kerja dalam format 'YYYY-MM-DD'.
+        - start_time (str): Waktu mulai kerja dalam format 'HH:MM'.
+        - end_time (str): Waktu akhir kerja dalam format 'HH:MM'.
+    3. Pastikan csrf_token dan token_key cookies tersedia dan valid.
+
+    Returns:
+    --------
+    - Jika berhasil, redirect ke dashboard dengan pesan sukses.
+    - Jika gagal, redirect ke dashboard dengan pesan error.
+
+    Example:
+    --------
+    >>> from flask import Flask, url_for
+    >>> app = Flask(__name__)
+    >>> with app.test_request_context():
+    >>>     print(url_for('dashboardAdminEdit'))
+    '/dashboard/admin/edit'
+    """
     # apakah method put /nukan
     if request.form.get("_method") != "PUT":
         return redirect(url_for("dashboard"))
@@ -1330,7 +1512,23 @@ def dashboardAdminEdit():
 # delete user karyawan / magang melalui admin
 @app.route("/dashboard/admin/delete/<id>", methods=["POST"])
 def adminDelete(id):
-    
+    """
+    Delete user karyawan / magang melalui admin
+
+    Parameters:
+    id (str): id user yang akan dihapus
+
+    Returns:
+    redirect to dashboard with message "data karyawan / magang berhasil di hapus" if success
+    redirect to dashboard with message "data karyawan / magang gagal di hapus" if failed
+
+    Pemakaian:
+    >>> import requests
+    >>> url = 'http://localhost:5000/dashboard/admin/delete/62d8a6d5f2f7f7a3f80f8f8b'
+    >>> response = requests.post(url, data={'_method':'DELETE'})
+    >>> response.url
+    'http://localhost:5000/dashboard?msg=data+karyawan+%2F+magang+berhasil+di+hapus&result=success'
+    """
     # The above code is checking if the value of the "_method" key in the request form is not equal to
     # "DELETE". If the condition is true, the code inside the if block will be executed.
     if request.form.get("_method") != "DELETE":
@@ -1609,8 +1807,31 @@ def signIn():
     return render_template("signIn.html", msg=msg, status=status, title=title)
 
 
+# logout
 @app.route("/api/auth/logout")
 def signOut():
+    """
+    Sign Out
+    --------
+
+    This function handles the sign-out process for a user. It performs the following tasks:
+
+    - Creates a response object with a JSON payload indicating the sign-out was successful.
+    - Sets the 'token_key', 'csrf_token', and 'session' cookies to expire immediately, effectively logging the user out.
+
+    Usage:
+        This function is automatically called when a GET request is made to the '/api/auth/logout' route.
+        It does not require any parameters to be passed and will log the user out by expiring the relevant cookies.
+
+    Returns:
+        A response object with a JSON payload containing:
+        - status: 'success' indicating the sign-out was successful.
+        - redirect: URL to redirect the user to the sign-in page.
+        - msg: A message indicating the logout was successful.
+
+        The response will have a status code of 200.
+    """
+    # Function implementation continues...
     resp = make_response(
         jsonify(
             {"status": "success", "redirect": "/sign-in", "msg": "Logout successful"}
@@ -1622,8 +1843,21 @@ def signOut():
     resp.set_cookie('session', expires=0)
     return resp
 
+# lupa password get and post
 @app.route("/sign-in/forget", methods=["GET", "POST"])
 def forgetPassword():
+    """
+    Forget Password
+    ===============
+
+    Fungsi ini digunakan untuk proses forget password, berikut adalah cara penggunaannya:
+
+    - Jika request method GET, maka akan menampilkan form untuk penginputan email.
+    - Jika request method POST, maka akan mengirimkan email yang berisi link untuk reset password.
+    - Jika email yang diinputkan tidak valid, maka akan muncul pesan error.
+    - Jika email yang diinputkan valid, maka akan mengirimkan email yang berisi link untuk reset password.
+    - Link yang dikirimkan akan berisi token yang akan digunakan untuk reset password.
+    """
     if request.method == "POST":
         try:
             # inisisasi data
@@ -1680,6 +1914,16 @@ def forgetPassword():
 # bagian otp lupa password
 @app.route("/sign-in/forget/otp/<jwt_otp>", methods=["GET", "POST"])
 def forgetPasswordOtp(jwt_otp):
+    """
+    Handle route /sign-in/forget/otp/<jwt_otp>, menampilkan form untuk penginputan OTP yang dikirimkan ke email.
+
+    Parameters:
+        jwt_otp (str): token yang berisi OTP yang dikirimkan ke email dan password yang akan diupdate.
+
+    Returns:
+        str: render template forgetPasswordOtp.html
+    """
+    
     if request.method == "POST":
         try:
             # inisisasi data
@@ -1816,6 +2060,37 @@ def signUp():
 # update my profile
 @app.route("/myProfiles", methods=["GET", "POST"])
 def myProfiles():
+    """
+    Update my profile
+
+    Parameters:
+    user_id (str): user id of the user who want to update their profile
+    nama (str): new name of the user
+    email (str): new email of the user
+    photo_profile (file): new photo profile of the user
+    tempat_lahir (str): new place of birth of the user
+    tanggal_lahir (str): new date of birth of the user
+    mulai_kerja (str): new start date of work of the user
+    akhir_kerja (str): new end date of work of the user
+    waktu_awal_kerja (str): new start time of work of the user
+    waktu_akhir_kerja (str): new end time of work of the user
+    work_hours (int): new total work hours of the user
+
+    Returns:
+    Json response with result, redirect, and msg
+        result (str): success jika berhasil, unsuccess jika gagal
+        redirect (str): url yang akan di redirect
+        msg (str): pesan yang akan ditampilkan jika gagal
+
+    Example:
+    >>> import requests
+    >>> url = 'http://localhost:5000/myProfiles'
+    >>> data = {'user_id':'62d8a6d5f2f7f7a3f80f8f8b','nama':'new name','email':'new email','photo_profile':'','tempat_lahir':'','tanggal_lahir':'','mulai_kerja':'','akhir_kerja':'','waktu_awal_kerja':'','waktu_akhir_kerja':'','work_hours':0}
+    >>> headers = {'X-CSRF-Token':'b0a2f43a-58a7-4d1e-8b7f-6f5f6f6f6f6f'}
+    >>> response = requests.post(url, json=data, headers=headers)
+    >>> response.json()
+    {'result': 'success', 'redirect': '/dashboard/magang', 'msg': ''}
+    """
     if request.method == "POST":
         try:
             # The above code is attempting to retrieve the value of the "token_key" cookie from the
@@ -1994,6 +2269,7 @@ def myProfiles():
 
 @app.route("/task/magang", methods=["GET"])
 def task():
+    
     # The above Python code snippet is checking for the presence and validity of a CSRF token and a
     # cookie in a web request. Here is a breakdown of the code:
     cookie = request.cookies.get("token_key")
@@ -2036,6 +2312,20 @@ def task():
 
 @app.route("/dashboard/admin/<path>", methods=["GET"])
 def export(path):
+    """
+    export(path)
+
+    Parameter:
+    - path: path yang akan di export
+
+    Fungsi:
+    - Fungsi ini digunakan untuk mengexport data dalam bentuk excel atau pdf.
+    - Fungsi ini hanya dapat diakses oleh admin.
+
+    Contoh pemakaian:
+    - /dashboard/admin/excel
+    - /dashboard/admin/pdf
+    """
     if path not in ["excel", "pdf"]:
         return redirect(url_for("notFound", path=path))
     try:
@@ -2204,9 +2494,36 @@ def ask():
         return jsonify({'redirect':url_for('signIn',msg = e.args[0])}),500
     
 
-# 
+# riwayat bantuan
 @app.route("/riwayat-bantuan", methods=["GET"])
 def riwayat_bantuan():
+    """
+    Riwayat Bantuan
+    ---------------
+
+    This function handles requests to the '/riwayat-bantuan' route, which is used to display the 
+    history of assistance requests. It performs the following tasks:
+
+    - Checks for the presence and validity of CSRF token and authentication cookies.
+    - Decodes JWT token from the cookies to get the user's payload.
+    - Validates the user's role to ensure they have the appropriate access.
+    - Retrieves status and message parameters from the request.
+    - Handles any exceptions that may occur during processing.
+
+    If any validation fails (e.g., expired token, missing cookies), the function redirects the user 
+    to the sign-in page with an appropriate message.
+
+    Usage:
+        This function is automatically called when a GET request is made to the '/riwayat-bantuan' 
+        route. It requires valid authentication cookies and a CSRF token to process the request 
+        successfully. If the user has the proper role, they can access the assistance history.
+
+    Returns:
+        Redirects to the sign-in page with a message if validation fails, or processes the request 
+        to display the assistance history if successful.
+    """
+    
+    # Function implementation continues...
     # The above Python code snippet is checking for the presence and validity of a CSRF token and a
     # cookie in a web request. Here is a breakdown of the code:
     cookie = request.cookies.get("token_key")
@@ -2297,11 +2614,26 @@ def riwayat_bantuan_post():
         # decript id riwayat absen
         status_id = cipher.decrypt(uuid_like_to_string(id_status).encode()).decode()
         
-        result = db.faq.find_one_and_update({'_id':ObjectId(status_id)},{'$set':{'status':status}},{'_id':0,'no_ticket':1,'name':1})
-        print(result)
+        # pemgambilan data message_id dari db faq
+        message_id = db.faq.find_one({'_id':ObjectId(status_id)},{'_id':0,'message_id':1,'email':1,'no_ticket':1,'name':1})
+        # cek ditemukan / tidak
+        if not message_id:
+            raise Exception('Terjadi Kesalahan dalam pengambilan data')
+        
+        # kirim pesan ke gmail untuk update status
+        reply_message = replyGmailSender(message_id['message_id'])
+        reply_message.service_gmail_api()
+        reply_message.reply_message_make(name=message_id['name'],email=message_id['email'],no_ticket=message_id['no_ticket'])
+        response = reply_message.send_reply_message()
+        # cek response yang didapatkan
+        if not response:
+            raise Exception('Terjadi Kesalahan dalam reply email')
+        
+        result = db.faq.update_one({'_id':ObjectId(status_id)},{'$set':{'status':status}},{'_id':0,'no_ticket':1,'name':1})
         if not result:
             raise Exception('Data status gagal di update')
         return jsonify({'redirect':url_for('riwayat_bantuan', msg=Markup(f"Status dengan no <span class='poppins-semibold'>'#{result['no_ticket']}'</span> bernama <span class='poppins-semibold'>{result['name']}</span> berhasil di update"), status='success')}),200
+    
     # The above code is handling exceptions related to JWT (JSON Web Token) authentication. It catches
     # different types of exceptions that can occur during JWT verification:
     except jwt.ExpiredSignatureError:
@@ -2320,10 +2652,27 @@ def riwayat_bantuan_post():
 # melakukan error handler csrf
 @app.errorhandler(400)
 def handle_csrf_error(e):
+    """This function is used to handle 400 Bad Request error which is usually caused by CSRF token validation failure.
+
+    Args:
+        e (Exception): The exception object that contains the error message.
+
+    Returns:
+        Response: A JSON response containing the error message.
+    """
     return jsonify({"error": e}), 400
 
 @app.errorhandler(404)
 def notFound(error):
+    """
+    This function is used to handle 404 Not Found error. It is usually caused by a request to a URL that does not exist on the server.
+
+    Args:
+        error (Exception): The exception object that contains the error message.
+
+    Returns:
+        Response: A rendered HTML template with a 404 error message.
+    """
     data = {"next": "/",'previous':"javascript:history.back()"}
     return render_template("notFound.html", data=data),200
 
