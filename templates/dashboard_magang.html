@@ -130,7 +130,7 @@
             data.waktu_akhir_kerja }}</p>-->
         </div>
         <!-- form absensi -->
-        <div id="absensi_kehadiran" class="d-flex justify-content-center align-items-center">
+        <div id="absensi_kehadiran" class="absensi_kehadiran d-flex justify-content-center align-items-center">
           <input type="hidden" id="csrf_token1" name="csrf_token" value="{{ csrf_token() }}" />
           <input type="hidden" id="user_id" name="user_id" value="{{ data._id }}" />
           <button class="btn {{ data['class-button-hadir'] }}" id="status_hadir" name="status_hadir"

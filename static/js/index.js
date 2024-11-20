@@ -88,6 +88,9 @@ $(document).ready(function () {
 
   // notifikasi
   // Cek apakah notifikasi sudah pernah ditampilkan
+  if (!($('.absensi_kehadiran #status_hadir').hasClass('btn-warning')||$('.absensi_kehadiran #status_hadir').hasClass('btn-success'))){
+    localStorage.removeItem("notificationShown")
+  }
   const notificationShown = localStorage.getItem("notificationShown");
 
   // Jika notifikasi belum pernah ditampilkan
@@ -205,14 +208,14 @@ notifAbsen = () => {
         countdownTime--;
         // Jika waktu tersisa 30 menit,sebelum absensi dibuka kirim notifikasi browser
         if (countdownTime == 30 * 60 && Notification.permission === "granted" && tepatWaktu != true) {
-          tepatWaktu = true
+          
           new Notification("Absensi Alert!", {
             body: "Waktu tinggal 30 menit, persiapan untuk absensi!",
           });
         }
         // Jika waktu tersisa 5 menit sebelum absensi dibuka, kirim notifikasi browser
         else if (countdownTime >= 5 * 60 && Notification.permission === "granted" && tepatWaktu != true) {
-          tepatWaktu = true;
+          
           new Notification("Absensi Alert!", {
             body: "Waktu tinggal 5 menit, persiapan untuk absensi!",
           });
@@ -270,8 +273,6 @@ function submitAbsen(action) {
     $("#status_hadir").val(1);
   } else if (action == "hadir" && tepatWaktu == false) {
     $("#status_hadir").val(2);
-  } else {
-    $("#status_hadir").val(0);
   }
 
   $.ajax({

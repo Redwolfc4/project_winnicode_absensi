@@ -102,7 +102,7 @@
     <tbody>
       {% for i in range(1,(riwayat_absent|length)+1)%}
       <tr
-        id="{{riwayat_absent[i-1]._id if (data.role==1 and data.jobs=='Admin') else '' }}"
+        id="{{riwayat_absent[i-1]._id if (data.role==1 and (data.jobs=='Admin' or data.jobs=='Sub Admin')) else '' }}"
         data-aos="slide-right"
         data-aos-delay="{{ 400+(i%26*100) }}"
         data-aos-duration="800"
@@ -123,7 +123,7 @@
             {{ 'hadir' if riwayat_absent[i-1].status_hadir == '1' else 'Telat' if riwayat_absent[i-1].status_hadir == 2 else 'Tidak Hadir' if riwayat_absent[i-1].status_hadir == 0 else 'Cuti' }}
           </button>
         </td>
-        {% if data.role==1 and data.jobs=='Admin' %}
+        {% if data.role==1 and (data.jobs=='Admin' or data.jobs=='Sub Admin') %}
         <!-- trigger modal edit -->
         <td class="poppins-regular align-middle">
           <a
@@ -151,7 +151,7 @@
       </tr>
 
       
-      {% if data.role==1 and data.jobs=='Admin' %}
+      {% if data.role==1 and (data.jobs=='Admin' or data.jobs=='Sub Admin') %}
       <!-- Modal edit -->
       <div class="modal fade" id="editModal{{ riwayat_absent[i-1]._id }}" tabindex="-1"
         aria-hidden="true">
@@ -278,14 +278,139 @@
 {% block cdn_custom_js %}
 <!-- datatables cdn js -->
 <script src="https://cdnjs.cloudflare.com/ajax/libs/pdfmake/0.2.7/pdfmake.min.js"></script>
-<script src="https://cdnjs.cloudflare.com/ajax/libs/pdfmake/0.2.7/vfs_fonts.js"></script>
+<!-- <script src="https://cdnjs.cloudflare.com/ajax/libs/pdfmake/0.2.7/vfs_fonts.js"></script> -->
+<script src="{{ url_for('static',filename='js/vfs_font.js') }}"></script>
 <script src="https://cdn.datatables.net/v/bs5/jq-3.7.0/jszip-3.10.1/dt-2.1.8/af-2.7.0/b-3.1.2/b-colvis-3.1.2/b-html5-3.1.2/b-print-3.1.2/cr-2.0.4/date-1.5.4/fc-5.0.3/fh-4.0.1/kt-2.12.1/r-3.0.3/rg-1.5.0/rr-1.5.0/sc-2.4.3/sb-1.8.1/sp-2.3.3/sl-2.1.0/sr-1.4.1/datatables.min.js"></script>
 {% endblock %} {% block js_custom %}
 <!-- js custom -->
 <script src="{{ url_for('static', filename='js/index.js') }}"></script>
 <script>
   $(document).ready(function () {
+    const options = parseInt('{{ data.role }}') == 1 ? [0, 1, 2, 3, 4, 5,6] : [0, 1, 2, 3];
+    //membuat fonts default export
+    pdfMake.fonts = {
+      Times: {
+        normal: 'times-new-roman.ttf',
+        bold: 'times-new-roman-bold.ttf',
+        italics: 'times-new-roman-italic.ttf',
+        bolditalics: 'times-new-roman-bold-italic.ttf'
+      }
+    };
 
+
+    /**
+    * Customize Print DOCS
+    * ==================
+    *
+    * @param {obj} win - document print
+    * @example
+    * // Contoh penggunaan
+    * customizePrint(win)
+    */
+    customizePrint = (win)=>{
+      templateHeading =` 
+        <header class='d-flex flex-column justify-content-center align-items-center'>
+          <h3 class="text-pink poppins-medium">Laporan Winnicode Garuda Terknologi</h3>
+          <h3 class="text-pink poppins-medium">Table Kelola Admin</h3>
+        </header>`
+        
+      //membuat border dan mealukan penambahan judul
+      $(win.document.body).find('h1').remove()
+      $(win.document.body).prepend(templateHeading)
+      $(win.document.body).find('tr').children().addClass('text-center border border-dark border-1')
+      
+      // Menambahkan informasi tambahan di bawah tabel
+      $(win.document.body).find( 'table' ).after(
+        '<footer class="d-flex flex-column justify-content-center align-items-end">' +
+        '<p class="poppins-light">Dicetak pada: ' + new Date().toLocaleString() + '</p>' +
+        '<p class="poppins-light">Dibuat oleh: <span class="poppins-semibold"><span class="text-pink">Absensi</span>Ku</span></p>'+
+        '</footer>'
+      )
+      //tambahkan background table 
+      $(win.document.body).find('table tbody tr>*').css('background-color','transparent')
+    }
+
+    /** 
+    * Customize PDF DOCS
+    * ==================
+    *
+    * @param {obj} doc - document pdf
+    * @example
+    * // Contoh penggunaan
+    * customizePDF(doc)
+    */
+    customizePDF = (doc)=>{
+      // Kustomisasi PDF
+      doc.defaultStyle = {
+        font: 'Times', // Gunakan font Times New Roman
+        fontSize: 10,  // Ukuran font default
+      };
+      // 1. Menambahkan Header
+      doc.content.splice(0, 0, {
+        alignment: 'center',
+        text: [
+          { text: 'Laporan Winnicode Garuda Teknologi\n', fontSize: 18, bold: true, color: 'pink' },
+          { text: 'Table Kelola Admin\n\n', fontSize: 15, bold: true, color: 'pink' }
+        ]
+      });
+
+      // 2. Menambahkan Footer dengan Tanggal dan Nama Pembuat
+      doc.content.push({
+        alignment: ({{ data.role }} != 1) ? 'center' : 'right',
+        margin: {{[0, 40, 0, 0] if data.role == 1 else [170,40,0,0]}},
+        text: [
+          {text: `Dicetak pada: ${new Date().toLocaleString()}\n`, fontSize: 10, font: 'Times', color:'black' },
+          { 
+            text: 'Dibuat oleh: ', 
+            fontSize: 10,  
+            font: 'Times',
+            color: 'black' 
+          },
+          { 
+            text: 'Absensi', 
+            fontSize: 10, 
+            bold: true, 
+            font: 'Times',
+            color: 'pink' 
+          },
+          { 
+            text: 'Ku', 
+            fontSize: 10, 
+            bold: true, 
+            font: 'Times',
+            color: 'black' 
+          }
+        ]
+      });
+
+      // 3. Mengatur Gaya Font dan Ukuran Teks di Tabel
+      doc.styles.tableHeader = {
+        fontSize: 12,
+        bold: true,
+        color: 'black',
+        fillColor: '#ff66c4',
+        alignment: 'center'  // Perataan tengah untuk teks di header
+      };
+      doc.content.splice(1,1)
+
+      //mengatur data table menjadi tengah
+      doc.content[1].table.body.forEach(function(row, rowIndex) {
+        if (rowIndex !== 0) {
+          row.forEach(function(cell, cellIndex) {
+            if (cell.text){
+              cell.alignment='center'
+            }
+          })
+        }
+      });
+
+      // Mengatur margin untuk membuat tabel menjadi rata tengah
+      if ({{ data.role }} != 1){
+        doc.content[1].margin = [135, 0, 100, 0]; // margin kiri, atas, kanan, bawah
+      }
+    }
+
+    // datatables export
     $("#table-riwayat").DataTable({
       dom: "Blfrtip",
       buttons: [
@@ -293,26 +418,50 @@
           extend: "copy",
           text: '<i class="fas fa-copy"></i> Copy', // Tambahkan ikon FontAwesome
           className: "btn btn-primary",
+          exportOptions:{
+            columns: options // Indeks kolom yang ingin diexport
+          },
         },
         {
           extend: "csv",
           text: '<i class="fas fa-file-csv"></i> CSV',
           className: "btn btn-warning",
+          exportOptions:{
+            columns: options // Indeks kolom yang ingin diexport
+          },
         },
         {
           extend: "excel",
           text: '<i class="fas fa-file-excel"></i> Excel',
           className: "btn btn-success",
+          exportOptions:{
+            columns: options // Indeks kolom yang ingin diexport
+          },
         },
         {
           extend: "pdf",
           text: '<i class="fas fa-file-pdf"></i> PDF',
           className: "btn btn-danger",
+          exportOptions: {
+            columns: options  // Kolom yang ingin diekspor
+          },
+          customize: function(doc){
+            customizePDF(doc)
+          }
         },
         {
           extend: "print",
           text: '<i class="fas fa-print"></i> Print',
           className: "btn btn-info",
+          exportOptions:{
+            columns: options // Indeks kolom yang ingin diexport
+          },
+          customize: function ( win ) {
+            customizePrint(win)
+
+            // Tambahkan alert untuk pengingat
+            alert('Pastikan untuk mencentang opsi "Background graphics" di pengaturan cetak untuk menampilkan warna yang sesuai.');
+          }
         },
       ],
       scrollX: true, // Enable horizontal scrolling

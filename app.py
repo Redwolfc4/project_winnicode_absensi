@@ -950,7 +950,6 @@ def riwayat_kehadiran_post(path1=None,path2=None):
                     nik = int(request.form['nik'])
                     email = request.form['email']
                     status_hadir = request.form['status_hadir']
-                    # status_hadir_referrer = request.form['status_hadir_referrer']
                     
                     # cek status hadir dimiliki dan konversi
                     if status_hadir == None or status_hadir=='':
@@ -2620,28 +2619,50 @@ def riwayat_bantuan_post():
         if not message_id:
             raise Exception('Terjadi Kesalahan dalam pengambilan data')
         
+        # sesuaikan status untuk body gmail kirim 
+        if status == 'Diproses':
+            body = f'''
+            <p class='poppins-regular'>Thanks for contacts our help, Your inquiry was still in the processing stage, please wait for <strong> 2 x 24 hours </strong> for our response</p>
+            '''
+        elif status == 'Selesai':
+            body = f'''
+            <p class='poppins-regular'>Thanks for your waiting, Your inquiry has been resolved, Hopefully the solution we provide can help you.
+            </p>
+            <p class='poppins-regular'>If you have any questions, please contact us at <a class='text-info' href='{url_for("signIn",_external=True)}'>Signin</a></p>
+            '''
+        else:
+            raise Exception('Terjadi Kesalahan dalam status')
+        
         # kirim pesan ke gmail untuk update status
         reply_message = replyGmailSender(message_id['message_id'])
         reply_message.service_gmail_api()
-        reply_message.reply_message_make(name=message_id['name'],email=message_id['email'],no_ticket=message_id['no_ticket'])
+        reply_message.reply_message_make(name=message_id['name'],email=message_id['email'],no_ticket=message_id['no_ticket'], body=body)
         response = reply_message.send_reply_message()
         # cek response yang didapatkan
         if not response:
             raise Exception('Terjadi Kesalahan dalam reply email')
-        
-        result = db.faq.update_one(
-            {'_id':ObjectId(status_id)} ,
-            {'$set':{
-                'status':status,
-                'message_id':{
-                    'id':response['id'],
-                    'threadId':response['threadId']
-                }
-            }}
-        )
+        # update proses riwayatnya
+        if status == 'Diproses':
+            result = db.faq.find_one_and_update(
+                {'_id':ObjectId(status_id)} ,
+                {'$set':{
+                    'status':status,
+                    'message_id':{
+                        'id':response['id'],
+                        'threadId':response['threadId']
+                    }
+                }},
+                {'_id':0,'no_ticket':1, 'name':1}
+            )
+        elif status == 'Selesai':
+            result = db.faq.find_one_and_delete({'_id':ObjectId(status_id)},{'_id':0,'no_ticket':1, 'name':1})
+        else:
+            raise Exception('Terjadi Kesalahan status')
+        # Cek apakah update berhasil
         if not result:
-            raise Exception('Data status gagal di update')
-        return jsonify({'redirect':url_for('riwayat_bantuan', msg=Markup(f"Status dengan no <span class='poppins-semibold'>'#{result['no_ticket']}'</span> bernama <span class='poppins-semibold'>{result['name']}</span> berhasil di update"), status='success')}),200
+            raise Exception('Data status tidak ditemukan dan gagal di update')
+        
+        return jsonify({'redirect':url_for('riwayat_bantuan', msg=Markup(f"Status bantuan dengan no <span class='poppins-semibold'>'#{result['no_ticket']}'</span> bernama <span class='poppins-semibold'>{result['name']}</span> berhasil di update"), status='success')}),200
     
     # The above code is handling exceptions related to JWT (JSON Web Token) authentication. It catches
     # different types of exceptions that can occur during JWT verification:
@@ -2651,9 +2672,10 @@ def riwayat_bantuan_post():
         return jsonify({'redirect':url_for("signIn", msg="Anda telah logout")})
     except Fernet.InvalidToken:
         return jsonify({'redirect':url_for("riwayat_bantuan", msg="Token update invalid please refresh your page")}),500
-    except IndexError as e:
-        return jsonify({'redirect':url_for('riwayat_bantuan', msg=e.args[0])}),500    
     except Exception as e:
+        print('jalan except')
+        return jsonify({'redirect':url_for('riwayat_bantuan', msg=e.args[0])}),500    
+    except IndexError as e:
         return jsonify({'redirect':url_for('riwayat_bantuan', msg=e.args[0])}),500    
     
 

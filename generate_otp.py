@@ -308,7 +308,7 @@ class replyGmailSender(OtpPasswordGenerator):
         
         self.__service = super().authenticate_gmail_api()
         
-    def reply_message_make(self, name:str=None, email:str=None, no_ticket:str=None):
+    def reply_message_make(self, name:str=None, email:str=None, no_ticket:str=None, body:str=None):
         """
         Buatkan body email untuk balasan.
         
@@ -325,7 +325,7 @@ class replyGmailSender(OtpPasswordGenerator):
         body = reply.reply_message_make(name="John Doe", email="john@example.com", no_ticket="TCKT-12345")
         print(body)
         """
-        if email is None and no_ticket is None:
+        if email is None and no_ticket is None and body is None:
             return None
         
         self.__name = name
@@ -337,7 +337,7 @@ class replyGmailSender(OtpPasswordGenerator):
         <body>
             <div class='d-flex flex-column gap-2 align-items-center'>
                 <p class='poppins-regular'>Hi Coders {self.__name},</p>
-                <p class='poppins-regular'>thanks for contacts our help, Your inquiry is still in the processing stage, please wait for <strong> 2 x 24 hours </strong> for our response</p>
+                {body}
                 <div class='d-flex flex-column gap-1 align-items-center'>
                     <p class='poppins-regular'>Regards,</p>
                     <p class='poppins-regular'>Winnicode Support Team</p>
@@ -380,7 +380,6 @@ class replyGmailSender(OtpPasswordGenerator):
         """
         if not self.__is_reply_created:
             raise Exception("Reply message has not been created. Call reply_message_make first.")
-        print('jalan_fungsi')
         
         self.__response = self.__service.users().messages().send(
             userId='me',
