@@ -23,9 +23,13 @@ $(document).ready(function () {
   // melakukan login form
   $("#signin").submit(function (e) {
     e.preventDefault();
-    email_receive = $("#email").val();
-    password_receive = $("#password").val();
-    jobs = $("#jobs").val();
+    email_receive = $("#email").val().trim();
+    password_receive = $("#password").val().trim();
+    jobs = $("#jobs").val().trim();
+
+    if (email_receive==='' && password_receive==='' && jobs==='None') {
+      window.location.replace('/sign-in?msg=Form masih kosong'),500;
+    }
 
     $.ajax({
       type: "post",
@@ -49,15 +53,16 @@ $(document).ready(function () {
             text: response["msg"],
             timer: 1500,
             willClose: () => {
-              window.location.replace(response["redirect"]);
+              window.location.replace(response["redirect"]),200;
             },
           });
-        } else {
-          window.location.replace(
-            response["redirect"] + "?msg=" + response["msg"]
-          );
-        }
+        } 
       },
+      error: function (xhr, status, error) {
+        // Tindakan jika gagal
+        console.log(xhr, status, error);
+        window.location.replace(`${xhr.responseJSON.redirect}`), 500;
+      }
     });
   });
 
@@ -93,6 +98,7 @@ $(document).ready(function () {
   }
   const notificationShown = localStorage.getItem("notificationShown");
 
+  console.log('jalan')
   // Jika notifikasi belum pernah ditampilkan
   if (!notificationShown) {
       // Tampilkan notifikasi (gunakan fungsi notifikasi di sini)
@@ -294,14 +300,17 @@ function submitAbsen(action) {
           text: "Anda sudah melakukan absen hari ini, terimakasih",
           timer: 3000,
           willClose: () => {
-            window.location.replace(response["redirect"]);
+            window.location.replace(response["redirect"]),200;
           },
         });
       } else {
-        window.location.replace(
-          response["redirect"] + "?msg=" + response["msg"]
-        );
+        window.location.replace(response["redirect"]), 200;
       }
+    },
+    error: function (xhr, status, error) {
+      // Tindakan jika gagal
+      console.log(xhr, status, error);
+      window.location.replace(`${xhr.responseJSON.redirect}`), 500;
     },
   });
 }
