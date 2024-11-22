@@ -80,7 +80,7 @@
     <thead>
       <tr>
         <th {{ 'rowspan=2' if data.role==1 else '' }} class="poppins-semibold">No</th>
-        {% if data.role==1 and data.jobs=='Admin' %}
+        {% if data.role==1 and data.jobs in ('Admin','Sub Admin') %}
         <th rowspan="2" class="poppins-semibold">Nik</th>
         <th rowspan="2" class="poppins-semibold">Email</th>
         <th rowspan="2" class="poppins-semibold">Nama Lengkap</th>
@@ -88,11 +88,11 @@
         <th {{ 'rowspan=2' if data.role==1 else '' }}  class="poppins-semibold">Tanggal Hadir</th>
         <th {{ 'rowspan=2' if data.role==1 else '' }}  class="poppins-semibold">Waktu Hadir</th>
         <th {{ 'rowspan=2' if data.role==1 else '' }}  class="poppins-semibold">Status Hadir</th>
-        {% if data.role==1 and data.jobs=='Admin' %}
+        {% if data.role==1 and data.jobs in ('Admin','Sub Admin') %}
         <th colspan="2">Action</th>
         {% endif %}
       </tr>
-      {% if data.role==1 and data.jobs=='Admin' %}
+      {% if data.role==1 and data.jobs in ('Admin','Sub Admin') %}
       <tr>
         <th>Edit</th>
         <th>Delete</th>
@@ -109,7 +109,7 @@
       >
         <td class="poppins-regular align-middle">{{ i }}</td>
         <!-- jika data role admin -->
-        {% if data.role==1 and data.jobs=='Admin' %}
+        {% if data.role==1 and data.jobs in ('Admin','Sub Admin') %}
         <td class="poppins-regular align-middle">{{ riwayat_absent[i-1].user.nik }}</td>
         <td class="poppins-regular align-middle">{{ riwayat_absent[i-1].user.email }}</td>
         <td class="poppins-regular align-middle">{{ riwayat_absent[i-1].user.nama }}</td>
@@ -123,7 +123,7 @@
             {{ 'hadir' if riwayat_absent[i-1].status_hadir == '1' else 'Telat' if riwayat_absent[i-1].status_hadir == 2 else 'Tidak Hadir' if riwayat_absent[i-1].status_hadir == 0 else 'Cuti' }}
           </button>
         </td>
-        {% if data.role==1 and (data.jobs=='Admin' or data.jobs=='Sub Admin') %}
+        {% if data.role==1 and data.jobs in ('Admin','Sub Admin') %}
         <!-- trigger modal edit -->
         <td class="poppins-regular align-middle">
           <a
@@ -151,7 +151,7 @@
       </tr>
 
       
-      {% if data.role==1 and (data.jobs=='Admin' or data.jobs=='Sub Admin') %}
+      {% if data.role==1 and data.jobs in ('Admin','Sub Admin') %}
       <!-- Modal edit -->
       <div class="modal fade" id="editModal{{ riwayat_absent[i-1]._id }}" tabindex="-1"
         aria-hidden="true">

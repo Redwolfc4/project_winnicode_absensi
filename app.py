@@ -109,6 +109,7 @@ def signIn():
                         "jobs": jobs,
                     }
                 )
+                print(user)
                 csrf_token = string_to_uuid_like(csrf_token)
                 
                 if not csrf_token:
@@ -127,8 +128,9 @@ def signIn():
                 
                 # cek jobs
                 if user['jobs'] in ('Magang','Karyawan'):
+                    print(user['mulai_kerja'])
                     # cek mulai kerja dan akhir kerja ada/ tidak ada
-                    if user["mulai_kerja"] != None and user["akhir_kerja"] != None:
+                    if user["mulai_kerja"] and user["akhir_kerja"]:
                         # jika tanggal kerja tidak sesuai
                         if not cek_tanggal_kerja(
                             user["mulai_kerja"], user["akhir_kerja"]
@@ -1201,6 +1203,8 @@ def change_password():
             
             # decode payload
             payload = jwt.decode(cookie, secretKey, algorithms=["HS256"])
+            if payload['role'] not in (1,3):
+                raise Exception('anda tidak punya hak akses')
             
             # ambil data password di database
             password_db = db.users.find_one(
@@ -1428,7 +1432,8 @@ def riwayat_kehadiran_post(path1=None,path2=None):
             return redirect(url_for("signIn", msg="Anda Telah logout"))
         
         # jika pathnya edit
-        if path1 == 'edit' and payloads['role']==1 and payloads['jobs']=='Admin' and payloads['jobs']=='Sub Admin':
+        if path1 == 'edit' and payloads['role']==1 and payloads['jobs'] in ('Admin','Sub Admin'):
+            print('jalan')
             # method put
             if request.form['__method'] == 'PUT':
                 # form csrf dimiliki
@@ -1453,7 +1458,7 @@ def riwayat_kehadiran_post(path1=None,path2=None):
                     # lakukan validasi email dan id_riwayat_absent
                     if '' in (email,id_riwayat_absent) or None in (email,id_riwayat_absent):
                         raise Exception('This data is undefined please try again')
-                    
+                
                     # decript id riwayat absen
                     absen_magang_id = cipher.decrypt(uuid_like_to_string(id_riwayat_absent).encode()).decode()
                     
@@ -1515,7 +1520,7 @@ def riwayat_kehadiran_post(path1=None,path2=None):
                 raise Exception('This method is not allowed')
             
         # delete kehadiran kryawan / magang
-        elif path1 == 'delete' and payloads['role']==1 and payloads['jobs']=='Admin' and payloads['jobs']=='Sub Admin':
+        elif path1 == 'delete' and payloads['role']==1 and payloads['jobs'] in ('Admin','Sub Admin'):
             if request.form['_method'] == 'DELETE':
                 # form csrf dimiliki
                 if request.form['__csrf_token'] != None or request.form['__csrf_token'] != '':
@@ -1909,12 +1914,9 @@ def kelola_admin(path1=None,path2=None):
                 
                 # cari departement
                 departement_payloads = db.users.find_one({'_id': ObjectId(payloads['_id'])}, {'_id': 0, 'departement': 1})
-                # jika bukan departemen superuser
-                if departement_payloads['departement'] not in ('Superuser'):
-                    raise('Anda tidak memiliki hak akses')
                 
                 # cek role=1 dan jobs = admin
-                if payloads['role'] != 1 and payloads['jobs'] not in ('Admin'):
+                if payloads['role'] != 1 and payloads['jobs'] not in ('Admin') and departement_payloads['departement'] not in ('Superuser'):
                     raise('Anda tidak memiliki hak akses')
                 
                 # ambil form data
@@ -2445,7 +2447,7 @@ def adminDelete(id):
             raise Exception("Data anda tidak ditemukan")
         
         # cek hak akses selama cookie
-        if payloads['role'] != 1 and payloads['jobs'] not in ('Admin') and data_user['departement'] not in ('Superuser'):
+        if payloads['role'] != 1 and payloads['jobs'] not in ('Admin') and data_user['departement'] in ('Superuser'):
             raise Exception("Anda tidak memiliki akses")
         
         # The above code is written in Python and it is performing two operations using MongoDB
@@ -2669,7 +2671,7 @@ if __name__ == "__main__":
         func=unhadir_absensi, trigger="interval", minutes=30
     )  # interval hours/minute/second. date run_date .cron day_of_week,hours,minutes
     delete_absen.start()
-    app.run(port=8080, debug=True) # adhoc adalah sertifikat self signed
+    app.run(port=8080, debug=True, ssl_context='adhoc' ) # ssl_context =  adhoc adalah sertifikat self signed
     # DEBUG is SET to TRUE. CHANGE FOR PROD
 
 

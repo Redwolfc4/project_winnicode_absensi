@@ -30,40 +30,42 @@ $(document).ready(function () {
     if (email_receive==='' && password_receive==='' && jobs==='None') {
       window.location.replace('/sign-in?msg=Form masih kosong'),500;
     }
-
-    $.ajax({
-      type: "post",
-      url: "/sign-in",
-      data: JSON.stringify({
-        email: email_receive,
-        password: password_receive,
-        jobs: jobs,
-      }),
-      headers: {
-        "Content-Type": "application/json",
-        "X-CSRF-Token": $("#csrf_token").val(),
-      },
-      dataType: "json",
-      success: function (response) {
-        if (response.result == "success") {
-          
-          Swal.fire({
-            icon: "success",
-            title: "Login Success",
-            text: response["msg"],
-            timer: 1500,
-            willClose: () => {
-              window.location.replace(response["redirect"]),200;
-            },
-          });
-        } 
-      },
-      error: function (xhr, status, error) {
-        // Tindakan jika gagal
-        console.log(xhr, status, error);
-        window.location.replace(`${xhr.responseJSON.redirect}`), 500;
-      }
-    });
+    else{
+      $.ajax({
+        type: "post",
+        url: "/sign-in",
+        data: JSON.stringify({
+          email: email_receive,
+          password: password_receive,
+          jobs: jobs,
+        }),
+        headers: {
+          "Content-Type": "application/json",
+          "X-CSRF-Token": $("#csrf_token").val(),
+        },
+        dataType: "json",
+        success: function (response) {
+          if (response.result == "success") {
+            
+            Swal.fire({
+              icon: "success",
+              title: "Login Success",
+              text: response["msg"],
+              timer: 1500,
+              willClose: () => {
+                window.location.replace(response["redirect"]),200;
+              },
+            });
+          } 
+        },
+        error: function (xhr, status, error) {
+          // Tindakan jika gagal
+          console.log(xhr, status, error);
+          window.location.replace(`${xhr.responseJSON.redirect}`), 500;
+        }
+      }); 
+    }
+    
   });
 
   // back to top
@@ -97,8 +99,6 @@ $(document).ready(function () {
     localStorage.removeItem("notificationShown")
   }
   const notificationShown = localStorage.getItem("notificationShown");
-
-  console.log('jalan')
   // Jika notifikasi belum pernah ditampilkan
   if (!notificationShown) {
       // Tampilkan notifikasi (gunakan fungsi notifikasi di sini)
