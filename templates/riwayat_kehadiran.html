@@ -8,44 +8,40 @@
 />
 
 {% endblock %} {% block navbar %}
-<ul class="navbar-nav me-auto mb-2 mb-lg-0">
-  <li class="nav-item">
-    <a
-      class="nav-link poppins-regular"
-      aria-current="page"
-      href="/dashboard/magang"
-      >Dashboard</a
-    >
-  </li>
-  <li class="nav-item">
-    <a class="nav-link poppins-regular" href="/change-password"
-      >Ubah Password</a
-    >
-  </li>
-  <li class="nav-item">
-    <a class="nav-link poppins-regular active" href="/riwayat-kehadiran"
-      >Riwayat Kehadiran Karyawan</a
-    >
-  </li>
-  {% if data.role==1 %}
-  <li class="nav-item">
-    <a class="nav-link poppins-regular" href="/riwayat-bantuan"
-      >Riwayat Bantuan</a
-    >
-  </li>
-  {% if data.departement == 'Superuser' %}
-  <li class="nav-item">
-    <a class="nav-link poppins-regular" href="/kelola-admin">Kelola Admin</a>
-  </li>
-  {% endif %}
-  {% endif %}
-    
-  {% if data.role !=1 %}
-  <li class="nav-item">
-    <a class="nav-link poppins-regular" href="/task/magang">Task</a>
-  </li>
-  {% endif %}
-</ul>
+  <ul class="navbar-nav me-auto mb-2 mb-lg-0">
+    <li class="nav-item">
+      <a
+        class="nav-link poppins-regular text-pink d-flex align-items-center gap-2"
+        href="/dashboard"
+        ><i class="fas fa-house-chimney fa-2xl text-primary w-100" style="font-size: 1em; max-width:20px"></i>Dashboard</a
+      >
+    </li>
+    <li class="nav-item">
+      <a class="nav-link poppins-regular text-pink d-flex align-items-center gap-2" href="/change-password">
+        <i class="fas fa-key fa-2xl text-primary w-100" style="font-size: 1em; max-width:20px"></i>Ubah Password
+      </a>
+    </li>
+    <li class="nav-item">
+      <a class="nav-link poppins-regular text-pink d-flex align-items-center gap-2 active" href="/riwayat-kehadiran"
+        ><i class="fas fa-calendar-check fa-2xl text-primary w-100" style="font-size: 1em; max-width:20px"></i>Riwayat Kehadiran Karyawan</a
+      >
+    </li>
+    {% if data.role==1 %}
+    <li class="nav-item">
+      <a class="nav-link poppins-regular text-pink  d-flex align-items-center gap-2" href="/riwayat-bantuan"
+        ><i class="fas fa-circle-question fa-2xl text-primary w-100" style="font-size: 1em; max-width:20px"></i> Riwayat Bantuan</a
+      >
+    </li>
+    {% if data.departement == 'Superuser' %}
+    <li class="nav-item">
+      <a class="nav-link poppins-regular text-pink d-flex align-items-center gap-2" href="/kelola-admin"><i class="fas fa-user-tie fa-2xl text-primary w-100" style="font-size: 1em; max-width:20px"></i>Kelola Admin</a>
+    </li>
+    {% endif %}
+    {% endif %}
+    <li class="nav-item">
+      <a class="nav-link poppins-regular text-pink d-flex align-items-center gap-2" href="/task"><i class="fa-regular fa-pen-to-square fa-2xl text-primary w-100" style="font-size: 1em; max-width:20px"></i>Task</a>
+    </li>
+  </ul>
 {% endblock %} {% block content %}
 
 <div id="riwayat" class="container-fluid" style="margin-top: 1.5rem">
@@ -54,7 +50,7 @@
     <h1
       class="h3 poppins-regular mb-md-0 mb-sm-2 text-gray-800"
       data-aos="zoom-in-right"
-      data-aos-delay="200"
+      data-aos-delay="600"
       data-aos-duration="800"
     >
       Riwayat Kehadiran
@@ -63,7 +59,7 @@
       id="clock"
       class="h6 border border-1 rounded border-secondary-subtle p-1 px-2 poppins-regular mb-0 text-gray-800"
       data-aos="zoom-in-left"
-      data-aos-delay="200"
+      data-aos-delay="600"
       data-aos-duration="800"
     ></h1>
   </div>
@@ -104,7 +100,7 @@
       <tr
         id="{{riwayat_absent[i-1]._id if (data.role==1 and (data.jobs=='Admin' or data.jobs=='Sub Admin')) else '' }}"
         data-aos="slide-right"
-        data-aos-delay="{{ 400+(i%26*100) }}"
+        data-aos-delay="{{ 500+(i%26*100) }}"
         data-aos-duration="800"
       >
         <td class="poppins-regular align-middle">{{ i }}</td>

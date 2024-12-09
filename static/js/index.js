@@ -1,4 +1,18 @@
-$(document).ready(function () {
+paceOptions = {
+  ajax: true,
+  document: true,
+  eventLag: true,
+};
+
+$(window).ready(function () {
+  // tampilkan signin setelah load
+  if (typeof Pace !== "undefined") {
+    Pace.on("done", function () {
+      $("section#loading").fadeOut(400, function () {
+        $(this).prev().fadeIn(500);
+      });
+    });
+  }
 
   // membuat saat lebar lebih dari 992 akan toggle clas
   if ($(this).width() >= 992) {
@@ -23,14 +37,16 @@ $(document).ready(function () {
   // melakukan login form
   $("#signin").submit(function (e) {
     e.preventDefault();
+    $(this).fadeOut(200, function () {
+      $("section#loading").fadeIn(500);
+    });
     email_receive = $("#email").val().trim();
     password_receive = $("#password").val().trim();
     jobs = $("#jobs").val().trim();
 
-    if (email_receive==='' && password_receive==='' && jobs==='None') {
-      window.location.replace('/sign-in?msg=Form masih kosong'),500;
-    }
-    else{
+    if (email_receive === "" && password_receive === "" && jobs === "None") {
+      window.location.replace("/sign-in?msg=Form masih kosong"), 500;
+    } else {
       $.ajax({
         type: "post",
         url: "/sign-in",
@@ -46,26 +62,31 @@ $(document).ready(function () {
         dataType: "json",
         success: function (response) {
           if (response.result == "success") {
-            
+            $("section#loading").fadeOut(500);
+
             Swal.fire({
               icon: "success",
               title: "Login Success",
               text: response["msg"],
               timer: 1500,
               willClose: () => {
-                window.location.replace(response["redirect"]),200;
+                window.location.replace(response["redirect"]), 200;
               },
             });
-          } 
+          }
         },
         error: function (xhr, status, error) {
           // Tindakan jika gagal
+          $("section#loading").fadeOut(300);
           console.log(xhr, status, error);
-          window.location.replace(`${xhr.responseJSON.redirect}`), 500;
-        }
-      }); 
+          if (xhr.responseJSON.redirect) {
+            window.location.replace(xhr.responseJSON.redirect), 500;
+          } else {
+            window.location.replace("/sign-in?msg=jaringan Error"), 500;
+          }
+        },
+      });
     }
-    
   });
 
   // back to top
@@ -95,18 +116,23 @@ $(document).ready(function () {
 
   // notifikasi
   // Cek apakah notifikasi sudah pernah ditampilkan
-  if (!($('.absensi_kehadiran #status_hadir').hasClass('btn-warning')||$('.absensi_kehadiran #status_hadir').hasClass('btn-success'))){
-    localStorage.removeItem("notificationShown")
+  if (
+    !(
+      $(".absensi_kehadiran #status_hadir").hasClass("btn-warning") ||
+      $(".absensi_kehadiran #status_hadir").hasClass("btn-success")
+    )
+  ) {
+    localStorage.removeItem("notificationShown");
   }
   const notificationShown = localStorage.getItem("notificationShown");
   // Jika notifikasi belum pernah ditampilkan
   if (!notificationShown) {
-      // Tampilkan notifikasi (gunakan fungsi notifikasi di sini)
-      notifAbsen();
+    // Tampilkan notifikasi (gunakan fungsi notifikasi di sini)
+    notifAbsen();
 
-      // Set nilai di Local Storage agar notifikasi tidak tampil lagi
-      localStorage.setItem("notificationShown", "true");
-  } 
+    // Set nilai di Local Storage agar notifikasi tidak tampil lagi
+    localStorage.setItem("notificationShown", "true");
+  }
 });
 
 let tepatWaktu;
@@ -213,21 +239,31 @@ notifAbsen = () => {
       const countdown = setInterval(() => {
         countdownTime--;
         // Jika waktu tersisa 30 menit,sebelum absensi dibuka kirim notifikasi browser
-        if (countdownTime == 30 * 60 && Notification.permission === "granted" && tepatWaktu != true) {
-          
+        if (
+          countdownTime == 30 * 60 &&
+          Notification.permission === "granted" &&
+          tepatWaktu != true
+        ) {
           new Notification("Absensi Alert!", {
             body: "Waktu tinggal 30 menit, persiapan untuk absensi!",
           });
         }
         // Jika waktu tersisa 5 menit sebelum absensi dibuka, kirim notifikasi browser
-        else if (countdownTime >= 5 * 60 && Notification.permission === "granted" && tepatWaktu != true) {
-          
+        else if (
+          countdownTime >= 5 * 60 &&
+          Notification.permission === "granted" &&
+          tepatWaktu != true
+        ) {
           new Notification("Absensi Alert!", {
             body: "Waktu tinggal 5 menit, persiapan untuk absensi!",
           });
         }
         // Jika waktu tersisa 20 menit setelah absensi dibuka, kirim notifikasi browser
-        else if (countdownTime < -20 * 60 && Notification.permission === "granted" && tepatWaktu != false) {
+        else if (
+          countdownTime < -20 * 60 &&
+          Notification.permission === "granted" &&
+          tepatWaktu != false
+        ) {
           tepatWaktu = false;
           new Notification("Absensi Alert!", {
             body: "Waktu absensi Habis, Anda memasuki telat!",
@@ -235,35 +271,55 @@ notifAbsen = () => {
           clearInterval(countdown);
         }
         // Jika waktu tersisa 20 menit setelah absensi dibuka, kirim notifikasi browser
-        else if (countdownTime >= -10 * 60 && Notification.permission === "granted" && tepatWaktu != false) {
+        else if (
+          countdownTime >= -10 * 60 &&
+          Notification.permission === "granted" &&
+          tepatWaktu != false
+        ) {
           tepatWaktu = true;
           new Notification("Absensi Alert!", {
             body: "Waktu absensi sudah memasuki 10 menitan, segera lakukan absensi!",
           });
         }
         // Jika waktu tersisa 20 menit setelah absensi dibuka, kirim notifikasi browser
-        else if (countdownTime >= -15 * 60 && Notification.permission === "granted" && tepatWaktu != true) {
+        else if (
+          countdownTime >= -15 * 60 &&
+          Notification.permission === "granted" &&
+          tepatWaktu != true
+        ) {
           tepatWaktu = true;
           new Notification("Absensi Alert!", {
             body: "Waktu absensi sudah memasuki 15 menitan, segera lakukan absensi!",
           });
         }
         // Jika waktu tersisa 5 menit setelah absensi dibuka, kirim notifikasi browser
-        else if (countdownTime >= -5 * 60 && Notification.permission === "granted" && tepatWaktu != true) {
+        else if (
+          countdownTime >= -5 * 60 &&
+          Notification.permission === "granted" &&
+          tepatWaktu != true
+        ) {
           tepatWaktu = true;
           new Notification("Absensi Alert!", {
             body: "Waktu sudah dalam kurang dari 5 menit, segera lakukan absensi!",
           });
         }
         // Jika waktu tersisa >5 menit setelah absensi dibuka, kirim notifikasi browser
-        else if (countdownTime <= -5 * 60 && Notification.permission === "granted" && tepatWaktu != true) {
+        else if (
+          countdownTime <= -5 * 60 &&
+          Notification.permission === "granted" &&
+          tepatWaktu != true
+        ) {
           tepatWaktu = true;
           new Notification("Absensi Alert!", {
             body: "Waktu sudah dalam 5 menit, segera lakukan absensi!",
           });
         }
         // Jika waktu habis
-        else if (countdownTime == 0 && tepatWaktu != true && Notification.permission === "granted") {
+        else if (
+          countdownTime == 0 &&
+          tepatWaktu != true &&
+          Notification.permission === "granted"
+        ) {
           tepatWaktu = true;
           new Notification("Absensi Alert!", {
             body: "Waktu absensi sudah dibuka, silahkan absensi dalam kurun 20 menit !",
@@ -271,10 +327,24 @@ notifAbsen = () => {
         }
       }, 1000); // Jalankan setiap detik (1000 ms)
     },
+    error: function (xhr, status, error) {
+      // Tindakan jika gagal
+      console.log(xhr, status, error);
+    },
   });
 };
 // trigger submit absen
-function submitAbsen(action) {
+function submitAbsen(action, e) {
+  e.preventDefault();
+  // Ambil parent `section#menu`
+  const parentMenu = $(e.target).closest("section#menu");
+
+  if (parentMenu.length > 0) {
+    console.log("Parent awal ditemukan:", parentMenu);
+  }
+  parentMenu.fadeOut(200, function () {
+    $("section#loading").fadeIn(500);
+  });
   if (action == "hadir" && tepatWaktu == true) {
     $("#status_hadir").val(1);
   } else if (action == "hadir" && tepatWaktu == false) {
@@ -293,6 +363,8 @@ function submitAbsen(action) {
     },
     dataType: "json",
     success: function (response) {
+      // Tindakan jika berhasil
+      $("section#loading").fadeOut(300);
       if (response.result == "success") {
         Swal.fire({
           icon: "success",
@@ -300,7 +372,7 @@ function submitAbsen(action) {
           text: "Anda sudah melakukan absen hari ini, terimakasih",
           timer: 3000,
           willClose: () => {
-            window.location.replace(response["redirect"]),200;
+            window.location.replace(response["redirect"]), 200;
           },
         });
       } else {
@@ -309,8 +381,13 @@ function submitAbsen(action) {
     },
     error: function (xhr, status, error) {
       // Tindakan jika gagal
+      $("section#loading").fadeOut(300);
       console.log(xhr, status, error);
-      window.location.replace(`${xhr.responseJSON.redirect}`), 500;
+      if (xhr.responseJSON.redirect) {
+        window.location.replace(xhr.responseJSON.redirect), 500;
+      } else {
+        window.location.replace("/dashboard/magang?msg=jaringan Error"), 500;
+      }
     },
   });
 }

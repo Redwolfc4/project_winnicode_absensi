@@ -3054,74 +3054,58 @@ def task():
                 "role": payload["role"],
             }
         )
-        # jika data kosong
         if not data:
             return redirect(url_for("signIn", msg="Anda bukan bagian dari WinniCode"))
 
-        # admin /sub admin
-        if payload["role"] == 1 and payload["jobs"] in ("Admin", "Sub Admin"):
-            # user selain payload
-            data_user_for_add = list(
+        # user selain payload
+        # data_user_all = list(
+        #     db.users.find(
+        #         {
+        #             "_id": {"$ne": ObjectId(payload["_id"])},
+        #             "role": {"$ne": 1},
+        #         },  # bukan id payload dan rolwnya bukan angka 1
+        #         {
+        #             "_id": 0,
+        #             "nama": 1,
+        #             "email": 1,
+        #             "jobs": 1,
+        #             "departement": 1,
+        #         },  # ambil nama , email, jobs dan depratement
+        #     )
+        # )
+
+        # ambil data ynag ditampilkan
+        print("jalan")
+        # path1 kosong
+        if not path1:
+            data_user_all = list(
+                db.users.aggregate(
+                    [
+                        {"$match": {"jobs": {"$nin": ["Admin", "Sub Admin"]}}},
+                        {"$group": {"_id": "$jobs", "document": {"$first": "$$ROOT"}}},
+                        {"$replaceRoot": {"newRoot": "$document"}},
+                        {"$project": {"_id": 1, "jobs": 1}},
+                    ]
+                )
+            )
+        # path 1 karyawan / magang
+        elif path1 in ("Karyawan", "Magang"):
+            data_user_all = list(
                 db.users.find(
-                    {
-                        "_id": {"$ne": ObjectId(payload["_id"])},
-                        "role": {"$ne": 1},
-                    },  # bukan id payload dan rolwnya bukan angka 1
-                    {
-                        "_id": 0,
-                        "nama": 1,
-                        "email": 1,
-                        "jobs": 1,
-                        "departement": 1,
-                    },  # ambil nama , email, jobs dan depratement
+                    {"jobs": path1}, {"_id": 1, "nama": 1, "email": 1, "departement": 1}
                 )
             )
 
-            # ambil data ynag ditampilkan
-            # path1 kosong
-            if not path1:
-                data_user_all = list(
-                    db.users.aggregate(
-                        [
-                            {"$match": {"jobs": {"$nin": ["Admin", "Sub Admin"]}}},
-                            {
-                                "$group": {
-                                    "_id": "$jobs",
-                                    "document": {"$first": "$$ROOT"},
-                                }
-                            },
-                            {"$replaceRoot": {"newRoot": "$document"}},
-                            {"$project": {"_id": 1, "jobs": 1}},
-                        ]
-                    )
-                )
-            # path 1 karyawan / magang
-            elif path1 in ("Karyawan", "Magang"):
-                data_user_all = list(
-                    db.users.find(
-                        {"jobs": path1},
-                        {"_id": 1, "nama": 1, "email": 1, "departement": 1},
-                    )
-                )
-
-            # selain itu
-            else:
-                data_user_all = list(
-                    db.tasks.find(
-                        {"user_id": ObjectId(uuid_like_to_string(str(path1)))},
-                        {"user_id": 0},
-                    )
-                )
-
-        # karyawan / magang
-        elif payload["role"] == 3 and payload["jobs"] in ("Karyawan", "Magang"):
+        # selain itu
+        else:
             data_user_all = list(
                 db.tasks.find(
-                    {"user_id": ObjectId(payload["_id"])},
-                    {"accepted": 0, "user_id": 0},
+                    {"user_id": ObjectId(uuid_like_to_string(str(path1)))},
+                    {"user_id": 0},
                 )
             )
 
+        print(data_user_all)
         # iterasiins
         for user in data_user_all:
             user["_id"] = string_to_uuid_like(str(user["_id"]))
@@ -3139,7 +3123,6 @@ def task():
             data_user_all=data_user_all,
             table_heading=table_heading,
             result=result,
-            data_user_for_add=data_user_for_add if payload["role"] == 1 else [],
             msg=msg,
         )
     # The above code is handling exceptions related to JWT (JSON Web Token) in a Python application.
@@ -3152,12 +3135,12 @@ def task():
         return redirect(url_for("signIn", msg="Session Expired"))
     except jwt.DecodeError:
         return redirect(url_for("signIn", msg="Anda telah logout"))
-    except Exception as e:
-        return redirect(
-            url_for(
-                "dashboard", msg=e.args[0] if e.args else "An unexpected error occurred"
-            )
-        )
+    # except Exception as e:
+    #     return redirect(
+    #         url_for(
+    #             "dashboard", msg=e.args[0] if e.args else "An unexpected error occurred"
+    #         )
+    #     )
 
 
 @app.route("/task/<path>", methods=["POST"])
@@ -3194,9 +3177,6 @@ def task_post_admin(path):
                 "role": payload["role"],
             }
         )
-
-        if not data:
-            raise Exception("Anda tidak memiliki hak akses")
 
         if path == "add":
             # ambil datajsonnnya
@@ -3249,7 +3229,7 @@ def task_post_admin(path):
             task_id_new = result.inserted_id
 
             # kirim ke class task gmail notif
-            TaskGmailNotif(task_id_new, path)
+            TaskGmailNotif(task_id_new)
 
             # buat response
             response = make_response(
@@ -3272,22 +3252,14 @@ def task_post_admin(path):
         elif path == "edit":
             # ambil data json
             rowId, inputId, newValue = request.json.values()
+            print(rowId, inputId, newValue)
 
             # cek nilai json tak kosong
             if not rowId and not inputId and not newValue:
                 raise Exception("form wajib diisi")
 
-            # decode row id
-            rowId = uuid_like_to_string(str(rowId))
-            if not rowId:
-                raise Exception("Decode Error")
-
-            # new value bila str True and False
-            if newValue in ("True", "False"):
-                newValue = True if newValue == "True" else False
-
             # edit database berdasarkan id
-            result = db.tasks.find_one_and_update(
+            result = db.tasks.update_one(
                 {"_id": ObjectId(rowId)}, {"$set": {inputId: newValue}}
             )
 
@@ -3295,176 +3267,13 @@ def task_post_admin(path):
             if not result:
                 raise Exception("Terjadi kesalahan pada database")
 
-            # ambil task id
-            task_id_new = result["_id"]
-
-            # kirim ke class task gmail notif
-            TaskGmailNotif(task_id_new, path)
-
             # buat response
             return make_response(
                 jsonify({"redirect": url_for("task", msg="Task Berhasil diubah")}), 200
             )
 
-        elif path == "delete":
-            # ambil data json
-            rowId = request.json.get("id")
-            rowId = uuid_like_to_string(str(rowId))
-
-            # cek nilai json tak kosong
-            if not rowId:
-                raise Exception("form wajib diisi")
-
-            # edit database berdasarkan id
-            result = db.tasks.delete_one({"_id": ObjectId(rowId)})
-
-            # cek result
-            if not result:
-                raise Exception("Terjadi kesalahan pada database")
-
-            # buat response
-            return make_response(
-                jsonify({"redirect": True}),
-                200,
-            )
-
         else:
             raise Exception("Path doesn`t exists")
-    # The above code is handling exceptions related to JWT (JSON Web Token) in a Python application.
-    # Specifically, it is catching `jwt.ExpiredSignatureError` and `jwt.DecodeError` exceptions. If
-    # either of these exceptions is raised, the code redirects the user to the "signIn" route with a
-    # message indicating either "Session Expired" or "Anda telah logout" (depending on the specific
-    # exception caught). This is likely part of a mechanism to handle expired or invalid JWT tokens
-    # during user authentication or authorization processes.
-    except jwt.ExpiredSignatureError:
-        return make_response(
-            jsonify({"redirect": url_for("signIn", msg="Session Expired")}), 500
-        )
-    except jwt.DecodeError:
-        return make_response(
-            jsonify({"redirect": url_for("signIn", msg="Anda telah logout")}), 500
-        )
-    except Exception as e:
-        # jikakosong
-        if not e.args:
-            return make_response(
-                jsonify(
-                    {
-                        "redirect": url_for(
-                            "dashboard", msg="An unexpected error occurred"
-                        )
-                    }
-                ),
-                500,
-            )
-        return make_response(jsonify({"redirect": url_for("task", msg=e.args[0])}), 500)
-
-
-@app.route("/task/user/<path>", methods=["POST"])
-def task_post_user(path):
-    try:
-        # The above Python code snippet is checking for the presence and validity of a CSRF token and a
-        # cookie in a web request. Here is a breakdown of the code:
-        cookie = request.cookies.get("token_key")
-        csrf_token = request.cookies.get("csrf_token")
-        if csrf_token == None:
-            return redirect(url_for("signIn", msg="csrf token expired"))
-        if cookie == None:
-            return redirect(url_for("signIn", msg="Anda Telah logout"))
-
-        # decode uuid
-        cookie = uuid_like_to_string(cookie)
-        csrf_token = uuid_like_to_string(csrf_token)
-        if not csrf_token:
-            return redirect(url_for("signIn", msg="CSRF Token Expired"))
-        if not cookie:
-            return redirect(url_for("signIn", msg="Cookie Expired"))
-
-        # decode payload
-        payload = jwt.decode(cookie, secretKey, algorithms=["HS256"])
-
-        if payload["role"] == 1 and payload["jobs"] not in ("Karyawan", "Magang"):
-            raise Exception("Anda tidak memiliki hak akses")
-
-        data = db.users.find_one(
-            {
-                "_id": ObjectId(payload["_id"]),
-                "jobs": payload["jobs"],
-                "role": payload["role"],
-            }
-        )
-
-        if not data:
-            raise Exception("Anda tidak memiliki hak akses")
-
-        if path == "edit":
-            # The above Python code is checking if the `X-CSRFToken` and `Content-Type` headers are
-            # present in the request headers. If either of these headers is missing (`csrf_token` or
-            # `contents` is `None`), the code will execute the block inside the `if` statement.
-            csrf_token = request.headers.get("X-CSRFToken")
-            contents = request.headers.get("Content-Type")
-            if not csrf_token or not contents:
-                raise Exception("anda melakukan ajax diluar")
-
-            # The code snippet is written in Python and it is extracting the values of `task_id` and
-            # `status_task_new` from a JSON request. It then checks if either `task_id` or
-            # `status_task_new` is empty (evaluates to False).
-            task_id, status_task_new = request.json.values()
-            if not task_id or not status_task_new:
-                raise Exception("Ada kesalahan dalam meload data task")
-
-            # The code snippet is attempting to convert a UUID-like object to a string representation
-            # using the `uuid_like_to_string` function. If the conversion is successful (i.e., the
-            # resulting string is not empty), the code proceeds with the next steps.
-            task_id_conv = uuid_like_to_string(str(task_id))
-            if not task_id_conv:
-                raise Exception("Terjadi kesalahan dalam mengonvert data task")
-
-            # The above Python code is querying a MongoDB database to find a specific task document
-            # based on the user ID and task ID provided. It retrieves the '_id' and 'status_task'
-            # fields of the found document. If no document is found (status_task_old is None), it
-            # prints an error message indicating that there was an issue retrieving the status of the
-            # old task from the database.
-            status_task_old = db.tasks.find_one(
-                {"user_id": data["_id"], "_id": ObjectId(task_id_conv)},
-                {"_id": 1, "status_task": 1},
-            )
-            if not status_task_old:
-                print("Terjadi kesalahan dalam pengambil status task old di db")
-                raise Exception("Terjadi kesalahan di db")
-
-            # The code is checking if the value of the 'status_task' key in the dictionary
-            # `status_task_old` is equal to the value of the variable `status_task_new`. If they are
-            # equal, the condition will be true.
-            if status_task_old["status_task"] == status_task_new:
-                raise Exception("Tidak ada perubahan status task")
-
-            # The above code is updating a document in a MongoDB collection called "tasks". It is
-            # finding a document with a specific "_id" and "user_id" that matches the provided values,
-            # and then updating the "status_task" field with a new value specified by
-            # "status_task_new". If the update is successful, the result will contain information
-            # about the update operation.
-            result = db.tasks.update_one(
-                {"_id": ObjectId(task_id_conv), "user_id": data["_id"]},
-                {"$set": {"status_task": status_task_new}},
-            )
-            if not result:
-                raise Exception("Terjadi kesalahan dalam update db")
-
-            # The above code is creating a response with a JSON object that includes a redirect URL
-            # for a specific task with a success status message. The response is returned with a
-            # status code of 200 (OK).
-            return make_response(
-                jsonify(
-                    {
-                        "redirect": url_for(
-                            "task", status="success", msg="status berhasil di update"
-                        )
-                    }
-                ),
-                200,
-            )
-
     # The above code is handling exceptions related to JWT (JSON Web Token) in a Python application.
     # Specifically, it is catching `jwt.ExpiredSignatureError` and `jwt.DecodeError` exceptions. If
     # either of these exceptions is raised, the code redirects the user to the "signIn" route with a
@@ -3531,7 +3340,7 @@ if __name__ == "__main__":
     # # Menjadwalkan pengecekan absensi setiap menit
     delete_absen = BackgroundScheduler()
     delete_absen.add_job(
-        func=unhadir_absensi, trigger="interval", minutes=1
+        func=unhadir_absensi, trigger="interval", minutes=30
     )  # interval hours/minute/second. date run_date .cron day_of_week,hours,minutes
     delete_absen.start()
     app.run(port=8080, debug=True)  # ssl_context =  adhoc adalah sertifikat self signed

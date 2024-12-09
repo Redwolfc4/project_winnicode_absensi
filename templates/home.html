@@ -305,8 +305,8 @@
       >
         <div class="btn-group-vertical gap-3 w-100">
           <!-- manual admin -->
-          <button onclick="manualAdmin()" type="button" class="btn btn-pink d-flex justify-content-center align-items-center poppins-regular w-100">
-            <div id="book-wrapper" class="wrapper text-md-start w-100">
+          <button id="book-wrapper" onclick="manualAdmin()" type="button" class="btn btn-pink d-flex justify-content-center align-items-center poppins-regular w-100">
+            <div class="wrapper text-md-start w-100">
               <svg
                 id="book"
                 width="34"
@@ -697,8 +697,8 @@
           </button>
 
           <!-- manual karyawan dan magang -->
-          <button onclick="manualKaryawan()" type="button" class="btn btn-pink d-flex justify-content-center align-items-center poppins-regular">
-            <div id="book-wrapper" class="wrapper text-md-start text-center w-100">
+          <button id="book-wrapper" onclick="manualKaryawan()" type="button" class="btn btn-pink d-flex justify-content-center align-items-center poppins-regular">
+            <div class="wrapper text-md-start text-center w-100">
               <svg
               id="book"
               width="34"
@@ -1092,6 +1092,8 @@
     </div>
   </section>
 </main>
+<!-- tambahkan loading -->
+{% include 'utility/loading.html' %}
 
 <footer
   class="container-fluid row row-cols-1 row-cols-lg-2 bg-secondary px-5 py-4 m-0 mt-5"

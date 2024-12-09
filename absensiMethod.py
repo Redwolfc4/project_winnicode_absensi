@@ -10,18 +10,17 @@ import datetime
 key = Fernet.generate_key()
 cipher = Fernet(key)
 
-# ambil waktu berdasarkan api
-def get_time_zone_now(location:str='asia/jakarta'):
-    url = f"https://www.timeapi.io/api/time/current/zone?timeZone={location}"
-    waktu_str = requests.get(url).json()['dateTime']
-    waktu_sekarang =  datetime.datetime.fromisoformat(waktu_str)
-    return  waktu_sekarang
 
-    
+# ambil waktu berdasarkan api
+def get_time_zone_now(location: str = "asia/jakarta"):
+    url = f"https://www.timeapi.io/api/time/current/zone?timeZone={location}"
+    waktu_str = requests.get(url).json()["dateTime"]
+    waktu_sekarang = datetime.datetime.fromisoformat(waktu_str)
+    return waktu_sekarang
+
 
 # tidak hadir untuk magang / karyawan
 def unhadir_absensi():
-
     """
     Fungsi untuk mengupdate status tidak hadir untuk magang/karyawan setiap 1 jam sekali.
 
@@ -39,8 +38,9 @@ def unhadir_absensi():
     Fungsi ini akan dijalankan setiap 1 jam sekali dan akan mengupdate status tidak hadir
     untuk magang/karyawan yang tidak hadir.
     """
-    
+
     from app import db
+
     users = db.users.find({"role": 3})  # nanti diubah bisa role 2 dan 3
     now = get_time_zone_now()
     time_now = now.time()
@@ -132,9 +132,11 @@ def unhadir_absensi():
                                 },
                             )
 
+
 # lakukan sigin payload
 def signInPayload(a, b, c, d):
     from app import secretKey
+
     """
     Fungsi untuk membuat payload token JWT untuk keperluan login
     
@@ -151,7 +153,6 @@ def signInPayload(a, b, c, d):
     >>> signInPayload(ObjectId("5f8c0c8b3b9b5c002f3e93e5"), "Magang", 3, datetime.timedelta(days=1))
     'eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJfaWQiOiI1ZjhjMGM4YjNiOWI1YzAwMmYzZTkyZSIsImpvYnMiOiJNYWdhbiIsInJvbGUiOjMsImV4cCI6MTYwMjQ4NzQ4NX0.1wDQ7Z4qJz0yN1Xm8ZQ0Qk3nT4Xj9rS5uP3oK2hR6g'
     """
-    
 
     payloads = {
         "_id": str(a),
@@ -161,6 +162,7 @@ def signInPayload(a, b, c, d):
     }
     token = jwt.encode(payloads, secretKey, algorithm="HS256")
     return token
+
 
 # buat filter kustom untuk mengubah format waktu
 def format_time(value):
@@ -179,6 +181,7 @@ def format_time(value):
     # Ubah format ke 'HH:MM'
     return date_obj.strftime("%H:%M")
 
+
 # Buat filter kustom untuk mengubah format tanggal
 def format_date(value):
     """
@@ -195,6 +198,7 @@ def format_date(value):
     # Ubah format ke 'YYYY-MM-DD'
     return date_obj.strftime("%Y-%m-%d")
 
+
 # kurangin tanggal hari ini sama tanggal mulai awal
 def cek_tanggal_kerja(awal_kerja_str: str, akhir_kerja_str: str):
     """
@@ -210,7 +214,7 @@ def cek_tanggal_kerja(awal_kerja_str: str, akhir_kerja_str: str):
     Contoh pemanggilan:
         >>> cek_tanggal_kerja("1 Januari 2022", "31 Januari 2022")
         True
-        
+
     Returns:
     bool: True jika tanggal sekarang berada diantara awal_kerja dan akhir_kerja, False jika sebaliknya
     """
@@ -220,6 +224,7 @@ def cek_tanggal_kerja(awal_kerja_str: str, akhir_kerja_str: str):
     akhir_kerja = datetime.datetime.strptime(akhir_kerja_str, format_tanggal)
 
     tanggal_sekarang = get_time_zone_now()
+
     # apakah awal kerja > tanggal_sekarang > akhir kerja
     if (tanggal_sekarang - awal_kerja >= datetime.timedelta(days=0)) and (
         akhir_kerja - tanggal_sekarang >= datetime.timedelta(days=0)
@@ -228,9 +233,9 @@ def cek_tanggal_kerja(awal_kerja_str: str, akhir_kerja_str: str):
     else:
         return False
 
-# Fungsi untuk mengonversi string menjadi bentuk UUID-like
-def string_to_uuid_like(data):
 
+# Fungsi untuk mengonversi string menjadi bentuk UUID-like
+def string_to_uuid_like(data: str):
     """
     Mengonversi string menjadi bentuk UUID-like.
 
@@ -255,8 +260,9 @@ def string_to_uuid_like(data):
     uuid_like = f"{encoded_bytes[:8].decode()}-{encoded_bytes[8:12].decode()}-{encoded_bytes[12:16].decode()}-{encoded_bytes[16:20].decode()}-{encoded_bytes[20:].decode()}"
     return uuid_like
 
+
 # Fungsi untuk mendekonversi kembali dari UUID-like ke string asli
-def uuid_like_to_string(uuid_like):
+def uuid_like_to_string(uuid_like: str):
     """
     Mendekonversi UUID-like kembali ke string asli.
 

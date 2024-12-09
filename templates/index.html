@@ -27,7 +27,7 @@
       href="{{ url_for('static', filename='img/logo.png') }}"
       type="image/png"
     />
-    <!-- bootstrao -->
+    <!-- bootstrap -->
     <link
       href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css"
       rel="stylesheet"
@@ -59,9 +59,11 @@
     {% endblock custom_css %}
   </head>
   <body>
+    <!-- template value body -->
     {% block value_body %}
     <h1>Hello, world!</h1>
     {% endblock value_body %}
+    <!-- cdn js default -->
     <!-- jquery -->
     <script
       src="https://code.jquery.com/jquery-3.7.1.js"
@@ -92,6 +94,11 @@
       integrity="sha384-YvpcrYf0tY3lHB60NNkmXc5s9fDVZLESaAA55NDzOxhy9GkcIdslK1eN7N6jIeHz"
       crossorigin="anonymous"
     ></script>
+    <!-- pace js -->
+    <script src="https://cdn.jsdelivr.net/npm/pace-js@latest/pace.min.js"></script>
+    <!-- end -->
+
+    <!-- inisiasi aos -->
     <script>
       AOS.init({
         duration: 400, // values from 0 to 3000, with step 50ms
@@ -99,11 +106,16 @@
         once: true, // whether animation should happen only once - while scrolling down
       });
     </script>
+
     <!-- custom cdn js -->
-    {% block cdn_custom_js %} {% endblock cdn_custom_js %} {% block js_custom %}
+    {% block cdn_custom_js %} {% endblock cdn_custom_js %}
+    <!-- membuat custom js -->
+    {% block js_custom %}
     <!-- js custom -->
     <script src="{{ url_for('static', filename='js/index.js') }}"></script>
-    {% endblock js_custom %} {% block message %} {% if msg %}
+    {% endblock js_custom %}
+    <!-- membuat mesage block -->
+    {% block message %} {% if msg %}
     <script>
       Swal.fire({
         icon: "error",

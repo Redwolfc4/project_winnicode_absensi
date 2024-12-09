@@ -1,11 +1,15 @@
 {% extends "index.html" %} {% block title %}
 <title>Absensi|Login</title>
-{% endblock %} {% block value_body %}
+{% endblock %} {% block cdn_custom_css %}
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/OverlayScrollbars/1.13.3/css/OverlayScrollbars.min.css">
+{% endblock cdn_custom_css %} {% block value_body %}
+
+<!-- signin body -->
 <section id="signin" class="h-100">
   <div class="container py-5 h-100">
     <div class="row align-items-center justify-content-center h-100">
       <!-- gambar -->
-      <div class="d-lg-block d-none col-md-8 col-lg-7 col-xl-6 mb-4" data-aos='fade-right' data-aos-delay='0' data-aos-duration='800' data-aos-easing='ease-in-sine'>
+      <div class="d-lg-block d-none col-md-8 col-lg-7 col-xl-6 m-lg-0 mb-4" data-aos='fade-right' data-aos-delay='600' data-aos-duration='800' data-aos-easing='ease-in-sine'>
         <img
           src="{{url_for('static', filename='img/login-concept-illustration.png')}}"
           class="img-fluid"
@@ -13,9 +17,9 @@
         />
       </div>
       <!-- bagian form -->
-      <div class="col-md-7 col-lg-5 col-xl-5 offset-xl-1 m-lg-0 mb-4" data-aos='fade-left' data-aos-delay='800' data-aos-duration='1600' data-aos-easing='ease-in-sine'>
+      <div class="col-sm-7 col-md-12 col-lg-5 col-xl-5 offset-xl-1" data-aos='fade-left' data-aos-delay='800' data-aos-duration='1600' data-aos-easing='ease-in-sine'>
         <form
-          class="row border border-3 rounded-2 border-purple"
+          class="row border border-3 rounded-2 border-purple m-md-0 m-sm-2 m-1"
         >
           <div
             id="logo-signin"
@@ -28,7 +32,7 @@
             />
           </div>
 
-          <div>
+          <div class="col-12">
             <h5 class="fw-normal mb-3 pb-3 poppins-regular" style="letter-spacing: 1px">
               Sign into your account
             </h5>
@@ -92,21 +96,28 @@
     </div>
   </div>
 </section>
-{% include 'ballon_faq.html' %}
+
+{% if not (status or msg) %}
+<!-- loading -->
+{% include 'utility/loading.html' %}
+{% endif %}
+<!-- FAQ -->
+{% include 'utility/ballon_faq.html' %}
+
 {% endblock %} 
 
 {% block message %}
 {% if (status and msg) %}
 <script>
-Swal.fire({
-  icon: "success",
-  title: "{{ title }}",
-  html: '{{ msg|safe }}',
-  timer:3000,
-  willClose: ()=>{
-    window.location.replace('/sign-in');
-  }
-});
+  Swal.fire({
+    icon: "success",
+    title: "{{ title }}",
+    html: '{{ msg|safe }}',
+    timer:3000,
+    willClose: ()=>{
+      window.location.replace('/sign-in');
+    }
+  });
 </script>
 {% elif msg %}
 <script>

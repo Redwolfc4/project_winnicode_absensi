@@ -2,6 +2,7 @@
 
 :root{
   --primary-color: #ff66c4;
+  --primary-color-hover: #fa1fa6
 }
 
 body{
@@ -242,6 +243,14 @@ body{
 }
 /* end home */
 
+/* loading  */
+#loading img{
+  transform: translateX(-.5em);
+  max-width: 300px; 
+  max-height: 300px
+}
+/* end loading */
+
 /* dashboard */
 /* navbar */
 .divider:after,
@@ -282,6 +291,12 @@ img#winnicode-navbar-logo{
   object-fit: cover;
   object-position: center;
 }
+
+nav .btn-close{
+  --bs-btn-close-bg: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16' fill='%23ff66c4'%3e%3cpath d='M.293.293a1 1 0 0 1 1.414 0L8 6.586 14.293.293a1 1 0 1 1 1.414 1.414L9.414 8l6.293 6.293a1 1 0 0 1-1.414 1.414L8 9.414l-6.293 6.293a1 1 0 0 1-1.414-1.414L6.586 8 .293 1.707a1 1 0 0 1 0-1.414z'/%3e%3c/svg%3e");
+  --bs-btn-close-color: var(--primary-color-hover);
+  --bs-btn-close-focus-shadow: none
+}
 /* end */
 
 
@@ -292,6 +307,15 @@ img#winnicode-navbar-logo{
 
 .text-pink {
   color: var(--primary-color) !important;
+  transition: color .5s ease-in-out;
+}
+
+.text-pink:hover{
+  color: var(--primary-color-hover) !important;
+}
+
+.text-pink.active{
+  color: var(--primary-color-hover) !important;
 }
 
 .border-left-success {
@@ -402,6 +426,10 @@ img#winnicode-navbar-logo{
   --bs-table-hover-color: #000;
   color: var(--bs-table-color);
   border-color: var(--bs-table-border-color);
+}
+
+table.dataTable tbody th.focus, table.dataTable tbody td.focus{
+  outline: 0;
 }
 
 .page-link:hover {

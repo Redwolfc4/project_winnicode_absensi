@@ -10,16 +10,18 @@ from dotenv import load_dotenv
 import os
 import json
 from absensiMethod import string_to_uuid_like
+from bson import ObjectId
 
 # If modifying these SCOPES, delete the file token.json
 load_dotenv()
 # cuman bisa handle 100 data otp
 
 
+# otp password generator
 class OtpPasswordGenerator:
     """
     Klas ini digunakan untuk mengirimkan One-Time Password (OTP) ke email yang ditentukan.
-    
+
     Parameters:
     - email_receiver (str): Email address yang akan di kirimkan OTP.
     - nickname_receiver (str): Nama user yang menerima OTP (default: "user").
@@ -29,6 +31,7 @@ class OtpPasswordGenerator:
     >>> otp = OtpPasswordGenerator("john@example.com", "John Doe")
     >>> otp.send_otp_email()
     """
+
     SCOPES = [os.getenv("GMAIL_SCOPE")]
     otp = None
 
@@ -110,27 +113,25 @@ class OtpPasswordGenerator:
 
         self.__creds = None
         # Retrieve values from environment
-        self.__client_id = os.getenv('GOOGLE_CLIENT_ID')
-        self.__client_secret = os.getenv('GOOGLE_CLIENT_SECRET')
-        self.__redirect_uris = [os.getenv('GOOGLE_REDIRECT_URIS')]
-        self.__token_uri = os.getenv('GOOGLE_TOKEN_URI')
-        self.__auth_uri = os.getenv('GOOGLE_AUTH_URI')
-        self.__auth_provider_cert_url = os.getenv('GOOGLE_AUTH_PROVIDER_CERT_URL')
-        result = db.gmail_service.find_one({},{'_id':0})
+        self.__client_id = os.getenv("GOOGLE_CLIENT_ID")
+        self.__client_secret = os.getenv("GOOGLE_CLIENT_SECRET")
+        self.__redirect_uris = [os.getenv("GOOGLE_REDIRECT_URIS")]
+        self.__token_uri = os.getenv("GOOGLE_TOKEN_URI")
+        self.__auth_uri = os.getenv("GOOGLE_AUTH_URI")
+        self.__auth_provider_cert_url = os.getenv("GOOGLE_AUTH_PROVIDER_CERT_URL")
+        result = db.gmail_service.find_one({}, {"_id": 0})
         if result:
-            self.__creds = Credentials.from_authorized_user_info(
-                result, self.SCOPES
-            )
-        
+            self.__creds = Credentials.from_authorized_user_info(result, self.SCOPES)
+
         # If there are no (valid) credentials available, let the user log in.
-        if not self.__creds or not self.__creds.valid: 
+        if not self.__creds or not self.__creds.valid:
             # expired
             if self.__creds and self.__creds.expired and self.__creds.refresh_token:
                 self.__creds.refresh(Request())
                 # update the credentials for the next run
                 data = json.loads(self.__creds.to_json())
-                result = db.gmail_service.find_one({},{'_id':1})
-                db.gmail_service.update_one({'_id':result['_id']}, {'$set': data}) 
+                result = db.gmail_service.find_one({}, {"_id": 1})
+                db.gmail_service.update_one({"_id": result["_id"]}, {"$set": data})
             else:
                 self.__flow = InstalledAppFlow.from_client_config(
                     {
@@ -146,11 +147,11 @@ class OtpPasswordGenerator:
                     self.SCOPES,
                 )
                 self.__creds = self.__flow.run_local_server(port=901)
-                
+
                 # Save the credentials for the next run
                 data = json.loads(self.__creds.to_json())
                 db.gmail_service.insert_one(data)
-            
+
         # Build the Gmail API service
         self.__service = build("gmail", "v1", credentials=self.__creds)
         return self.__service
@@ -168,6 +169,8 @@ class OtpPasswordGenerator:
         )
         return self.send_message(self.__service, "me", self.__message)
 
+
+# This class likely sends emails with frequently asked questions (FAQs) using Gmail
 class FaqGmailSender(OtpPasswordGenerator):
     """
     Class FaqGmailSender digunakan untuk mengirimkan email ke helpdesk@winnicode.com
@@ -178,9 +181,18 @@ class FaqGmailSender(OtpPasswordGenerator):
     >>> faq = FaqGmailSender("john.doe@example.com", "John Doe", "Admin", "Superuser", "Tidak ada internet")
     >>> faq.send_faq_via_gmail()
     """
+
     uuid_ticket = None
     message_id = None
-    def __init__(self, email_receiver: str = '', nickname_receiver: str = "user", jobs: str = '', departement: str = '', kendala: str = ''):
+
+    def __init__(
+        self,
+        email_receiver: str = "",
+        nickname_receiver: str = "user",
+        jobs: str = "",
+        departement: str = "",
+        kendala: str = "",
+    ):
         """
         Class FaqGmailSender digunakan untuk mengirimkan email ke helpdesk@winnicode.com
         dengan format yang sesuai dengan kebutuhan FAQ.
@@ -197,6 +209,7 @@ class FaqGmailSender(OtpPasswordGenerator):
         sender.send_faq_email()
         """
         from app import db
+
         self.__email_receiver = email_receiver
         self.__nickname_receiver = nickname_receiver
         self.__jobs = jobs
@@ -204,14 +217,22 @@ class FaqGmailSender(OtpPasswordGenerator):
         self.__kendala = kendala
 
         # Check if any input is empty
-        if not all([self.__email_receiver.strip(), self.__nickname_receiver.strip(), self.__jobs.strip(), self.__departement.strip(), self.__kendala.strip()]):
+        if not all(
+            [
+                self.__email_receiver.strip(),
+                self.__nickname_receiver.strip(),
+                self.__jobs.strip(),
+                self.__departement.strip(),
+                self.__kendala.strip(),
+            ]
+        ):
             print("Some input values are empty. Existing...")
             return None
-    
+
         # Generate UUID for the ticket
         while True:
             self.__uuid_tiket = string_to_uuid_like(str(random.randint(0, 9999999)))
-            result = db.faq.find_one({'no_ticket':self.__uuid_tiket})
+            result = db.faq.find_one({"no_ticket": self.__uuid_tiket})
             if not result:
                 self.uuid_ticket = self.__uuid_tiket
                 break
@@ -253,73 +274,83 @@ class FaqGmailSender(OtpPasswordGenerator):
         """
         Mengirimkan email melalui Gmail API dengan menggunakan credential yang
         sudah di set sebelumnya.
-        
+
         Parameter:
             receiver_email (str): Alamat email penerima yang akan dikirimkan email.
             subject (str): Subyek email yang akan dikirimkan.
             body (str): Isi email yang akan dikirimkan dalam format HTML.
-        
+
         Returns:
             str: Message ID dari email yang telah dikirimkan.
         """
-        self.message_id = super().send_otp_via_gmail(receiver_email=receiver_email, subject=subject, body=body) # jangan kupa ubah ke string to uuid
-        
+        self.message_id = super().send_otp_via_gmail(
+            receiver_email=receiver_email, subject=subject, body=body
+        )  # jangan kupa ubah ke string to uuid
+
+
+# This class likely sends replies to Gmail messages
 class replyGmailSender(OtpPasswordGenerator):
     """
     Class untuk mengirimkan balasan email ke pengguna melalui Gmail API.
-    
+
     Method yang tersedia:
     - __init__(self, message_id: dict=None): Konstruktor untuk kelas ReplyGmailSender.
         Parameter:
             message_id (dict): message id yang akan di reply.
     - service_gmail_api(self): Authenticate to Gmail API and return a Gmail API service instance.
     - reply_message_make(self, name: str = None, email: str = None, no_ticket: str = None): Buatkan body email untuk balasan.
-        
+
     Parameter:
         - name (str): Nama pengguna yang akan di balas.
         - email (str): Email pengguna yang akan di balas.
         - no_ticket (str): Nomor ticket yang akan di balas.
     """
-    
-    def __init__(self, message_id: dict=None):
+
+    def __init__(self, message_id: dict = None):
         """
         Konstruktor untuk kelas ReplyGmailSender
-        
+
         Parameters:
         message_id (dict): message id yang akan di reply
-        
+
         Returns:
         None
         """
         if message_id is None:
             return None
         self.__message_id = message_id
-    
+
     def service_gmail_api(self):
         """Authenticate to Gmail API and return a Gmail API service instance.
-        
+
         This method will authenticate to Gmail API using the credentials in the environment.
         If the credentials are valid, it will return a Gmail API service instance.
         If the credentials are invalid, it will raise an error.
-        
+
         Returns:
             A Gmail API service instance.
         """
-        
+
         self.__service = super().authenticate_gmail_api()
-        
-    def reply_message_make(self, name:str=None, email:str=None, no_ticket:str=None, body:str=None):
+
+    def reply_message_make(
+        self,
+        name: str = None,
+        email: str = None,
+        no_ticket: str = None,
+        body: str = None,
+    ):
         """
         Buatkan body email untuk balasan.
-        
+
         Parameters:
         - name (str): Nama pengguna yang akan di balas.
         - email (str): Email pengguna yang akan di balas.
         - no_ticket (str): Nomor ticket yang akan di balas.
-        
+
         Returns:
         str: body email yang akan di gunakan untuk reply.
-        
+
         Contoh:
         reply = ReplyGmailSender(message_id={"id": "1234567890abcdef"})
         body = reply.reply_message_make(name="John Doe", email="john@example.com", no_ticket="TCKT-12345")
@@ -327,12 +358,12 @@ class replyGmailSender(OtpPasswordGenerator):
         """
         if email is None and no_ticket is None and body is None:
             return None
-        
+
         self.__name = name
         self.__email = email
         self.__no_ticket = no_ticket
-        
-        self.__body = f'''
+
+        self.__body = f"""
         <html>
         <body>
             <div class='d-flex flex-column gap-2 align-items-center'>
@@ -345,33 +376,36 @@ class replyGmailSender(OtpPasswordGenerator):
             </div>
         </body>
         </html>
-        '''
-        
-        self.__subject = "Re: Winnicode helpdesk ticket # "+self.__no_ticket
-        
+        """
+
+        self.__subject = "Re: Winnicode helpdesk ticket # " + self.__no_ticket
+
         # Create a reply message
         self.__reply_message = MIMEText(self.__body, "html")
         if self.__name is None:
-            self.__reply_message["to"] = f'{self.__email}'
+            self.__reply_message["to"] = f"{self.__email}"
         else:
-            self.__reply_message["to"] = f'{self.__name} <{self.__email}>'
+            self.__reply_message["to"] = f"{self.__name} <{self.__email}>"
         self.__reply_message["from"] = os.getenv("GMAIL_SENDER")
         self.__reply_message["subject"] = self.__subject
-        self.__reply_message["In-Reply-To"] = self.__message_id['id']
-        self.__reply_message["References"] = self.__message_id['id']
+        self.__reply_message["In-Reply-To"] = self.__message_id["id"]
+        self.__reply_message["References"] = self.__message_id["id"]
         self.__raw_message = base64.urlsafe_b64encode(
             self.__reply_message.as_bytes()
         ).decode()
-        self.__raw_body = {"raw": self.__raw_message, "threadId": self.__message_id['threadId']}  # Memastikan email masuk ke dalam thread}
+        self.__raw_body = {
+            "raw": self.__raw_message,
+            "threadId": self.__message_id["threadId"],
+        }  # Memastikan email masuk ke dalam thread}
         self.__is_reply_created = True  # Set flag ke True
-        
+
     def send_reply_message(self):
         """
         Kirimkan email balasan.
-        
+
         Returns:
         dict: Berisi informasi tentang email yang terkirim.
-        
+
         Contoh:
         reply = ReplyGmailSender(message_id={"id": "1234567890abcdef"})
         reply.reply_message_make(name="John Doe", email="john@example.com", no_ticket="TCKT-12345")
@@ -379,17 +413,140 @@ class replyGmailSender(OtpPasswordGenerator):
         print(response)
         """
         if not self.__is_reply_created:
-            raise Exception("Reply message has not been created. Call reply_message_make first.")
-        
-        self.__response = self.__service.users().messages().send(
-            userId='me',
-            body = self.__raw_body
-        ).execute()
+            raise Exception(
+                "Reply message has not been created. Call reply_message_make first."
+            )
+
+        self.__response = (
+            self.__service.users()
+            .messages()
+            .send(userId="me", body=self.__raw_body)
+            .execute()
+        )
         print(f"Reply sent successfully!")
         print(f"Message ID: {self.__response['id']}")
         print(f"Thread ID: {self.__response['threadId']}")
-        
+
         if self.__response:
             return self.__response
         else:
             return None
+
+
+class TaskGmailNotif(OtpPasswordGenerator):
+    message_id = None
+
+    def __init__(self, task_id_new: ObjectId, path: str):
+        from app import db, url_for  # import db
+
+        self.__task_id_new = task_id_new
+        self.path = path
+
+        if not self.__task_id_new:
+            print("task_id_new kosong silahkan coba lagi")
+            raise Exception("Error Database 1")
+
+        if self.path == "add":
+            self.desc = "<p class='poppins-regular'> Kamu memiliki Task baru dengan detail sebagai berikut: </p>"
+
+        elif self.path == "edit":
+            self.desc = "<p class='poppins-regular'> Task kamu telah di update dengan detail sebagai berikut: </p>"
+
+        self.__uuid_ticket = string_to_uuid_like(str(self.__task_id_new))
+
+        self.__pipeline = [
+            {"$match": {"_id": ObjectId(self.__task_id_new)}},  # Hanya user_id tertentu
+            {
+                "$lookup": {
+                    "from": "users",  # Koleksi yang akan digabungkan
+                    "localField": "user_id",  # Field di koleksi orders
+                    "foreignField": "_id",  # Field di koleksi users
+                    "as": "user",  # Nama field hasil penggabungan
+                }
+            },
+            {"$unwind": "$user"},  # Opsional: Memisahkan array menjadi objek individu
+            {"$unset": ["_id", "user_id", "user._id", "user.password"]},
+            {
+                "$project": {
+                    "taskName": 1,
+                    "description_task": 1,
+                    "link_input": 1,
+                    "deadline": 1,
+                    "user.nama": 1,  # Tampilkan `nama` dari `users`
+                    "user.jobs": 1,  # Tampilkan `jobs` dari `users`
+                    "user.departement": 1,  # Tampilkan `departement` dari `users`
+                    "user.email": 1,
+                }
+            },
+        ]
+
+        # ambil datanya dari db task dan foreign user
+        self.__results = list(db.tasks.aggregate(self.__pipeline))
+
+        # jika gagal didapatkan
+        if not self.__results:
+            print("data gagal didapatkan dari db tasks dan users")
+            raise Exception("Database Error 2")
+
+        # perulangan data aggregate
+        for self.__result in self.__results:
+            # Set email subject
+            self.__subject = (
+                f"Winnicode Tasks #{self.__uuid_ticket} : {self.__result['taskName']}"
+            )
+
+            # buat table link saat linkinput diisi
+            self.__table_link = (
+                f"""
+            <tr>
+                <td style="border: none; padding: 8px; font-weight:bold;">Link Pengerjaan</td>
+                <td style="border: none; padding: 8px;"><a href="{self.__result['link_input'].strip()}">{self.__result['link_input'].strip()}</a></td>
+            </tr>
+            
+            """
+                if self.__result["link_input"]
+                else ""
+            )
+
+            # Set email body
+            self.__body = f"""
+            <html>
+            <body>
+                <div class='d-flex flex-column gap-2 align-items-center'>
+                    <div class='d-flex flex-column gap-1 align-items-center'>
+                        <p class='poppins-regular'>Hi  <strong>{self.__result['user']['nama'].strip()}</strong></p> 
+                        <p class='poppins-regular'>{self.__result['user']['jobs'].strip()} - {self.__result['user']['departement'].strip()}</p>
+                    </div>
+                    {self.desc}
+                    <table style="border-collapse: collapse; width: 100%;">
+                        <tr>
+                            <td style="border: none; padding: 8px; font-weight:bold;">Task Name</td>
+                            <td style="border: none; padding: 8px;">{self.__result['taskName'].strip()}</td>
+                        </tr>
+                        <tr>
+                            <td style="border: none; padding: 8px; font-weight:bold;">Description task</td>
+                            <td style="border: none; padding: 8px;">{self.__result['description_task'].strip()}</td>
+                        </tr>
+                        <tr>
+                            <td style="border: none; padding: 8px; font-weight:bold;">Deadline</td>
+                            <td style="border: none; padding: 8px;">{self.__result['deadline'].strftime('%Y-%m-%d %H:%M:%S')}</td>
+                        </tr>
+                        {self.__table_link}
+                    </table>
+                    <p class='poppins-regular'> Untuk melihat lebih lanjut, anda dapat langsung mengunjungi <a href='{url_for('task',_external=True)}' target='_blank' style='text-decoration: none; color: #ff66c4'>Absensi<span style='color: black;'>Ku</span></a> </p>
+                </div>
+            </body>
+            </html>
+            """
+
+            # kirim datanya
+            self.send_add_task_gmail_notif(
+                receiver_email=self.__result["user"]["email"],
+                subject=self.__subject,
+                body=self.__body,
+            )
+
+    def send_add_task_gmail_notif(self, receiver_email: str, subject: str, body: str):
+        self.message_id = super().send_otp_via_gmail(
+            receiver_email=receiver_email, subject=subject, body=body
+        )  # jangan kupa ubah ke string to uuid

@@ -4,44 +4,57 @@
 <!-- datatables css link -->
 <link
   href="https://cdn.datatables.net/v/bs5/jq-3.7.0/jszip-3.10.1/dt-2.1.8/af-2.7.0/b-3.1.2/b-colvis-3.1.2/b-html5-3.1.2/b-print-3.1.2/cr-2.0.4/date-1.5.4/fc-5.0.3/fh-4.0.1/kt-2.12.1/r-3.0.3/rg-1.5.0/rr-1.5.0/sc-2.4.3/sb-1.8.1/sp-2.3.3/sl-2.1.0/sr-1.4.1/datatables.min.css"
-  rel="stylesheet"
-/>
+  rel="stylesheet" />
 
 {% endblock %} {% block navbar %}
 <ul class="navbar-nav me-auto mb-2 mb-lg-0">
   <li class="nav-item">
     <a
-      class="nav-link poppins-regular"
-      aria-current="page"
-      href="/dashboard/magang"
-      >Dashboard</a
-    >
+      class="nav-link poppins-regular text-pink d-flex align-items-center gap-2"
+      href="/dashboard"><i
+        class="fas fa-house-chimney fa-2xl text-primary w-100"
+        style="font-size: 1em; max-width:20px"></i>Dashboard</a>
   </li>
   <li class="nav-item">
-    <a class="nav-link poppins-regular" href="/change-password"
-      >Ubah Password</a
-    >
+    <a
+      class="nav-link poppins-regular text-pink d-flex align-items-center gap-2"
+      href="/change-password">
+      <i class="fas fa-key fa-2xl text-primary w-100"
+        style="font-size: 1em; max-width:20px"></i>Ubah Password
+    </a>
   </li>
   <li class="nav-item">
-    <a class="nav-link poppins-regular" href="/riwayat-kehadiran"
-      >Riwayat Kehadiran Karyawan</a
-    >
+    <a
+      class="nav-link poppins-regular text-pink d-flex align-items-center gap-2"
+      href="/riwayat-kehadiran"><i
+        class="fas fa-calendar-check fa-2xl text-primary w-100"
+        style="font-size: 1em; max-width:20px"></i>Riwayat Kehadiran
+      Karyawan</a>
   </li>
   {% if data.role==1 %}
   <li class="nav-item">
-    <a class="nav-link poppins-regular active" href="/riwayat-bantuan"
-      >Riwayat Bantuan</a
-    >
+    <a
+      class="nav-link poppins-regular text-pink  d-flex align-items-center gap-2 active"
+      href="/riwayat-bantuan"><i
+        class="fas fa-circle-question fa-2xl text-primary w-100"
+        style="font-size: 1em; max-width:20px"></i> Riwayat Bantuan</a>
   </li>
   {% if data.departement == 'Superuser' %}
   <li class="nav-item">
-    <a class="nav-link poppins-regular" href="/kelola-admin">Kelola Admin</a>
-  </li>
-  {% endif %} {% endif %} {% if data.role !=1 %}
-  <li class="nav-item">
-    <a class="nav-link poppins-regular" href="/task/magang">Task</a>
+    <a
+      class="nav-link poppins-regular text-pink d-flex align-items-center gap-2"
+      href="/kelola-admin"><i class="fas fa-user-tie fa-2xl text-primary w-100"
+        style="font-size: 1em; max-width:20px"></i>Kelola Admin</a>
   </li>
   {% endif %}
+  {% endif %}
+  <li class="nav-item">
+    <a
+      class="nav-link poppins-regular text-pink d-flex align-items-center gap-2"
+      href="/task"><i
+        class="fa-regular fa-pen-to-square fa-2xl text-primary w-100"
+        style="font-size: 1em; max-width:20px"></i>Task</a>
+  </li>
 </ul>
 {% endblock %} {% block content %}
 
@@ -52,8 +65,7 @@
       class="h3 poppins-regular mb-md-0 mb-sm-2 text-gray-800"
       data-aos="zoom-in-right"
       data-aos-delay="200"
-      data-aos-duration="800"
-    >
+      data-aos-duration="800">
       Riwayat Bantuan
     </h1>
     <h1
@@ -61,8 +73,7 @@
       class="h6 border border-1 rounded border-secondary-subtle p-1 px-2 poppins-regular mb-0 text-gray-800"
       data-aos="zoom-in-left"
       data-aos-delay="200"
-      data-aos-duration="800"
-    ></h1>
+      data-aos-duration="800"></h1>
   </div>
 
   <table
@@ -71,8 +82,7 @@
     style="width: 100%"
     data-aos="zoom-in"
     data-aos-delay="400"
-    data-aos-duration="800"
-  >
+    data-aos-duration="800">
     {% if riwayat_bantuan and data.role==1%}
     <thead>
       <tr>
@@ -92,8 +102,7 @@
         id="{{riwayat_bantuan[i-1]._id  }}"
         data-aos="slide-right"
         data-aos-delay="{{ 400+(i%26*100) }}"
-        data-aos-duration="800"
-      >
+        data-aos-duration="800">
         <td class="poppins-regular align-middle">{{ i }}</td>
         <td class="poppins-regular align-middle">
           {{ riwayat_bantuan[i-1].no_ticket }}
@@ -114,10 +123,18 @@
           {{ riwayat_bantuan[i-1].kendala }}
         </td>
         <td class="poppins-regular align-middle">
-          <select class="{{ riwayat_bantuan[i-1].selectClass }}" name="status" id="status" style="-webkit-appearance: none; -moz-appearance: none; appearance: none; background-image: none;">
-            <option class='text-warning' value="Pending" {% if riwayat_bantuan[i-1].status == 'Pending' %}selected{% endif %}>Pending</option>
-            <option class='text-info' value="Diproses" {% if riwayat_bantuan[i-1].status == 'Diproses' %}selected{% endif %}>Diproses</option>
-            <option class='text-success' value="Selesai" {% if riwayat_bantuan[i-1].status == 'Selesai' %}selected{% endif %}>Selesai</option>
+          <select class="{{ riwayat_bantuan[i-1].selectClass }}" name="status"
+            id="status"
+            style="-webkit-appearance: none; -moz-appearance: none; appearance: none; background-image: none;">
+            <option class='text-warning' value="Pending" {% if
+              riwayat_bantuan[i-1].status == 'Pending' %}selected{% endif
+              %}>Pending</option>
+            <option class='text-info' value="Diproses" {% if
+              riwayat_bantuan[i-1].status == 'Diproses' %}selected{% endif
+              %}>Diproses</option>
+            <option class='text-success' value="Selesai" {% if
+              riwayat_bantuan[i-1].status == 'Selesai' %}selected{% endif
+              %}>Selesai</option>
           </select>
         </td>
       </tr>
@@ -131,9 +148,12 @@
 <!-- cdn js custom -->
 {% block cdn_custom_js %}
 <!-- datatables cdn js -->
-<script src="https://cdnjs.cloudflare.com/ajax/libs/pdfmake/0.2.7/pdfmake.min.js"></script>
-<script src="https://cdnjs.cloudflare.com/ajax/libs/pdfmake/0.2.7/vfs_fonts.js"></script>
-<script src="https://cdn.datatables.net/v/bs5/jq-3.7.0/jszip-3.10.1/dt-2.1.8/af-2.7.0/b-3.1.2/b-colvis-3.1.2/b-html5-3.1.2/b-print-3.1.2/cr-2.0.4/date-1.5.4/fc-5.0.3/fh-4.0.1/kt-2.12.1/r-3.0.3/rg-1.5.0/rr-1.5.0/sc-2.4.3/sb-1.8.1/sp-2.3.3/sl-2.1.0/sr-1.4.1/datatables.min.js"></script>
+<script
+  src="https://cdnjs.cloudflare.com/ajax/libs/pdfmake/0.2.7/pdfmake.min.js"></script>
+<script
+  src="https://cdnjs.cloudflare.com/ajax/libs/pdfmake/0.2.7/vfs_fonts.js"></script>
+<script
+  src="https://cdn.datatables.net/v/bs5/jq-3.7.0/jszip-3.10.1/dt-2.1.8/af-2.7.0/b-3.1.2/b-colvis-3.1.2/b-html5-3.1.2/b-print-3.1.2/cr-2.0.4/date-1.5.4/fc-5.0.3/fh-4.0.1/kt-2.12.1/r-3.0.3/rg-1.5.0/rr-1.5.0/sc-2.4.3/sb-1.8.1/sp-2.3.3/sl-2.1.0/sr-1.4.1/datatables.min.js"></script>
 {% endblock %} {% block js_custom %}
 <!-- js custom -->
 <script src="{{ url_for('static', filename='js/index.js') }}"></script>
@@ -166,7 +186,11 @@
       // Cari elemen parent <tr> terdekat
       const parentId = $(this).closest("tr").attr("id");
       const dataToSend = { status: selectedValue, status_id:parentId }; // Data yang akan dikirimkan
-  
+      
+      // make loading
+      $('section#menu').fadeOut(200,function(){
+        $('section#loading').fadeIn(500);
+      })
       $.ajax({
         url: '/update-status-bantuan', // Endpoint Flask
         type: 'POST',
@@ -178,12 +202,19 @@
           "X-Requested-With": 'XMLHttpRequest'
         },
         success: function (response) {
+          //dapat respose
+          $('section#loading').fadeOut(500);
           window.location.replace(response.redirect),200
         },
         error: function (xhr, status, error) {
           // Tindakan jika gagal
           console.log(xhr, status, error);
-          window.location.replace(`${xhr.responseJSON.redirect}`),500
+          $('section#loading').fadeOut(500);
+          if (xhr.responseJSON.redirect){
+            window.location.replace(xhr.responseJSON.redirect),500
+          } else {
+            window.location.replace("/myProfiles?msg=jaringan Error"),500
+          }
         },
       });
     });

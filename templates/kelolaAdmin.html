@@ -11,37 +11,36 @@
 <ul class="navbar-nav me-auto mb-2 mb-lg-0">
   <li class="nav-item">
     <a
-      class="nav-link poppins-regular"
-      aria-current="page"
-      href="/dashboard/magang"
-      >Dashboard</a
+      class="nav-link poppins-regular text-pink d-flex align-items-center gap-2"
+      href="/dashboard"
+      ><i class="fas fa-house-chimney fa-2xl text-primary w-100" style="font-size: 1em; max-width:20px"></i>Dashboard</a
     >
   </li>
   <li class="nav-item">
-    <a class="nav-link poppins-regular" href="/change-password"
-      >Ubah Password</a
-    >
+    <a class="nav-link poppins-regular text-pink d-flex align-items-center gap-2" href="/change-password">
+      <i class="fas fa-key fa-2xl text-primary w-100" style="font-size: 1em; max-width:20px"></i>Ubah Password
+    </a>
   </li>
   <li class="nav-item">
-    <a class="nav-link poppins-regular" href="/riwayat-kehadiran"
-      >Riwayat Kehadiran Karyawan</a>
+    <a class="nav-link poppins-regular text-pink d-flex align-items-center gap-2" href="/riwayat-kehadiran"
+      ><i class="fas fa-calendar-check fa-2xl text-primary w-100" style="font-size: 1em; max-width:20px"></i>Riwayat Kehadiran Karyawan</a
+    >
   </li>
   {% if data.role==1 %}
   <li class="nav-item">
-    <a class="nav-link poppins-regular" href="/riwayat-bantuan"
-      >Riwayat Bantuan</a
+    <a class="nav-link poppins-regular text-pink  d-flex align-items-center gap-2" href="/riwayat-bantuan"
+      ><i class="fas fa-circle-question fa-2xl text-primary w-100" style="font-size: 1em; max-width:20px"></i> Riwayat Bantuan</a
     >
   </li>
+  {% if data.departement == 'Superuser' %}
   <li class="nav-item">
-    <a class="nav-link poppins-regular active" href="/kelola-admin">Kelola Admin</a>
-  </li> 
-  {% endif %}
-    
-  {% if data.role !=1 %}
-  <li class="nav-item">
-    <a class="nav-link poppins-regular" href="/task/magang">Task</a>
+    <a class="nav-link poppins-regular text-pink d-flex align-items-center gap-2 active" href="/kelola-admin"><i class="fas fa-user-tie fa-2xl text-primary w-100" style="font-size: 1em; max-width:20px"></i>Kelola Admin</a>
   </li>
   {% endif %}
+  {% endif %}
+  <li class="nav-item">
+    <a class="nav-link poppins-regular text-pink d-flex align-items-center gap-2" href="/task"><i class="fa-regular fa-pen-to-square fa-2xl text-primary w-100" style="font-size: 1em; max-width:20px"></i>Task</a>
+  </li>
 </ul>
 {% endblock %}{% block content %}
 

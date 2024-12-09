@@ -1,0 +1,984 @@
+{% extends "dashboard_magang.html" %} {% block title %}
+<title>AbsensiKu | Task</title>
+{% endblock %} {% block cdn_custom_css %}
+<!-- datatables css link -->
+<link
+    href="https://cdn.datatables.net/v/bs5/jq-3.7.0/jszip-3.10.1/dt-2.1.8/af-2.7.0/b-3.1.2/b-colvis-3.1.2/b-html5-3.1.2/b-print-3.1.2/cr-2.0.4/date-1.5.4/fc-5.0.3/fh-4.0.1/kt-2.12.1/r-3.0.3/rg-1.5.0/rr-1.5.0/sc-2.4.3/sb-1.8.1/sp-2.3.3/sl-2.1.0/sr-1.4.1/datatables.min.css"
+    rel="stylesheet" />
+
+{% endblock %}
+
+{% block custom_css %}
+<!-- css custom -->
+<link
+    rel="stylesheet"
+    href="{{ url_for('static', filename='css/style.css') }}" />
+<style>
+    td#Pending .card {
+    cursor: grab; /* Menampilkan cursor grab saat elemen bisa di-drag */
+    cursor: -moz-grab;
+    cursor: -webkit-grab
+    }
+
+    td#Progress .card {
+    cursor: grab; /* Menampilkan cursor grab saat elemen bisa di-drag */
+    cursor: -moz-grab;
+    cursor: -webkit-grab
+    }
+
+    .dragging {
+        cursor: grabbing; /* Menampilkan cursor grabbing saat elemen sedang di-drag */
+        cursor: -moz-grabbing;
+        cursor: -webkit-grabbing;
+    }
+
+    .disabled-drag{
+        cursor: not-allowed; /* Tunjukkan bahwa dragging dinonaktifkan */
+        opacity: 0.6; /* Memberi efek "disable" */
+    }
+</style>
+{% endblock custom_css %}
+
+{% block navbar %}
+<ul class="navbar-nav me-auto mb-2 mb-lg-0">
+    <li class="nav-item">
+        <a
+            class="nav-link poppins-regular text-pink d-flex align-items-center gap-2"
+            href="/dashboard"><i
+                class="fas fa-house-chimney fa-2xl text-primary w-100"
+                style="font-size: 1em; max-width:20px"></i>Dashboard</a>
+    </li>
+    <li class="nav-item">
+        <a
+            class="nav-link poppins-regular text-pink d-flex align-items-center gap-2"
+            href="/change-password">
+            <i class="fas fa-key fa-2xl text-primary w-100"
+                style="font-size: 1em; max-width:20px"></i>Ubah Password
+        </a>
+    </li>
+    <li class="nav-item">
+        <a
+            class="nav-link poppins-regular text-pink d-flex align-items-center gap-2"
+            href="/riwayat-kehadiran"><i
+                class="fas fa-calendar-check fa-2xl text-primary w-100"
+                style="font-size: 1em; max-width:20px"></i>Riwayat Kehadiran
+            Karyawan</a>
+    </li>
+    {% if data.role==1 %}
+    <li class="nav-item">
+        <a
+            class="nav-link poppins-regular text-pink  d-flex align-items-center gap-2"
+            href="/riwayat-bantuan"><i
+                class="fas fa-circle-question fa-2xl text-primary w-100"
+                style="font-size: 1em; max-width:20px"></i> Riwayat Bantuan</a>
+    </li>
+    {% if data.departement == 'Superuser' %}
+    <li class="nav-item">
+        <a
+            class="nav-link poppins-regular text-pink d-flex align-items-center gap-2"
+            href="/kelola-admin"><i
+                class="fas fa-user-tie fa-2xl text-primary w-100"
+                style="font-size: 1em; max-width:20px"></i>Kelola Admin</a>
+    </li>
+    {% endif %}
+    {% endif %}
+    <li class="nav-item">
+        <a
+            class="nav-link poppins-regular text-pink d-flex align-items-center gap-2 active"
+            href="/task"><i
+                class="fa-regular fa-pen-to-square fa-2xl text-primary w-100"
+                style="font-size: 1em; max-width:20px"></i>Task</a>
+    </li>
+</ul>
+{% endblock %} {% block content %}
+<div id="kelolaAdmin" class="container-fluid" style="margin-top: 1.5rem">
+    <!-- Page Heading -->
+    <div class="d-sm-flex align-items-center justify-content-between mb-4">
+        <h1
+            class="h3 poppins-regular mb-md-0 mb-sm-2 text-gray-800"
+            data-aos="zoom-in-right"
+            data-aos-delay="200"
+            data-aos-duration="800">
+            Task Departement
+        </h1>
+        <h1
+            id="clock"
+            class="h6 border border-1 rounded border-secondary-subtle p-1 px-2 poppins-regular mb-0 text-gray-800"
+            data-aos="zoom-in-left"
+            data-aos-delay="200"
+            data-aos-duration="800"></h1>
+    </div>
+
+    <div class="container">
+        {% if data.role==1 %}
+        <!-- ini untuk role jika admin /sub admin -->
+        <!-- Button to trigger modal -->
+        <div class="text-end mb-3">
+            <button
+                class="btn btn-primary"
+                data-bs-toggle="modal"
+                data-bs-target="#taskModal">
+                <i class="fas fa-plus"></i> Add Task
+            </button>
+        </div>
+
+        <!-- Task Table -->
+        <div
+            data-aos="zoom-in"
+            data-aos-delay="400"
+            data-aos-duration="800">
+            <table id="taskTable"
+                class="table table-striped display no-wrap table-winnicode w-100">
+                <thead>
+                    <tr>
+                        <th>No</th>
+                        {% for th in table_heading %}
+                        <th>{{ th }}</th>
+                        {% endfor %}
+                        {% if path1 not in ('Karyawan', 'Magang') and path1 %}
+                        <th>Action</th>
+                        {% endif %}
+                    </tr>
+                </thead>
+                <tbody>
+                    <!-- Dynamic rows will be appended here -->
+                    <!-- enumerate data_user_all -->
+                    {% for index, tr in enumerate(data_user_all) %}
+
+                    <tr id="{{ tr['_id'] }}"><!--  inisiasi id  -->
+                        <td class="poppins-regular">{{ index+1 }}</td>
+
+                        {% for td in range(1,list(tr.values())|length) %}
+
+                        {% if not path1 %}
+                        <td class="poppins-regular"><a
+                                class="text-dark text-decoration-none"
+                                href="/task?path1={{ list(tr.values())[td] }}"
+                                style="cursor: pointer;">{{
+                                list(tr.values())[td]
+                                }}</a></td>
+                        {% elif path1 in ('Karyawan','Magang') %}
+                        <td class="poppins-regular">{{ list(tr.values())[td]
+                            }}</td>
+                        {% else %}
+
+                        <td class="poppins-regular">{% if not
+                            (type(list(tr.values())[td]) == datetime)
+                            %}
+
+                            {% if list(tr.keys())[td] == 'accepted' %}
+                            <select
+                                class="form-control bg-transparent border border-0 shadow-none p-0 text-center"
+                                name="{{ list(tr.keys())[td] }}"
+                                id="list(tr.keys())[td]">
+
+                                {% if list(tr.values())[td] == False %}
+                                <option value="False" selected>False</option>
+                                {% else %}
+                                <option value="False">False</option>
+                                {% endif %}
+
+                                {% if list(tr.values())[td] == True %}
+                                <option value="True" selected>True</option>
+                                {% else %}
+                                <option value="True">True</option>
+                                {% endif %}
+
+                            </select>
+                            {% else %}
+
+                            <input
+                                class="border-0 poppins-regular bg-transparent text-center"
+                                style="outline: 0;" type="text"
+                                value="{{list(tr.values())[td] }}"
+                                id="{{ list(tr.keys())[td] }}">
+                            {% endif %}
+                            {% else %}
+                            <input
+                                class="border-0 poppins-regular bg-transparent"
+                                style="outline: 0;"
+                                type="datetime-local"
+                                id="{{ list(tr.keys())[td] }}"
+                                value="{{ list(tr.values())[td] }}">
+                            {% endif %}
+
+                        </td>
+                        {% endif %}
+
+                        {% endfor %}
+                        {% if path1 not in ('Karyawan', 'Magang') and path1
+                        %}
+                        <td class="text-nowrap">
+                            <button
+                                class="btn btn-sm btn-danger delete-btn">
+                                <i class="fas fa-trash"></i>
+                            </button>
+                        </td>
+                        {% endif %}
+                    </tr>
+                    {% endfor %}
+                </tbody>
+
+            </table>
+        </div>
+        <!-- Task Modal add -->
+        <div
+            class="modal fade"
+            id="taskModal"
+            tabindex="-1"
+            aria-labelledby="taskModalLabel"
+            aria-hidden="true">
+            <div class="modal-dialog">
+                <div class="modal-content">
+                    <form id="taskForm">
+                        <div class="modal-header bg-primary">
+                            <h5 class="modal-title poppins-semibold text-white"
+                                id="taskModalLabel">Add
+                                New
+                                Task</h5>
+                            <button
+                                type="button"
+                                class="btn-close"
+                                data-bs-dismiss="modal"
+                                aria-label="Close"></button>
+                        </div>
+                        <div class="modal-body">
+                            <!-- csrf_token -->
+                            <input type="hidden" name="csrf_token"
+                                value="{{ csrf_token() }}">
+                            <!-- metode input -->
+                            <input type="hidden" name="_method" value="add">
+                            <!--  nama task -->
+                            <div class="mb-3">
+                                <label for="taskName"
+                                    class="form-label">Task
+                                    Name<span
+                                        class="text-danger">*</span></label>
+                                <input
+                                    type="text"
+                                    class="form-control"
+                                    id="taskName"
+                                    placeholder="Masukkan task name yang tersedia"
+                                    required
+                                    oninvalid="this.setCustomValidity('Task Name wajib diisi')"
+                                    oninput="this.setCustomValidity('')" />
+                            </div>
+                            <!-- deskripsi task -->
+                            <div class="mb-3">
+                                <label for="description_task"
+                                    class="form-label">Description Task<span
+                                        class="text-danger">*</span></label>
+                                <textarea id="description_task"
+                                    class="form-control"
+                                    cols="30"
+                                    rows="2"
+                                    placeholder="Masukkan Deskripsi Task"
+                                    required
+                                    oninvalid="this.setCustomValidity('Description Task wajib diisi')"
+                                    oninput="this.setCustomValidity('')"></textarea>
+                            </div>
+                            <!-- link task -->
+                            <div class="mb-3">
+                                <label for="link_input"
+                                    class="form-label">Masukkan Link (jika
+                                    diperlukan)</label>
+                                <input
+                                    type="text"
+                                    class="form-control"
+                                    id="link_input"
+                                    placeholder="Masukkan link yang tersedia (jika diperlukan)" />
+                                <div id="linkHelpBlock" class="form-text">
+                                    <strong>*</strong>note: link yang dimasukkan
+                                    diawali dengan https://* atau http://*
+                                </div>
+                            </div>
+                            <!-- deadline -->
+                            <div class="mb-3">
+                                <label for="deadline"
+                                    class="form-label">Deadline<span
+                                        class="text-danger">*</span></label>
+                                <input
+                                    type="datetime-local"
+                                    class="form-control"
+                                    id="deadline"
+                                    required
+                                    oninvalid="this.setCustomValidity('Deadline wajib diisi')"
+                                    oninput="this.setCustomValidity('')" />
+                            </div>
+                            <!-- send to -->
+                            <div class="mb-3">
+                                <label for="send_to_user"
+                                    class="form-label">Send To<span
+                                        class="text-danger">*</span></label>
+                                <select class="form-select"
+                                    id="send_to_user"
+                                    aria-placeholder="Masukkan send to user"
+                                    required
+                                    oninvalid="this.setCustomValidity('Wajib dipilih')"
+                                    oninput="this.setCustomValidity('')">
+                                    <option value disabled selected>--select
+                                        send to user--</option>
+                                    {% for user in data_user_for_add %}
+                                    <option
+                                        value="{{ user.email }}">{{
+                                        user.nama
+                                        }}</option>
+                                    {% endfor %}
+                                </select>
+                            </div>
+                            <!-- jobs -->
+                            <div class="mb-3">
+                                <label for="jobs"
+                                    class="form-label">Jobs<span
+                                        class="text-danger">*</span></label>
+                                <select class="form-select" id="jobs"
+                                    disabled
+                                    aria-placeholder="Masukkan send to user"
+                                    required
+                                    oninvalid="this.setCustomValidity('Wajib dipilih')"
+                                    oninput="this.setCustomValidity('')">
+                                    <option value disabled selected>--select
+                                        send to user--</option>
+                                </select>
+                            </div>
+                            <!-- departement -->
+                            <div class="mb-3">
+                                <label for="departement"
+                                    class="form-label">Departement<span
+                                        class="text-danger">*</span></label>
+                                <select class="form-select" id="departement"
+                                    disabled
+                                    aria-placeholder="Masukkan send to user"
+                                    required
+                                    oninvalid="this.setCustomValidity('Wajib dipilih')"
+                                    oninput="this.setCustomValidity('')">
+                                    <option value disabled selected>--select
+                                        send to user--</option>
+                                </select>
+                            </div>
+                        </div>
+                        <div class="modal-footer">
+                            <button type="reset" class="btn btn-danger"
+                                data-bs-dismiss="modal"
+                                aria-label="Close">Cancel</button>
+                            <button type="submit"
+                                class="btn btn-primary">Kirim</button>
+                        </div>
+                    </div>
+                </form>
+            </div>
+        </div>
+
+        <!-- task magang -->
+        {% elif data.role!=1 %}
+        <!-- Task Table user -->
+        <div
+            data-aos="zoom-in"
+            data-aos-delay="400"
+            data-aos-duration="800" class="table-responsive">
+            <table id="taskTableUser"
+                class="table display no-wrap table-winnicode w-100 align-middle">
+                <thead>
+                    <tr>
+                        <th
+                            class="bg-warning poppins-semibold text-white">Pending</th>
+                        <th
+                            class="poppins-semibold bg-secondary text-white">Progress</th>
+                        <th
+                            class="poppins-semibold bg-success text-white">Success</th>
+                        <th
+                            class="poppins-semibold bg-primary text-white">Accepted</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for user in data_user_all %}
+
+                    <tr id="{{user['_id']}}">
+
+                        <td id="Pending" class="sortable">
+                            {% if user.status_task == 'Pending' %}
+                            <div class="card text-start">
+
+                                {% if user.link_input %}
+                                <i
+                                    class=" position-absolute top-0 end-0 fa-solid fa-up-right-from-square fa-sm lh-1 text-secondary mt-1 me-1"
+                                    onclick="window.open('{{ user.link_input }}', '_blank')"
+                                    style='cursor: pointer'></i>
+                                {% endif %}
+                                <div class="card-body">
+                                    <h5
+                                        class="card-title poppins-medium">{{
+                                        user.taskName }}</h5>
+                                    <p
+                                        class="card-text poppins-regular">{{
+                                        user.description_task }}</p>
+                                    <p
+                                        class="deadline poppins-regular text-secondary">{{user.deadline}}</p>
+                                </div>
+                            </div>
+                            {% endif %}
+                        </td>
+                        <td id="Progress" class="sortable">
+                            {% if user.status_task == 'Progress' %}
+                            <div class="card text-start mb-4">
+
+                                {% if user.link_input %}
+                                <i
+                                    class="position-absolute top-0 end-0 fa-solid fa-up-right-from-square fa-sm lh-1 text-secondary mt-1 me-1"
+                                    onclick="window.open('{{ user.link_input }}', '_blank')"
+                                    style='cursor: pointer'></i>
+                                {% endif %}
+                                <div class="card-body">
+                                    <h5
+                                        class="card-title poppins-medium">{{
+                                        user.taskName }}</h5>
+                                    <p
+                                        class="card-text poppins-regular">{{
+                                        user.description_task }}</p>
+                                    <p
+                                        class="deadline poppins-regular text-secondary">{{user.deadline}}</p>
+                                </div>
+                            </div>
+                            {% endif %}
+
+                        </td>
+                        <td id="Success" class="sortable">
+                            {% if user.status_task == 'Success' %}
+                            <div class="card text-start mb-4">
+
+                                {% if user.link_input %}
+                                <i
+                                    class=" position-absolute top-0 end-0 fa-solid fa-up-right-from-square fa-sm lh-1 text-secondary mt-1 me-1"
+                                    onclick="window.open('{{ user.link_input }}', '_blank')"
+                                    style='cursor: pointer'></i>
+                                {% endif %}
+                                <div class="card-body">
+                                    <h5
+                                        class="card-title poppins-medium">{{
+                                        user.taskName }}</h5>
+                                    <p
+                                        class="card-text poppins-regular">{{
+                                        user.description_task }}</p>
+                                    <p
+                                        class="deadline poppins-regular text-secondary">{{user.deadline}}</p>
+                                </div>
+                            </div>
+                            {% endif %}
+
+                        </td>
+                        <td id="active" class="text-center">
+
+                            {% if user.accepted == True %}
+                            <button
+                                class="btn btn-success text-white poppins-regular">Accepted</button>
+                            {% else %}
+                            <button
+                                class="btn btn-danger text-white poppins-regular">Not
+                                Accepted</button>
+                            {% endif %}
+
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+            {% endif %}
+        </div>
+    </div>
+    {% endblock %}
+    <!-- custom js -->
+    <!-- cdn js custom -->
+    {% block cdn_custom_js %}
+    <script
+        src="https://cdnjs.cloudflare.com/ajax/libs/pdfmake/0.2.7/pdfmake.min.js"></script>
+    <script
+        src="https://cdnjs.cloudflare.com/ajax/libs/pdfmake/0.2.7/vfs_fonts.js"></script>
+    <script
+        src="https://cdn.datatables.net/v/bs5/jq-3.7.0/jszip-3.10.1/dt-2.1.8/af-2.7.0/b-3.1.2/b-colvis-3.1.2/b-html5-3.1.2/b-print-3.1.2/cr-2.0.4/date-1.5.4/fc-5.0.3/fh-4.0.1/kt-2.12.1/r-3.0.3/rg-1.5.0/rr-1.5.0/sc-2.4.3/sb-1.8.1/sp-2.3.3/sl-2.1.0/sr-1.4.1/datatables.min.js"></script>
+    <!-- SortableJS -->
+    <script
+        src="https://cdn.jsdelivr.net/npm/sortablejs@1.15.0/Sortable.min.js"></script>
+    {% endblock %}
+    <!-- block js custom -->
+    {% block js_custom %}
+    <!-- js custom -->
+    <script
+        src="{{ url_for('static', filename='js/index.js') }}"></script>
+
+    {% if data.role==1 %}
+
+    <script>
+    $(document).ready(function () {
+
+        //initalize datatables
+        $('#taskTable').DataTable({
+            dom: '<"d-flex flex-column flex-md-row gap-3 justify-content-center justify-content-md-between mb-3"<l><f>>t<"mt-3" <i><p>>',
+            scrollX: true, // Enable horizontal scrolling
+            keys: true,
+            scrollCollapse: true, // Allow the table to reduce in height if there are fewer rows
+            fixedHeader: true,
+            lengthMenu: [5, 10, 25, 50, 75, { label: "All", value: -1 }],
+            pageLength: 10,
+        });
+
+        //for link input
+        document.getElementById("link_input").addEventListener("input", function () {
+            const input = this.value.trim(); // Ambil nilai input
+            const hasValidPrefix = input.startsWith("https://") || input.startsWith("http://");
+
+            if (input !== "" && !hasValidPrefix) {
+                // Jika input tidak kosong dan tidak valid, tambahkan kelas 'border-danger'
+                this.classList.add("border-danger");
+            } else {
+                // Jika input kosong atau valid, hapus kelas 'border-danger'
+                this.classList.remove("border-danger");
+            }
+        });
+
+        //delete task
+        $(document).on("click", ".delete-btn", function () {
+            const trId = $(this).closest("tr").attr("id");
+
+            //custom swal
+            const swalWithBootstrapButtons = Swal.mixin({
+                customClass: {
+                    confirmButton: "btn btn-primary ms-1",
+                    cancelButton: "btn btn-danger me-1",
+                    title: 'text-danger',  // Judul modal berwarna merah
+                    icon: 'text-danger',   // Ikon warning berwarna merah
+                },
+                buttonsStyling: false
+            });
+
+            //jalankan swall fire dengan customize tadi
+            swalWithBootstrapButtons.fire({
+                icon: "warning",
+                title: trId,
+                text: "Are you sure want to delete this task?",
+                showCancelButton: true,
+                confirmButtonText: "Yes, delete it!",
+                cancelButtonText: "No, cancel!",
+                reverseButtons: true
+            }).then((result)=>{
+                //jika dikonfirmasi
+                if (result.isConfirmed) {
+
+                    //nyalanakan loading
+                    $("section#menu").fadeOut(200, async function () {
+                        $("section#loading").fadeIn(500, function () {
+                            //kirim data ke server melalui ajax
+                            $.ajax({
+                                type: "POST",
+                                url: `/task/delete`,
+                                data: JSON.stringify({ id: trId }),
+                                headers: {
+                                    "X-CSRF-Token": '{{ csrf_token() }}',
+                                    "Content-Type": "application/json"
+                                },
+                                dataType: "json",
+                                //success
+                                success: function (response,status,xhr) {
+                                    console.log(response,status,xhr);
+                                    $('section#loading').fadeOut(500,function(){
+
+                                        if (xhr.status == 200 && response.redirect){
+                                            swalWithBootstrapButtons.fire({
+                                                title: "Deleted!",
+                                                text: "Your task has been deleted.",
+                                                icon: "success",
+                                                timer: 3000,
+                                                willClose: function(){
+                                                    window.location.reload(),xhr.status
+                                                }
+                                            }),xhr.status;
+                                        }
+                                    })
+                                },
+                                //error
+                                error: function(xhr, status, error) {
+                                    console.error(xhr,status,error);
+
+                                    $('section#loading').fadeOut(500,function(){
+                                        if(xhr.responseJSON.redirect){
+                                            window.location.replace(xhr.responseJSON.redirect),500
+                                        }else{
+                                            window.location.replace("/task/msg=jaringan Error"),500
+                                        }
+                                    });
+                                }
+                            })
+                        });
+                    });
+                //jika dicanel
+                } else if (
+                    /* Read more about handling dismissals below */
+                    result.dismiss === Swal.DismissReason.cancel
+                ) {
+                    return
+                }
+            })
+        })
+
+        // Add Task Form Submit
+        $("#taskModal #taskForm").on("submit", function (e) {
+            e.preventDefault();
+            $('#taskModal').modal('hide')
+            const csrf_token = $(this).find("input[name=csrf_token]").val().trim();
+            const method = $(this).find("input[name=_method]").val().trim();
+            const taskName = $(this).find("#taskName").val().trim();
+            const description_task = $(this).find("#description_task").val().trim();
+            const link_input = $(this).find("#link_input").val().trim();
+            const deadline = $(this).find("#deadline").val().trim();
+            const send_to_user = $(this).find("#send_to_user").val().trim();
+            const jobs = $(this).find("#jobs").val().trim();
+            const departement = $(this).find("#departement").val().trim();
+
+            if ($(this).find('#link_input').hasClass('border-danger')){
+                window.location.replace("/task?msg=Link harus diawali dengan http:// atau https://");
+                return
+            }
+
+            $("section#menu").fadeOut(200, async function () {
+                $("section#loading").fadeIn(500, function () {
+                    if (csrf_token === "" || method === "" || taskName === "" || description_task === "" || deadline === "" || send_to_user === "" || jobs === "" || departement === "") {
+                        console.error('formnya Kosong gan !!!')
+                        window.location.replace("/task?msg=Form dengan tanda <span class='text-danger fw-bold'>*</span> tidak boleh kosong");
+                    }
+        
+                    //jadikan obejct
+                    const data = {
+                        taskName: taskName,
+                        description_task: description_task,
+                        link_input: link_input,
+                        deadline: deadline,
+                        send_to_user: send_to_user,
+                        jobs: jobs,
+                        departement: departement,
+                    };
+        
+                    //lakukan ajax
+                    $.ajax({
+                        type: "POST",
+                        url: `/task/${method}`,
+                        data: JSON.stringify(data),
+                        headers: {
+                            "Content-Type": "application/json",
+                            "X-CSRF-Token": csrf_token,
+                        },
+                        dataType: "json",
+                        success: function (response,status,xhr) {
+                            //saat success
+                            console.log(response,status,xhr)
+                            $('section#loading').fadeOut(500,function(){
+                                if (status==='success' && xhr.status===200 && xhr.getResponseHeader('CSRF_TOKEN') && xhr.getResponseHeader('Content-Type')) {
+                                    window.location.replace(response.redirect),xhr.status
+                                }
+                            });
+                        },
+                        error: function(xhr,status,error){
+                            // Tindakan jika gagal
+                            console.log(xhr, status, error);
+                            $('section#loading').fadeOut(500,function(){
+                                if(xhr.responseJSON.redirect){
+                                    window.location.replace(xhr.responseJSON.redirect),500
+                                }else{
+                                    window.location.replace("/task/msg=jaringan Error"),500
+                                }
+                            });
+                        }
+                    })
+                })
+            });
+        });
+
+        //global varnya
+        const data_user_all_json = JSON.parse('{{ data_user_for_add|tojson }}'); // dapatkan data json dari server
+
+        //saat select send to user di change
+        $('#send_to_user').on('change', function (){
+            var selectedValue = $(this).val(); //ambil value select
+
+            //hapus disable
+            $('#jobs').attr('disabled', false);
+
+            // Kosongkan opsi di dropdown #jobs
+            $('#jobs').empty();
+            
+            // Tambahkan opsi default kembali
+            $('#jobs').append('<option value disabled selected>--select send to user--</option>');
+
+            //hapus disable
+            $('#departement').attr('disabled', true);
+
+            // Kosongkan opsi di dropdown #departement
+            $('#departement').empty();
+            
+            // Tambahkan opsi default kembali
+            $('#departement').append('<option value disabled selected>--select send to user--</option>');
+
+            // lakukan perurangan data_user_all dan samakan dengan selectend value
+            for (const user of data_user_all_json){
+                if (user.email == selectedValue){
+                    $('#jobs').append(`<option value="${user.jobs}">${user.jobs}</option>`) //ta,bah option selanjutnya
+                }
+            }
+        });
+
+        //saat select jobs di change
+        $('#jobs').on('change', function(){
+            var selectedValueUser = $('#send_to_user').val(); //ambil value select send to user
+            var selectedValue = $(this).val(); //ambil value select jobs
+            //hapus disable
+            $('#departement').attr('disabled', false);
+            // Kosongkan opsi di dropdown #departement
+            $('#departement').empty();
+            // Tambahkan opsi default kembali
+            $('#departement').append('<option value disabled selected>--select send to user--</option>');
+            // lakukan perurangan data_user_all dan samakan dengan selectend value
+            for (const user of data_user_all_json){
+                if (user.email == selectedValueUser && user.jobs == selectedValue){
+                    $('#departement').append(`<option value="${user.departement}">${user.departement}</option>`)
+                }
+            }
+        });
+    });
+
+    //function handle link td a href saat mouse over dan mouse out
+    $(document).on('mouseover', 'tr td a', function() {
+        $(this).removeClass('text-dark')
+        $(this).removeClass('text-decoration-none')
+        
+    });
+    //hadle mouse out
+    $(document).on('mouseout', 'tr td a', function() {
+        $(this).addClass('text-dark')
+        $(this).addClass('text-decoration-none')
+    });
+
+    //cek path1 sama dengan karyawan dan magang untuk dispatch
+    if (['Karyawan', 'Magang'].includes('{{ path1 }}')) {
+        $('#taskTable').on('click','tr', function(e){
+            const tr = e.currentTarget.id.toString()
+            window.location.href = `/task?path1=${tr}`
+        })
+    };
+</script>
+
+    {% if path1 and path1 not in ['karyawan', 'Magang']%}
+    <script>
+
+    // edit input
+    $('#taskTable tbody').on('click', 'td input', function (e) {
+        //inisiasi
+        const cell = $(this)
+        const inputId = cell.attr('id').trim();
+        const oldValue = cell.val();
+        const rowId = cell.closest('tr').attr('id').trim(); 
+
+        // Event ketika selesai mengetik
+        cell.off('blur').on('blur', function () {
+            //value baru
+            const newValue = $(this).val().trim();
+            
+            
+            if (!newValue) {
+                if (inputId != 'link_input'){
+                    console.error('Value tidak boleh kosong');
+                    return;
+                    
+                }
+            }
+
+            //jika value baru sama dengan value lama dan bukan dari accepted
+            if (newValue === oldValue && inputId != 'accepted') {
+                console.error('Value tidak berubah');
+                return;
+            }
+            
+            if (inputId == 'link_input'){
+                if (!newValue.startsWith('http://') && !newValue.startsWith('https://')) {
+                    Swal.fire({
+                        icon: "error",
+                        title: "OOPS!",
+                        html: `Link harus dimulai dengan http:// atau https://`,
+                        timer: 3000,
+                        willClose: () => {
+                            return
+                        },
+                    });
+                    return
+                }
+            }
+
+            // Kirim data ke server
+            $.ajax({
+                url: '/task/edit', // Endpoint backend
+                method: 'POST',
+                contentType: 'application/json',
+                data: JSON.stringify({
+                    rowId_receive: rowId,
+                    inputId_receive: inputId,
+                    newValue_receive: newValue,
+                }),
+                headers:{
+                    'Content-Type':'Application/json',
+                    'X-CSRFToken':'{{ csrf_token() }}'
+                },
+                success: function (response,status,xhr) {
+                    console.log(response,status,xhr)
+                    if (response.redirect && xhr.status == 200){
+                        const url = new URL(response.redirect,window.location.origin);
+                        const msg = url.searchParams.get('msg');
+                        Swal.fire({
+                            icon: "success",
+                            title: "Sukses!",
+                            html: `${msg}`,
+                            timer: 3000,
+                            willClose: () => {  
+                                console.log('Data updated successfully'),xhr.status;
+                            },
+                        });
+                    }
+
+                },
+                error: function (xhr,status,error) {
+                    console.log(xhr, status, error);
+                    const url = new URL(response.redirect,window.location.origin);
+                    const msg = url.searchParams.get('msg');
+                    const path = url.pathname
+                    if (xhr.responseJSON.redirect && xhr.status == 500 && url.pathname !== '/sign-in/'){
+                        Swal.fire({
+                            icon: "error",
+                            title: "OOPS!",
+                            html: `${msg}`,
+                            timer: 3000,
+                            willClose: () => {
+                                console.log('Data updated Failedly'),500;
+                            },
+                        });
+                    } else if (xhr.responseJSON.redirect && xhr.status == 500 && url.pathname === '/sign-in/'){
+                        window.location.replace('/task')
+                    }
+                },
+            });
+        });
+    });
+</script>
+    {% endif %}
+    {% endif %}
+
+    {% if data.role!=1 %}
+    <script>
+    $('#taskTableUser').DataTable({
+        dom:'t'
+    })
+    const pendingContainer = document.querySelectorAll('#Pending'); 
+    const progressContainer = document.querySelectorAll('#Progress'); 
+    const successContainer = document.querySelectorAll('#Success'); 
+
+    // Make columns sortable
+    const sortableOptions = {
+        group: 'shared', // Allow dragging between groups
+        animation: 150,
+        multiDrag: true, // Enable multi-dragging
+        direction: 'horizontal', // Batasi drag hanya horizontal
+        dragClass: 'dragging',
+        onEnd: function (evt) {
+            //console.log(evt.item.closest('tr'))
+            //console.log(`Moved ${evt.item.innerText} from ${evt.from.id} to ${evt.to.id}`);
+
+            // Ambil elemen <tr>  id yang merupakan parent dari item yang sedang dipindahkan
+            const parentTrId = evt.item.closest('tr').id;
+            //ambil column id berubah
+            const tdId = evt.to.id;
+            
+            $.ajax({
+                type:'POST',
+                url: '/task/user/edit',
+                data:JSON.stringify({
+                    parentTrId_receive: parentTrId,
+                    tdId_receive: tdId
+                }),
+                headers:{
+                    'Content-Type':'Application/json',
+                    'X-CSRFToken':'{{ csrf_token() }}'
+                },
+                success: function (response,status,xhr) {
+                    console.log(response,status,xhr)
+                    if (response.redirect && xhr.status == 200){
+                        window.location.replace(response.redirect),xhr.status
+                    }
+                },
+                error: function (xhr,status,error) {
+                    console.log(xhr,status,error)
+                    if (xhr.responseJSON.redirect && xhr.status == 500){
+                        window.location.replace(xhr.responseJSON.redirect)
+                    }
+                    else{
+                        Swal.fire({
+                            icon: "error",
+                            title: "OOPS!",
+                            html: `${error}`,
+                            timer: 3000,
+                            willClose: () => {
+                                console.log('Data updated Failedly'),xhr.status;
+                            },
+                        });
+                    }
+                }
+            })
+            
+        }
+    };
+
+    //ortable khusus pending
+    pendingContainer.forEach((el)=>{
+        const sortablePending = new Sortable(el, sortableOptions);
+    })
+    //sortable khusus progress
+    progressContainer.forEach((el)=>{
+        const sortableProgress = new Sortable(el, sortableOptions);
+    })
+    //sortable khusus success
+    successContainer.forEach((el)=>{
+        const sortableSuccess = new Sortable(el,{
+            group: {
+                name: 'shared',
+                pull: false,
+                put: true
+            },
+            animation: 150,
+            dragClass: 'disabled-drag'
+        });
+    })
+    </script>
+    {% endif %}
+
+    {% endblock js_custom %}
+
+    <!-- message js -->
+    {% block message %} {% if (result and msg) %}
+    <script>
+  Swal.fire({
+    icon: "success",
+    title: "Sukses!",
+    html: "{{ msg }}",
+    timer: 3000,
+    willClose: () => {
+      window.location.replace("/task");
+    },
+  });
+</script>
+    {% elif msg %}
+    <script>
+  Swal.fire({
+    icon: "error",
+    title: "OOPS!",
+    html: "{{ msg }}",
+    timer: 3000,
+    willClose: () => {
+      window.location.replace("/task");
+    },
+  });
+</script>
+    {% endif %} {% endblock %}

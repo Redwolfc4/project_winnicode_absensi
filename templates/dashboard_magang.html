@@ -4,621 +4,627 @@
 
 <!-- navbar -->
 {% block value_body %}
-<nav class="navbar navbar-expand-lg bg-body-tertiary shadow sticky-top" data-aos='fade-down' data-aos-delay='0' data-aos-duration='800'>
-  <div class="container-fluid gap-4">
-    <a class="navbar-brand d-flex justify-content-center align-items-center m-0 p-0" href="#">
-      <img id="winnicode-navbar-logo" src="{{url_for('static',filename='img/winni-code-copy.png')}}" alt="Logo"
-        class="d-inline-block align-text-top" />
-    </a>
-    <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarSupportedContent"
-      aria-controls="navbarSupportedContent" aria-expanded="false" aria-label="Toggle navigation">
-      <span class="navbar-toggler-icon"></span>
-    </button>
-    <div class="collapse navbar-collapse" id="navbarSupportedContent">
-      {% block navbar %}
-      
-      {% if data.role==3 %}
-      <ul class="navbar-nav me-auto mb-2 mb-lg-0">
-        <li class="nav-item">
-          <a class="nav-link poppins-regular active" aria-current="page" href="/dashboard/magang">Dashboard</a>
-        </li>
-        <li class="nav-item">
-          <a class="nav-link poppins-regular" href="/change-password">Ubah Password</a>
-        </li>
-        <li class="nav-item">
-          <a class="nav-link poppins-regular" href="/riwayat-kehadiran">Riwayat Kehadiran</a>
-        </li>
-        <li class="nav-item">
-          <a class="nav-link poppins-regular" href="/task/magang">Task</a>
-        </li>
-      </ul>
-      {% elif data.role==1 %}
-      <ul class="navbar-nav me-auto mb-2 mb-lg-0">
-        <li class="nav-item">
-          <a class="nav-link poppins-regular active" aria-current="page" href="/dashboard/magang">Dashboard</a>
-        </li>
-        <li class="nav-item">
-          <a class="nav-link poppins-regular" href="/change-password">Ubah Password</a>
-        </li>
-        <li class="nav-item">
-          <a class="nav-link poppins-regular" href="/riwayat-kehadiran">Riwayat Kehadiran Karyawan</a>
-        </li>
-        <li class="nav-item">
-          <a class="nav-link poppins-regular" href="/riwayat-bantuan"
-            >Riwayat Bantuan</a
-          >
-        </li>
-        {% if data.departement == 'Superuser' %}
-        <li class="nav-item">
-          <a class="nav-link poppins-regular" href="/kelola-admin">Kelola Admin</a>
-        </li>
-        {% endif %}
-      </ul>
-      {% endif %}
-        
-      {% endblock navbar%}
-      <a role="button" href="/myProfiles" id="page-user"
-        class="d-flex justify-content-center align-items-center gap-2 text-decoration-none">
-        <img src="{{url_for('static',filename=data.photo_profile)}}" class="img-fluid rounded rounded-circle" alt />
-        <div class="vr"></div>
-        <h5 class="poppins-regular text-secondary text-truncate" style="max-width: 7.5rem">
-          {{data.nama}}
-        </h5>
+<section id="menu">
+  <nav class="navbar bg-body-tertiary shadow sticky-top" data-aos='fade-down' data-aos-delay='600' data-aos-duration='800'>
+    <div class="container-fluid gap-4">
+      <a class="navbar-brand d-flex justify-content-center align-items-center m-0 p-0" role="button" data-bs-toggle="offcanvas" href="#navbarSupportedContent" aria-controls="navbarSupportedContent">
+        <img id="winnicode-navbar-logo" src="{{url_for('static',filename='img/winni-code-copy.png')}}" alt="Logo"
+          class="d-inline-block align-text-top" />
       </a>
-    </div>
-  </div>
-</nav>
-
-{% block content %}
-{% if data.role==3 %}
-<!-- content -->
-<div id="riwayat_kehadiran{{ data.role }}" class="container-fluid" style='margin-top: 1.5rem'>
-  <!-- Page Heading -->
-  <div class="d-sm-flex align-items-center justify-content-between mb-4">
-    <h1 class="h3 poppins-regular mb-md-0 mb-sm-2 text-gray-800" data-aos='zoom-in-right' data-aos-delay='200' data-aos-duration='800'>Riwayat Absen Saya</h1>
-    <h1 id="clock" class="h6 border border-1 rounded border-secondary-subtle p-1 px-2 poppins-regular mb-0 text-gray-800" data-aos='zoom-in-leftt' data-aos-delay='200' data-aos-duration='800'></h1>
-  </div>
-  <!-- card riwayat -->
-  {% block content_body_3 %}
-  <div class="row justify-content-center align-items-center">
-    {% for i in range(0,data2|length) %}
-    <div id="{{data2[i]['titleCard']|lower}}" class="col-lg-3 col-md-6 mb-4" data-aos='zoom-in' data-aos-delay='{{ i*400 }}' data-aos-duration='800'>
-      <div class="card {{ data2[i].borderLeft }} shadow h-100 py-2">
-        <div class="card-body">
-          <div class="row no-gutters align-items-center">
-            <div class="col mr-2">
-              <div class="text-xs poppins-regular {{ data2[i].textColor }} text-uppercase mb-1">
-                {{data2[i]['titleCard']}}
-              </div>
-              <div id="angka" class="h5 mb-0 poppins-regular text-gray-800">
-                {{data2[i].angkaCard}}
-              </div>
-            </div>
-            <div class="col-auto">
-              <i class="{{data2[i].icon}}"></i>
-            </div>
-          </div>
+      <div class="offcanvas offcanvas-start bg-dark" data-bs-scroll="true" tabindex="-1" id="navbarSupportedContent">
+        <div class="offcanvas-header">
+          <h5 class="offcanvas-title text-pink" id="offcanvasDarkNavbarLabel">Menu Page</h5>
+          <button type="button" class="btn-close" data-bs-dismiss="offcanvas" aria-label="Close" ></button>
         </div>
-      </div>
-    </div>
-    {% endfor %}
-  </div>
+        <hr class='text-pink' style="opacity:1">
+        <div class="offcanvas-body">
+          {% block navbar %}
 
-  <div class="row justify-content-center align-items-center mt-5 px-3">
-    <div class="card border border-0 col-md-6 col" data-aos='zoom-in-up' data-aos-delay='600' data-aos-duration='800'>
-      <!-- card header -->
-      <div class="card-header border border-success d-flex justify-content-center align-items-center w-100 bg-success">
-        <h5 class="card-title h5 m-0 text-white poppins-medium align-middle" id="absen">Absensi Hari Ke- {{
-          data['heading-card'] }}</h5>
-      </div>
-      <!-- card Body -->
-      <div
-        class="card-body border border-success rounded-bottom-2 d-flex flex-column justify-content-center align-items-center gap-4">
-        <div class="container-fluid">
-          <p class="card-text " id="name"><strong>Name</strong> : {{ data.nama
-            }}</p>
-          <p class="card-text" id="departement"><strong>Departement</strong> :
-            {{ data.departement }}</p>
-          <p class="card-text" id="jobs"><strong>jobs</strong> : {{ data.jobs
-            }}</p>
-          <p class="card-text" id="date"><strong>Tanggal</strong> : {{
-            data.tanggal_sekarang }}</p>
-          <p class="card-text" id="work_hours"><strong>Waktu</strong>: {{
-            data.waktu_awal_kerja }} - {{
-            data.waktu_akhir_kerja }} WIB</p>
-        </div>
-        <!-- form absensi -->
-        <div id="absensi_kehadiran" class="absensi_kehadiran d-flex justify-content-center align-items-center">
-          <input type="hidden" id="csrf_token1" name="csrf_token" value="{{ csrf_token() }}" />
-          <input type="hidden" id="user_id" name="user_id" value="{{ data._id }}" />
-          <button class="btn {{ data['class-button-hadir'] }}" id="status_hadir" name="status_hadir"
-            onclick="submitAbsen('hadir')">
-            {{ data['text-button'] }}
-          </button>
-        </div>
-      </div>
-    </div>
-  </div>
-  {% endblock content_body_3 %}
-</div>
-
-<!-- admin -->
-{% elif data.role==1 %}
-<div id="dashboard{{data.role}}" class="container-fluid" style="margin-top: 1.5rem">
-  <!-- Page Heading -->
-  <div class="d-sm-flex align-items-center justify-content-between mb-4">
-    <h1 class="h3 poppins-regular mb-md-0 mb-sm-2 text-gray-800" data-aos='zoom-in-right' data-aos-delay='200' data-aos-duration='800'>{{ data['heading_title_body'] }}</h1>
-    <h1 id="clock" class="h6 border border-1 rounded border-secondary-subtle p-1 px-2 poppins-regular mb-0 text-gray-800" data-aos='zoom-in-left' data-aos-delay='200' data-aos-duration='800'></h1>
-  </div>
-
-  {% block content_body_1 %}
-
-  <!-- DataTales Example -->
-  <div class="card shadow mb-4" data-aos='fade-up' data-aos-delay='200' data-aos-duration='800'>
-    <div class="card-header g-sm-0 g-4 py-3 row align-items-center">
-      <h6 class="col-sm-6 col-12 m-0 font-weight-bold text-primary poppins-medium">Data Absensi Karyawan dan
-        Magang</h6>
-      <!-- trigger add acoount -->
-      <div id="generate-report" class="col-sm-6 col-12">
-        <div class="dropdown btn-group w-100 float-end" style="max-width: 15rem;">
-          <button type="button" class="text-truncate btn w-100 btn-info dropdown-toggle text-white" data-bs-toggle="dropdown"><i class="fa-solid fa-download fa-lg me-2"></i><span>Generate Report</span></button>
-          <ul class="dropdown-menu">
-            <li><a class="dropdown-item text-truncate" href="/dashboard/admin/excel">Excel</a></li>
-            <li><hr class="dropdown-divider"></li>
-            <li><a class="dropdown-item text-truncate" href="/dashboard/admin/pdf" id="triggerPdf">PDF</a></li>
+          <ul class="navbar-nav me-auto mb-2 mb-lg-0">
+            <li class="nav-item">
+              <a
+                class="nav-link poppins-regular text-pink d-flex align-items-center gap-2 active"
+                href="/dashboard"
+                ><i class="fas fa-house-chimney fa-2xl text-primary w-100" style="font-size: 1em; max-width:20px"></i>Dashboard</a
+              >
+            </li>
+            <li class="nav-item">
+              <a class="nav-link poppins-regular text-pink d-flex align-items-center gap-2" href="/change-password">
+                <i class="fas fa-key fa-2xl text-primary w-100" style="font-size: 1em; max-width:20px"></i>Ubah Password
+              </a>
+            </li>
+            <li class="nav-item">
+              <a class="nav-link poppins-regular text-pink d-flex align-items-center gap-2" href="/riwayat-kehadiran"
+                ><i class="fas fa-calendar-check fa-2xl text-primary w-100" style="font-size: 1em; max-width:20px"></i>Riwayat Kehadiran Karyawan</a
+              >
+            </li>
+            {% if data.role==1 %}
+            <li class="nav-item">
+              <a class="nav-link poppins-regular text-pink  d-flex align-items-center gap-2" href="/riwayat-bantuan"
+                ><i class="fas fa-circle-question fa-2xl text-primary w-100" style="font-size: 1em; max-width:20px"></i> Riwayat Bantuan</a
+              >
+            </li>
+            {% if data.departement == 'Superuser' %}
+            <li class="nav-item">
+              <a class="nav-link poppins-regular text-pink d-flex align-items-center gap-2" href="/kelola-admin"><i class="fas fa-user-tie fa-2xl text-primary w-100" style="font-size: 1em; max-width:20px"></i>Kelola Admin</a>
+            </li>
+            {% endif %}
+            {% endif %}
+            <li class="nav-item">
+              <a class="nav-link poppins-regular text-pink d-flex align-items-center gap-2" href="/task"><i class="fa-regular fa-pen-to-square fa-2xl text-primary w-100" style="font-size: 1em; max-width:20px"></i>Task</a>
+            </li>
           </ul>
+          {% endblock navbar%}
+        </div>
+        <div class='offcanvas-footer mb-3'>
+          <a role="button" href="/myProfiles" id="page-user"
+            class="d-flex justify-content-center align-items-center gap-2 text-decoration-none">
+            <img src="{{url_for('static',filename=data.photo_profile)}}" class="img-fluid rounded rounded-circle" alt />
+            <div class="vr"></div>
+            <h5 class="poppins-regular text-pink text-truncate" style="max-width: 100%">
+              {{data.nama}}
+            </h5>
+          </a>
         </div>
       </div>
     </div>
-    <div class="card-body">
-      <div>
-        <div>
-          <div class="row gy-2 mb-2">
-            <!-- length -->
-            <div class="col-12 col-md-6">
-              <div class="row" id="dataTable_length">
-                <label class="col-12 gap-4 align-items-center poppins-regular">Show
-                  <select name="dataTable_length" id="dataTable_length" aria-controls="dataTable"
-                    class="d-inline-block poppins-regular custom-select custom-select-sm form-control form-control-sm"
-                    style="color: #212122;">
-                    <option value="1" {{ 'selected' if data.table_length==1 else '' }}>1</option>
-                    <option value="10" {{ 'selected' if data.table_length==10 else '' }}>10</option>
-                    <option value="25" {{ 'selected' if data.table_length==25 else '' }}>25</option>
-                    <option value="50" {{ 'selected' if data.table_length==50 else '' }}>50</option>
-                    <option value="100" {{ 'selected' if data.table_length==100 else '' }}>100</option>
-                  </select> entries
-                </label>
-              </div>
-            </div>
+  </nav>
 
-            <!-- search -->
-            <div class="col-12 col-md-6 d-flex justify-content-start justify-content-md-end align-items-center">
-              <div class="search">
-                <input type="text" id="search" class="search-input" placeholder="Search..." name="search">
-                <a onclick="search_karyawan()" class="search-icon"> <i class="fa fa-search"></i> </a>
+  {% block content %}
+  {% if data.role==3 %}
+  <!-- content -->
+  <div id="riwayat_kehadiran{{ data.role }}" class="container-fluid" style='margin-top: 1.5rem'>
+    <!-- Page Heading -->
+    <div class="d-sm-flex align-items-center justify-content-between mb-4">
+      <h1 class="h3 poppins-regular mb-md-0 mb-sm-2 text-gray-800" data-aos='zoom-in-right' data-aos-delay='600' data-aos-duration='800'>Riwayat Absen Saya</h1>
+      <h1 id="clock" class="h6 border border-1 rounded border-secondary-subtle p-1 px-2 poppins-regular mb-0 text-gray-800" data-aos='zoom-in-leftt' data-aos-delay='600' data-aos-duration='800'></h1>
+    </div>
+    <!-- card riwayat -->
+    {% block content_body_3 %}
+    <div class="row justify-content-center align-items-center">
+      {% for i in range(0,data2|length) %}
+      <div id="{{data2[i]['titleCard']|lower}}" class="col-lg-3 col-md-6 mb-4" data-aos='zoom-in' data-aos-delay='{{ i*400 }}' data-aos-duration='800'>
+        <div class="card {{ data2[i].borderLeft }} shadow h-100 py-2">
+          <div class="card-body">
+            <div class="row no-gutters align-items-center">
+              <div class="col mr-2">
+                <div class="text-xs poppins-regular {{ data2[i].textColor }} text-uppercase mb-1">
+                  {{data2[i]['titleCard']}}
+                </div>
+                <div id="angka" class="h5 mb-0 poppins-regular text-gray-800">
+                  {{data2[i].angkaCard}}
+                </div>
+              </div>
+              <div class="col-auto">
+                <i class="{{data2[i].icon}}"></i>
               </div>
             </div>
           </div>
-          <div class="row mx-0 table-responsive">
-            <div class="col px-0 w-100">
-              <table class="table table-striped table-hover table-bordered align-middle text-center text-nowrap"
-                id="dataTable" width="100%" cellspacing="0" role="grid" aria-describedby="dataTable_info"
-                style="width: 100%;">
-                <thead>
-                  <tr class="table-winniCode align-middle">
-                    <th class="poppins-semibold" rowspan="2">No</th>
-                    <th class="poppins-semibold" rowspan="2">NIK</th>
-                    <th class="poppins-semibold" rowspan="2">Nama</th>
-                    <th class="poppins-semibold" rowspan="2">Email</th>
-                    <th class="poppins-semibold" rowspan="2">Photo Profile</th>
-                    <th class="poppins-semibold" rowspan="2">Departement</th>
-                    <th class="poppins-semibold" rowspan="2">Born</th>
-                    <th class="poppins-semibold" rowspan="2">Birthday</th>
-                    <th class="poppins-semibold" rowspan="2">Status</th>
-                    <th class="poppins-semibold" colspan="4">Works</th>
-                    <th class="poppins-semibold" colspan="4">Absen</th>
-                    <th class="poppins-semibold" colspan="3">Action</thcol>
-                  </tr>
-                  <tr class="table-warning align-middle" style='--bs-table-bg:#efd500'>
-                    <th>Start Date</th>
-                    <th>End Date</th>
-                    <th>Start Time</th>
-                    <th>End Time</th>
-                    <th style="--bs-table-bg:#71ea71">Present</th>
-                    <th style="--bs-table-bg:#71ea71">Late</th>
-                    <th style="--bs-table-bg:#71ea71">Unpresent</th>
-                    <th style="--bs-table-bg:#71ea71">Holiday</th>
-                    <th style="--bs-table-bg:#38e9f2">View</th>
-                    <th style="--bs-table-bg:#38e9f2">Edit</th>
-                    <th style="--bs-table-bg:#38e9f2">Delete</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  {% for i in range(0,(data_karyawan_magang|length)) %}
-                  <tr id="{{ data_karyawan_magang[i]._id }}" data-aos='slide-right' data-aos-delay='{{ 400+((i+1)%26*100) }}' data-aos-duration='800'>
-                    <td class="poppins-regular">{{ (data.first_table - 1) * data.table_length + (i+1) }}</td>
-                    <td class="poppins-regular">{{ data_karyawan_magang[i].nik }}</td>
-                    <td class="poppins-regular">{{ data_karyawan_magang[i].nama}}</td>
-                    <td class="poppins-regular">{{ data_karyawan_magang[i].email }}</td>
-                    <td class="poppins-regular"><img
-                        src="{{url_for('static',filename=data_karyawan_magang[i].photo_profile)}}" width="50em"
-                        height="50em" alt="{{ data_karyawan_magang[i].nik }}.png"></td>
-                    <td class="poppins-regular">{{ data_karyawan_magang[i].departement }}</td>
-                    <td class="poppins-regular">{{ data_karyawan_magang[i].tempat_lahir }}</td>
-                    <td class="poppins-regular">{{ data_karyawan_magang[i].tanggal_lahir }}</td>
-                    <td class="poppins-regular">{{ data_karyawan_magang[i].jobs }}</td>
-                    <td class="poppins-regular">{{ data_karyawan_magang[i].mulai_kerja }}</td>
-                    <td class="poppins-regular">{{ data_karyawan_magang[i].akhir_kerja }}</td>
-                    <td class="poppins-regular">{{ data_karyawan_magang[i].waktu_awal_kerja }}</td>
-                    <td class="poppins-regular">{{ data_karyawan_magang[i].waktu_akhir_kerja }}</td>
-                    <td class="poppins-regular">{{ data_karyawan_magang[i].absen.hadir }}</td>
-                    <td class="poppins-regular">{{ data_karyawan_magang[i].absen.telat }}</td>
-                    <td class="poppins-regular">{{ data_karyawan_magang[i].absen.tidak_hadir }}</td>
-                    <td class="poppins-regular">{{ data_karyawan_magang[i].absen.libur }}</td>
-                    <!-- trigger modal view -->
-                    <td class="poppins-regular"><a type="button" id="triggerviewModal"
-                        data-bs-target="#viewModal{{ data_karyawan_magang[i]._id }}" class="btn btn-primary"
-                        data-bs-toggle="modal"><i class="fa-solid fa-xs text-white fa-user"></i></a></td>
-                    <!-- trigger modal edit -->
-                    <td class="poppins-regular"><a href="#" type="button" class="btn btn-success" data-bs-toggle="modal"
-                        id="triggerEditModal" data-bs-target="#editModal{{ data_karyawan_magang[i]._id }}"><i
-                          class="fa-solid fa-xs text-white fa-user-pen"></i></a></td>
-                    <!-- trigger delete edit -->
-                    <td class="poppins-regular"><a href="#" type="button" class="btn btn-danger" data-bs-toggle="modal"
-                        data-bs-target="#deleteModal{{ data_karyawan_magang[i]._id }}"><i
-                          class="fa-solid fa-xs text-white fa-user-minus"></i></a></td>
-                  </tr>
+        </div>
+      </div>
+      {% endfor %}
+    </div>
 
-                  <!-- modal view -->
-                  <div class="modal fade" id="viewModal{{ data_karyawan_magang[i]._id }}" tabindex="-1" role="dialog"
-                    aria-labelledby="viewModalLabel" aria-hidden="true">
-                    <div class="modal-dialog modal-lg" role="document">
-                      <div class="modal-content">
-                        <div class="modal-header">
-                          <h5 class="modal-title fs-2 poppins-regular" id="viewModalLabel">Profil {{
-                            data_karyawan_magang[i].nama }}</h5>
-                          <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
-                        </div>
-                        <div class="modal-body ">
-                          <div class="row row-gap-5 justify-content-center">
-                            <div class="col-lg-4 col-12 my-auto">
-                              <img src="{{url_for('static',filename=data_karyawan_magang[i].photo_profile)}}"
-                                class="img-fluid border border-4 border-purple rounded-3"
-                                alt="{{ data_karyawan_magang[i].nama }}.png">
-                            </div>
-                            <div id="profile-view" class="col-lg-8 col-12 row gap-3 justify-content-center">
-                              <!-- nik -->
-                              <div class="row">
-                                <div class="col-4">
-                                  <h5 class="fs-5 poppins-bold w-100 m-0">NIK</h5>
-                                </div>
-                                <div class="col-1"><span class="fs-5 poppins-medium m-0 w-100">:</span></div>
-                                <div class="col-7">
-                                  <p class="text-sm-end text-start md m-0 fs-5 poppins-medium w-100">{{
-                                    data_karyawan_magang[i].nik }}</p>
-                                </div>
-                              </div>
+    <div class="row justify-content-center align-items-center my-5 px-3">
+      <div class="card border border-0 col-md-6 col" data-aos='zoom-in-up' data-aos-delay='600' data-aos-duration='800'>
+        <!-- card header -->
+        <div class="card-header border border-success d-flex justify-content-center align-items-center w-100 bg-success">
+          <h5 class="card-title h5 m-0 text-white poppins-medium align-middle" id="absen">Absensi Hari Ke- {{
+            data['heading-card'] }}</h5>
+        </div>
+        <!-- card Body -->
+        <div
+          class="card-body border border-success rounded-bottom-2 d-flex flex-column justify-content-center align-items-center gap-4">
+          <div class="container-fluid">
+            <p class="card-text " id="name"><strong>Name</strong> : {{ data.nama
+              }}</p>
+            <p class="card-text" id="departement"><strong>Departement</strong> :
+              {{ data.departement }}</p>
+            <p class="card-text" id="jobs"><strong>jobs</strong> : {{ data.jobs
+              }}</p>
+            <p class="card-text" id="date"><strong>Tanggal</strong> : {{
+              data.tanggal_sekarang }}</p>
+            <p class="card-text" id="work_hours"><strong>Waktu</strong>: {{
+              data.waktu_awal_kerja }} - {{
+              data.waktu_akhir_kerja }} WIB</p>
+          </div>
+          <!-- form absensi -->
+          <div id="absensi_kehadiran" class="absensi_kehadiran d-flex justify-content-center align-items-center">
+            <input type="hidden" id="csrf_token1" name="csrf_token" value="{{ csrf_token() }}" />
+            <input type="hidden" id="user_id" name="user_id" value="{{ data._id }}" />
+            <button class="btn {{ data['class-button-hadir'] }}" id="status_hadir" name="status_hadir"
+              onclick="submitAbsen('hadir',event)">
+              {{ data['text-button'] }}
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+    {% endblock content_body_3 %}
+  </div>
 
-                              <!-- nama -->
-                              <div class="row">
-                                <div class="col-4">
-                                  <h5 class="fs-5 poppins-bold  m-0 w-100">Nama</h5>
-                                </div>
-                                <div class="col-1"><span class=" fs-5 poppins-medium m-0 w-100">:</span></div>
-                                <div class="col-7">
-                                  <p class="text-sm-end text-start fs-5 poppins-medium m-0 w-100">{{
-                                    data_karyawan_magang[i].nama }}</p>
-                                </div>
-                              </div>
-                              <!-- Email -->
-                              <div class="row">
-                                <div class="col-4">
-                                  <h5 class="fs-5 poppins-bold m-0 w-100">Email</h5>
-                                </div>
-                                <div class="col-1"><span class="fs-5 poppins-medium m-0 w-100">:</span></div>
-                                <div class="col-7">
-                                  <p class="text-sm-end text-start fs-5 poppins-medium m-0 w-100">{{
-                                    data_karyawan_magang[i].email }}</p>
-                                </div>
-                              </div>
-                              <!-- divisi -->
-                              <div class="row">
-                                <div class="col-4">
-                                  <h5 class="fs-5 poppins-bold m-0 w-100">Departement</h5>
-                                </div>
-                                <div class="col-1"><span class="fs-5 poppins-medium m-0 w-100">:</span></div>
-                                <div class="col-7">
-                                  <p class="text-sm-end text-start fs-5 poppins-medium m-0 w-100">{{
-                                    data_karyawan_magang[i].departement }}</p>
-                                </div>
-                              </div>
-                              <!-- Tempat Lahir -->
-                              <div class="row">
-                                <div class="col-4">
-                                  <h5 class="fs-5 poppins-bold m-0 w-100">Tempat, Tgl Lahir</h5>
-                                </div>
-                                <div class="col-1"><span class="fs-5 poppins-medium m-0 w-100">:</span></div>
-                                <div class="col-7">
-                                  <p class="text-sm-end text-start fs-5 poppins-medium m-0 w-100">{{
-                                    data_karyawan_magang[i].tempat_lahir}}, {{ data_karyawan_magang[i].tanggal_lahir }}
-                                  </p>
-                                </div>
-                              </div>
-                              <!-- Tanggal Kerja -->
-                              <div class="row">
-                                <div class="col-4">
-                                  <h5 class="fs-5 poppins-bold m-0 w-100">Tanggal Kerja</h5>
-                                </div>
-                                <div class="col-1"><span class="fs-5 poppins-medium m-0 w-100">:</span></div>
-                                <div class="col-7">
-                                  <p class="text-sm-end text-start fs-5 poppins-medium m-0 w-100">{{
-                                    data_karyawan_magang[i].mulai_kerja}} - {{ data_karyawan_magang[i].akhir_kerja }}
-                                  </p>
-                                </div>
-                              </div>
-                              <!-- Mulai Kerja -->
-                              <div class="row">
-                                <div class="col-4">
-                                  <h5 class="fs-5 poppins-bold m-0 w-100">Mulai Kerja</h5>
-                                </div>
-                                <div class="col-1"><span class="fs-5 poppins-medium m-0 w-100">:</span></div>
-                                <div class="col-7">
-                                  <p class="text-sm-end text-start fs-5 poppins-medium m-0 w-100">{{
-                                    data_karyawan_magang[i].waktu_awal_kerja}} - {{
-                                    data_karyawan_magang[i].waktu_akhir_kerja }}</p>
-                                </div>
-                              </div>
-                            </div>
-                          </div>
-                        </div>
-                        <div class="modal-footer">
-                          <button type="button" class="btn btn-secondary poppins-regular"
-                            data-bs-dismiss="modal">Close</button>
-                        </div>
-                      </div>
-                    </div>
-                  </div>
-                  <!-- end view modal -->
+  <!-- admin -->
+  {% elif data.role==1 %}
+  <div id="dashboard{{data.role}}" class="container-fluid" style="margin-top: 1.5rem">
+    <!-- Page Heading -->
+    <div class="d-sm-flex align-items-center justify-content-between mb-4">
+      <h1 class="h3 poppins-regular mb-md-0 mb-sm-2 text-gray-800" data-aos='zoom-in-right' data-aos-delay='600' data-aos-duration='800'>{{ data['heading_title_body'] }}</h1>
+      <h1 id="clock" class="h6 border border-1 rounded border-secondary-subtle p-1 px-2 poppins-regular mb-0 text-gray-800" data-aos='zoom-in-left' data-aos-delay='600' data-aos-duration='800'></h1>
+    </div>
 
-                  <!-- Modal edit -->
-                  <div class="modal fade" id="editModal{{ data_karyawan_magang[i]._id }}" tabindex="-1"
-                    aria-hidden="true">
-                    <div class="modal-dialog">
-                      <div class="modal-content">
-                        <form action="/dashboard/admin/edit" method="post">
-                          <!-- modal header -->
+    {% block content_body_1 %}
+
+    <!-- DataTales Example -->
+    <div class="card shadow mb-4" data-aos='fade-up' data-aos-delay='600' data-aos-duration='800'>
+      <div class="card-header g-sm-0 g-4 py-3 row align-items-center">
+        <h6 class="col-sm-6 col-12 m-0 font-weight-bold text-primary poppins-medium">Data Absensi Karyawan dan
+          Magang</h6>
+        <!-- trigger add acoount -->
+        <div id="generate-report" class="col-sm-6 col-12">
+          <div class="dropdown btn-group w-100 float-end" style="max-width: 15rem;">
+            <button type="button" class="text-truncate btn w-100 btn-info dropdown-toggle text-white" data-bs-toggle="dropdown"><i class="fa-solid fa-download fa-lg me-2"></i><span>Generate Report</span></button>
+            <ul class="dropdown-menu">
+              <li><a class="dropdown-item text-truncate" href="/dashboard/admin/excel" id='triggerExcel'>Excel</a></li>
+              <li><hr class="dropdown-divider"></li>
+              <li><a class="dropdown-item text-truncate" href="/dashboard/admin/pdf" id="triggerPdf">PDF</a></li>
+            </ul>
+          </div>
+        </div>
+      </div>
+      <div class="card-body">
+        <div>
+          <div>
+            <div class="row gy-2 mb-2">
+              <!-- length -->
+              <div class="col-12 col-md-6">
+                <div class="row" id="dataTable_length">
+                  <label class="col-12 gap-4 align-items-center poppins-regular">Show
+                    <select name="dataTable_length" id="dataTable_length" aria-controls="dataTable"
+                      class="d-inline-block poppins-regular custom-select custom-select-sm form-control form-control-sm"
+                      style="color: #212122;">
+                      <option value="1" {{ 'selected' if data.table_length==1 else '' }}>1</option>
+                      <option value="10" {{ 'selected' if data.table_length==10 else '' }}>10</option>
+                      <option value="25" {{ 'selected' if data.table_length==25 else '' }}>25</option>
+                      <option value="50" {{ 'selected' if data.table_length==50 else '' }}>50</option>
+                      <option value="100" {{ 'selected' if data.table_length==100 else '' }}>100</option>
+                    </select> entries
+                  </label>
+                </div>
+              </div>
+
+              <!-- search -->
+              <div class="col-12 col-md-6 d-flex justify-content-start justify-content-md-end align-items-center">
+                <div class="search">
+                  <input type="text" id="search" class="search-input" placeholder="Search..." name="search">
+                  <a onclick="search_karyawan()" class="search-icon"> <i class="fa fa-search"></i> </a>
+                </div>
+              </div>
+            </div>
+            <div class="row mx-0 table-responsive">
+              <div class="col px-0 w-100">
+                <table class="table table-striped table-hover table-bordered align-middle text-center text-nowrap"
+                  id="dataTable" width="100%" cellspacing="0" role="grid" aria-describedby="dataTable_info"
+                  style="width: 100%;">
+                  <thead>
+                    <tr class="table-winniCode align-middle">
+                      <th class="poppins-semibold" rowspan="2">No</th>
+                      <th class="poppins-semibold" rowspan="2">NIK</th>
+                      <th class="poppins-semibold" rowspan="2">Nama</th>
+                      <th class="poppins-semibold" rowspan="2">Email</th>
+                      <th class="poppins-semibold" rowspan="2">Photo Profile</th>
+                      <th class="poppins-semibold" rowspan="2">Departement</th>
+                      <th class="poppins-semibold" rowspan="2">Born</th>
+                      <th class="poppins-semibold" rowspan="2">Birthday</th>
+                      <th class="poppins-semibold" rowspan="2">Status</th>
+                      <th class="poppins-semibold" colspan="4">Works</th>
+                      <th class="poppins-semibold" colspan="4">Absen</th>
+                      <th class="poppins-semibold" colspan="3">Action</thcol>
+                    </tr>
+                    <tr class="table-warning align-middle" style='--bs-table-bg:#efd500'>
+                      <th>Start Date</th>
+                      <th>End Date</th>
+                      <th>Start Time</th>
+                      <th>End Time</th>
+                      <th style="--bs-table-bg:#71ea71">Present</th>
+                      <th style="--bs-table-bg:#71ea71">Late</th>
+                      <th style="--bs-table-bg:#71ea71">Unpresent</th>
+                      <th style="--bs-table-bg:#71ea71">Holiday</th>
+                      <th style="--bs-table-bg:#38e9f2">View</th>
+                      <th style="--bs-table-bg:#38e9f2">Edit</th>
+                      <th style="--bs-table-bg:#38e9f2">Delete</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {% for i in range(0,(data_karyawan_magang|length)) %}
+                    <tr id="{{ data_karyawan_magang[i]._id }}" data-aos='slide-right' data-aos-delay='{{ 500+((i+1)%26*100) }}' data-aos-duration='800'>
+                      <td class="poppins-regular">{{ (data.first_table - 1) * data.table_length + (i+1) }}</td>
+                      <td class="poppins-regular">{{ data_karyawan_magang[i].nik }}</td>
+                      <td class="poppins-regular">{{ data_karyawan_magang[i].nama}}</td>
+                      <td class="poppins-regular">{{ data_karyawan_magang[i].email }}</td>
+                      <td class="poppins-regular"><img
+                          src="{{url_for('static',filename=data_karyawan_magang[i].photo_profile)}}" width="50em"
+                          height="50em" alt="{{ data_karyawan_magang[i].nik }}.png"></td>
+                      <td class="poppins-regular">{{ data_karyawan_magang[i].departement }}</td>
+                      <td class="poppins-regular">{{ data_karyawan_magang[i].tempat_lahir }}</td>
+                      <td class="poppins-regular">{{ data_karyawan_magang[i].tanggal_lahir }}</td>
+                      <td class="poppins-regular">{{ data_karyawan_magang[i].jobs }}</td>
+                      <td class="poppins-regular">{{ data_karyawan_magang[i].mulai_kerja }}</td>
+                      <td class="poppins-regular">{{ data_karyawan_magang[i].akhir_kerja }}</td>
+                      <td class="poppins-regular">{{ data_karyawan_magang[i].waktu_awal_kerja }}</td>
+                      <td class="poppins-regular">{{ data_karyawan_magang[i].waktu_akhir_kerja }}</td>
+                      <td class="poppins-regular">{{ data_karyawan_magang[i].absen.hadir }}</td>
+                      <td class="poppins-regular">{{ data_karyawan_magang[i].absen.telat }}</td>
+                      <td class="poppins-regular">{{ data_karyawan_magang[i].absen.tidak_hadir }}</td>
+                      <td class="poppins-regular">{{ data_karyawan_magang[i].absen.libur }}</td>
+                      <!-- trigger modal view -->
+                      <td class="poppins-regular"><a type="button" id="triggerviewModal"
+                          data-bs-target="#viewModal{{ data_karyawan_magang[i]._id }}" class="btn btn-primary"
+                          data-bs-toggle="modal"><i class="fa-solid fa-xs text-white fa-user"></i></a></td>
+                      <!-- trigger modal edit -->
+                      <td class="poppins-regular"><a href="#" type="button" class="btn btn-success" data-bs-toggle="modal"
+                          id="triggerEditModal" data-bs-target="#editModal{{ data_karyawan_magang[i]._id }}"><i
+                            class="fa-solid fa-xs text-white fa-user-pen"></i></a></td>
+                      <!-- trigger delete edit -->
+                      <td class="poppins-regular"><a href="#" type="button" class="btn btn-danger" data-bs-toggle="modal"
+                          data-bs-target="#deleteModal{{ data_karyawan_magang[i]._id }}"><i
+                            class="fa-solid fa-xs text-white fa-user-minus"></i></a></td>
+                    </tr>
+
+                    <!-- modal view -->
+                    <div class="modal fade" id="viewModal{{ data_karyawan_magang[i]._id }}" tabindex="-1" role="dialog"
+                      aria-labelledby="viewModalLabel" aria-hidden="true">
+                      <div class="modal-dialog modal-lg" role="document">
+                        <div class="modal-content">
                           <div class="modal-header">
-                            <h1 class="modal-title fs-5 poppins-medium">Edit Karyawan / Magang {{ i+1
-                              }}</h1>
+                            <h5 class="modal-title fs-2 poppins-regular" id="viewModalLabel">Profil {{
+                              data_karyawan_magang[i].nama }}</h5>
                             <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
                           </div>
-                          <!-- body modal -->
-                          <div class="modal-body">
-                            <div class="form-floating">
-                              <!-- Input Hidden for Method Override -->
-                              <input type="hidden" name="_method" value="PUT">
-                              <!-- csrf token -->
-                              <input type="hidden" id="csrf_token{{ i+1 }}" name="csrf_token" value="{{ csrf_token() }}" />
-
-                              <!-- nik -->
-                              <div class="form-floating mb-3">
-                                <input type="number" class="form-control" id="nik" name="nik"
-                                  value="{{ data_karyawan_magang[i].nik }}" readonly>
-                                <label class="poppins-regular" for="nik">Nomor Induk
-                                  Kependudukan</label>
+                          <div class="modal-body ">
+                            <div class="row row-gap-5 justify-content-center">
+                              <div class="col-lg-4 col-12 my-auto">
+                                <img src="{{url_for('static',filename=data_karyawan_magang[i].photo_profile)}}"
+                                  class="img-fluid border border-4 border-purple rounded-3"
+                                  alt="{{ data_karyawan_magang[i].nama }}.png">
                               </div>
-
-                              <!-- nama -->
-                              <div class="form-floating mb-3">
-                                <input type="text" class="form-control" name="nama" id="nama"
-                                  value="{{ data_karyawan_magang[i].nama }}" readonly>
-                                <label class="poppins-regular" for="nama">Nama Lengkap</label>
-                              </div>
-
-                              <!-- email -->
-                              <div class="form-floating mb-3">
-                                <input type="email" class="form-control" name="email" id="email"
-                                  value="{{ data_karyawan_magang[i].email }}" readonly>
-                                <label class="poppins-regular" for="email">Email address</label>
-                              </div>
-
-                              <!-- departement -->
-                              <div class="form-floating mb-3">
-                                <select class="form-select" id="departement" name="departement"
-                                  aria-label="Floating label select example">
-                                  <option value=None {{'selected' if data_karyawan_magang[i].departement=='' else '' }}>
-                                    --Pilih
-                                    Departement--</option>
-                                  <option value="Fullstack Developer" {{'selected' if
-                                    data_karyawan_magang[i].departement=='Fullstack Developer' else '' }}>Fullstack
-                                    Developer</option>
-                                  <option value="Web Developer Laravel" {{'selected' if
-                                    data_karyawan_magang[i].departement=='Web Developer Laravel' else '' }}>Web
-                                    Developer Laravel</option>
-                                  <option value="Copywriting" {{'selected' if
-                                    data_karyawan_magang[i].departement=='Copywriting' else '' }}>Copywriting</option>
-                                </select>
-                                <label class="poppins-regular" for="departement">Pilih
-                                  Departement</label>
-                              </div>
-
-                              <!-- born -->
-                              <div class="form-floating mb-3">
-                                <input type="text" class="form-control" name="tempat_lahir" id="tempat_lahir"
-                                  value="{{ data_karyawan_magang[i].tempat_lahir }}" readonly>
-                                <label class="poppins-regular" for="tempat_lahir">Born</label>
-                              </div>
-
-                              <!-- birthday -->
-                              <div class="form-floating mb-3">
-                                <input type="date" class="form-control" name="tanggal_lahir" id="tanggal_lahir"
-                                  value="{{ data_karyawan_magang[i].tanggal_lahir|format_date if data_karyawan_magang[i].tanggal_lahir else '' }}" readonly>
-                                <label class="poppins-regular" for="tanggal_lahir">Birthday</label>
-                              </div>
-
-                              <!-- Status Perusahaan -->
-                              <div class="form-floating mb-3">
-                                <select id="jobs" name="jobs" class="form-select">
-                                  <option value=None {{'selected' if data_karyawan_magang[i].jobs=='' else '' }}>
-                                    --Select
-                                    Jobs--</option>
-                                  <option value="Karyawan" {{'selected' if data_karyawan_magang[i].jobs=='Karyawan'
-                                    else '' }}>Karyawan</option>
-                                  <option value="Magang" {{'selected' if data_karyawan_magang[i].jobs=='Magang' else ''
-                                    }}>Magang</option>
-                                </select>
-                                <label class="poppins-regular" for="jobs">Status Perusahan</label>
-                              </div>
-
-                              <!-- works date -->
-                              <div id="works date" class="row mb-3 g-3">
-
-                                <!-- start works -->
-                                <div class="col-md-6">
-                                  <div class="form-floating">
-                                    <input type="date" class="form-control" name="start_date" id="start_date"
-                                      value="{{ data_karyawan_magang[i].mulai_kerja|format_date if data_karyawan_magang[i].mulai_kerja else '' }}">
-                                    <label class="poppins-regular" for="start_date">Start Date
-                                      Works</label>
+                              <div id="profile-view" class="col-lg-8 col-12 row gap-3 justify-content-center">
+                                <!-- nik -->
+                                <div class="row">
+                                  <div class="col-4">
+                                    <h5 class="fs-5 poppins-bold w-100 m-0">NIK</h5>
+                                  </div>
+                                  <div class="col-1"><span class="fs-5 poppins-medium m-0 w-100">:</span></div>
+                                  <div class="col-7">
+                                    <p class="text-sm-end text-start md m-0 fs-5 poppins-medium w-100">{{
+                                      data_karyawan_magang[i].nik }}</p>
                                   </div>
                                 </div>
 
-                                <!-- end works -->
-                                <div class="col-md-6">
-                                  <div class="form-floating">
-                                    <input type="date" class="form-control" name="end_date" id="end_date"
-                                      value="{{ data_karyawan_magang[i].akhir_kerja|format_date if data_karyawan_magang[i].akhir_kerja else '' }}">
-                                    <label class="poppins-regular" for="end_date">End Date Works</label>
+                                <!-- nama -->
+                                <div class="row">
+                                  <div class="col-4">
+                                    <h5 class="fs-5 poppins-bold  m-0 w-100">Nama</h5>
+                                  </div>
+                                  <div class="col-1"><span class=" fs-5 poppins-medium m-0 w-100">:</span></div>
+                                  <div class="col-7">
+                                    <p class="text-sm-end text-start fs-5 poppins-medium m-0 w-100">{{
+                                      data_karyawan_magang[i].nama }}</p>
                                   </div>
                                 </div>
-                              </div>
-
-                              <!-- works_time -->
-                              <div id="works_time" class="row mb-3 g-3">
-                                <!-- start Time -->
-                                <div class="col-md-6">
-                                  <div class="form-floating">
-                                    <input type="time" class="form-control" name="start_time" id="start_time"
-                                      value="{{ data_karyawan_magang[i].waktu_awal_kerja|format_time if data_karyawan_magang[i].waktu_awal_kerja else '' }}">
-                                    <label class="poppins-regular" for="start_time">Start Time
-                                      Works</label>
+                                <!-- Email -->
+                                <div class="row">
+                                  <div class="col-4">
+                                    <h5 class="fs-5 poppins-bold m-0 w-100">Email</h5>
+                                  </div>
+                                  <div class="col-1"><span class="fs-5 poppins-medium m-0 w-100">:</span></div>
+                                  <div class="col-7">
+                                    <p class="text-sm-end text-start fs-5 poppins-medium m-0 w-100">{{
+                                      data_karyawan_magang[i].email }}</p>
                                   </div>
                                 </div>
-
-                                <!-- end Time -->
-                                <div class="col-md-6">
-                                  <div class="form-floating">
-                                    <input type="time" class="form-control" name="end_time" id="end_time"
-                                      value="{{ data_karyawan_magang[i].waktu_akhir_kerja|format_time if data_karyawan_magang[i].waktu_akhir_kerja else '' }}">
-                                    <label class="poppins-regular" for="end_time">End Time Works</label>
+                                <!-- divisi -->
+                                <div class="row">
+                                  <div class="col-4">
+                                    <h5 class="fs-5 poppins-bold m-0 w-100">Departement</h5>
+                                  </div>
+                                  <div class="col-1"><span class="fs-5 poppins-medium m-0 w-100">:</span></div>
+                                  <div class="col-7">
+                                    <p class="text-sm-end text-start fs-5 poppins-medium m-0 w-100">{{
+                                      data_karyawan_magang[i].departement }}</p>
+                                  </div>
+                                </div>
+                                <!-- Tempat Lahir -->
+                                <div class="row">
+                                  <div class="col-4">
+                                    <h5 class="fs-5 poppins-bold m-0 w-100">Tempat, Tgl Lahir</h5>
+                                  </div>
+                                  <div class="col-1"><span class="fs-5 poppins-medium m-0 w-100">:</span></div>
+                                  <div class="col-7">
+                                    <p class="text-sm-end text-start fs-5 poppins-medium m-0 w-100">{{
+                                      data_karyawan_magang[i].tempat_lahir}}, {{ data_karyawan_magang[i].tanggal_lahir }}
+                                    </p>
+                                  </div>
+                                </div>
+                                <!-- Tanggal Kerja -->
+                                <div class="row">
+                                  <div class="col-4">
+                                    <h5 class="fs-5 poppins-bold m-0 w-100">Tanggal Kerja</h5>
+                                  </div>
+                                  <div class="col-1"><span class="fs-5 poppins-medium m-0 w-100">:</span></div>
+                                  <div class="col-7">
+                                    <p class="text-sm-end text-start fs-5 poppins-medium m-0 w-100">{{
+                                      data_karyawan_magang[i].mulai_kerja}} - {{ data_karyawan_magang[i].akhir_kerja }}
+                                    </p>
+                                  </div>
+                                </div>
+                                <!-- Mulai Kerja -->
+                                <div class="row">
+                                  <div class="col-4">
+                                    <h5 class="fs-5 poppins-bold m-0 w-100">Mulai Kerja</h5>
+                                  </div>
+                                  <div class="col-1"><span class="fs-5 poppins-medium m-0 w-100">:</span></div>
+                                  <div class="col-7">
+                                    <p class="text-sm-end text-start fs-5 poppins-medium m-0 w-100">{{
+                                      data_karyawan_magang[i].waktu_awal_kerja}} - {{
+                                      data_karyawan_magang[i].waktu_akhir_kerja }}</p>
                                   </div>
                                 </div>
                               </div>
                             </div>
-                          </div>
-                          <div class="modal-footer">
-                            <button type="button" type="reset" id="reset" class="btn btn-danger poppins-regular"
-                              data-bs-dismiss="modal">Close</button>
-                            <input role="button" type="submit" type="submit" id="submit"
-                              class="btn btn-primary poppins-regular"" disabled=" true" value="Save Changes"></input>
-                          </div>
-                        </form>
-                      </div>
-                    </div>
-                  </div>
-                  <!-- end modal -->
-
-                  <!-- delete modal -->
-                  <div class="modal fade" id="deleteModal{{ data_karyawan_magang[i]._id }}" tabindex="-1" role="dialog"
-                    aria-labelledby="deleteModalLabel" aria-hidden="true">
-                    <div class="modal-dialog" role="document">
-                      <div class="modal-content">
-                        <form action="/dashboard/admin/delete/{{data_karyawan_magang[i]._id}}" method="post">
-                          <div class="modal-header">
-                            <h5 class="modal-title poppins-regular" id="deleteModalLabel">Delete Confirmation</h5>
-                            <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
-                          </div>
-                          <div class="modal-body">
-                            Are you sure want to delete this person data?
-                            <input type="hidden" name="_method" value="DELETE">
-                            <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
                           </div>
                           <div class="modal-footer">
                             <button type="button" class="btn btn-secondary poppins-regular"
                               data-bs-dismiss="modal">Close</button>
-                            <input type="submit" role="button" class="btn btn-danger poppins-regular" value="Delete">
                           </div>
-                        </form>
+                        </div>
                       </div>
                     </div>
-                  </div>
-                  <!-- end delete modal -->
+                    <!-- end view modal -->
 
-                  {% endfor %}
-                </tbody>
-              </table>
-            </div>
-          </div>
-          <div class="row table-responsive">
-            <div class="col-5 d-none d-md-block">
-              <div class="dataTables_info" id="dataTable_info" role="status" aria-live="polite poppins-regular">
-                {{ data.showing_table_karyawan }}
+                    <!-- Modal edit -->
+                    <div class="modal fade" id="editModal{{ data_karyawan_magang[i]._id }}" tabindex="-1"
+                      aria-hidden="true">
+                      <div class="modal-dialog">
+                        <div class="modal-content">
+                          <form action="/dashboard/admin/edit" method="post">
+                            <!-- modal header -->
+                            <div class="modal-header">
+                              <h1 class="modal-title fs-5 poppins-medium">Edit Karyawan / Magang {{ i+1
+                                }}</h1>
+                              <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                            </div>
+                            <!-- body modal -->
+                            <div class="modal-body">
+                              <div class="form-floating">
+                                <!-- Input Hidden for Method Override -->
+                                <input type="hidden" name="_method" value="PUT">
+                                <!-- csrf token -->
+                                <input type="hidden" id="csrf_token{{ i+1 }}" name="csrf_token" value="{{ csrf_token() }}" />
+
+                                <!-- nik -->
+                                <div class="form-floating mb-3">
+                                  <input type="number" class="form-control" id="nik" name="nik"
+                                    value="{{ data_karyawan_magang[i].nik }}" readonly>
+                                  <label class="poppins-regular" for="nik">Nomor Induk
+                                    Kependudukan</label>
+                                </div>
+
+                                <!-- nama -->
+                                <div class="form-floating mb-3">
+                                  <input type="text" class="form-control" name="nama" id="nama"
+                                    value="{{ data_karyawan_magang[i].nama }}" readonly>
+                                  <label class="poppins-regular" for="nama">Nama Lengkap</label>
+                                </div>
+
+                                <!-- email -->
+                                <div class="form-floating mb-3">
+                                  <input type="email" class="form-control" name="email" id="email"
+                                    value="{{ data_karyawan_magang[i].email }}" readonly>
+                                  <label class="poppins-regular" for="email">Email address</label>
+                                </div>
+
+                                <!-- departement -->
+                                <div class="form-floating mb-3">
+                                  <select class="form-select" id="departement" name="departement"
+                                    aria-label="Floating label select example">
+                                    <option value=None {{'selected' if data_karyawan_magang[i].departement=='' else '' }}>
+                                      --Pilih
+                                      Departement--</option>
+                                    <option value="Fullstack Developer" {{'selected' if
+                                      data_karyawan_magang[i].departement=='Fullstack Developer' else '' }}>Fullstack
+                                      Developer</option>
+                                    <option value="Web Developer Laravel" {{'selected' if
+                                      data_karyawan_magang[i].departement=='Web Developer Laravel' else '' }}>Web
+                                      Developer Laravel</option>
+                                    <option value="Copywriting" {{'selected' if
+                                      data_karyawan_magang[i].departement=='Copywriting' else '' }}>Copywriting</option>
+                                  </select>
+                                  <label class="poppins-regular" for="departement">Pilih
+                                    Departement</label>
+                                </div>
+
+                                <!-- born -->
+                                <div class="form-floating mb-3">
+                                  <input type="text" class="form-control" name="tempat_lahir" id="tempat_lahir"
+                                    value="{{ data_karyawan_magang[i].tempat_lahir }}" readonly>
+                                  <label class="poppins-regular" for="tempat_lahir">Born</label>
+                                </div>
+
+                                <!-- birthday -->
+                                <div class="form-floating mb-3">
+                                  <input type="date" class="form-control" name="tanggal_lahir" id="tanggal_lahir"
+                                    value="{{ data_karyawan_magang[i].tanggal_lahir|format_date if data_karyawan_magang[i].tanggal_lahir else '' }}" readonly>
+                                  <label class="poppins-regular" for="tanggal_lahir">Birthday</label>
+                                </div>
+
+                                <!-- Status Perusahaan -->
+                                <div class="form-floating mb-3">
+                                  <select id="jobs" name="jobs" class="form-select">
+                                    <option value=None {{'selected' if data_karyawan_magang[i].jobs=='' else '' }}>
+                                      --Select
+                                      Jobs--</option>
+                                    <option value="Karyawan" {{'selected' if data_karyawan_magang[i].jobs=='Karyawan'
+                                      else '' }}>Karyawan</option>
+                                    <option value="Magang" {{'selected' if data_karyawan_magang[i].jobs=='Magang' else ''
+                                      }}>Magang</option>
+                                  </select>
+                                  <label class="poppins-regular" for="jobs">Status Perusahan</label>
+                                </div>
+
+                                <!-- works date -->
+                                <div id="works date" class="row mb-3 g-3">
+
+                                  <!-- start works -->
+                                  <div class="col-md-6">
+                                    <div class="form-floating">
+                                      <input type="date" class="form-control" name="start_date" id="start_date"
+                                        value="{{ data_karyawan_magang[i].mulai_kerja|format_date if data_karyawan_magang[i].mulai_kerja else '' }}">
+                                      <label class="poppins-regular" for="start_date">Start Date
+                                        Works</label>
+                                    </div>
+                                  </div>
+
+                                  <!-- end works -->
+                                  <div class="col-md-6">
+                                    <div class="form-floating">
+                                      <input type="date" class="form-control" name="end_date" id="end_date"
+                                        value="{{ data_karyawan_magang[i].akhir_kerja|format_date if data_karyawan_magang[i].akhir_kerja else '' }}">
+                                      <label class="poppins-regular" for="end_date">End Date Works</label>
+                                    </div>
+                                  </div>
+                                </div>
+
+                                <!-- works_time -->
+                                <div id="works_time" class="row mb-3 g-3">
+                                  <!-- start Time -->
+                                  <div class="col-md-6">
+                                    <div class="form-floating">
+                                      <input type="time" class="form-control" name="start_time" id="start_time"
+                                        value="{{ data_karyawan_magang[i].waktu_awal_kerja|format_time if data_karyawan_magang[i].waktu_awal_kerja else '' }}">
+                                      <label class="poppins-regular" for="start_time">Start Time
+                                        Works</label>
+                                    </div>
+                                  </div>
+
+                                  <!-- end Time -->
+                                  <div class="col-md-6">
+                                    <div class="form-floating">
+                                      <input type="time" class="form-control" name="end_time" id="end_time"
+                                        value="{{ data_karyawan_magang[i].waktu_akhir_kerja|format_time if data_karyawan_magang[i].waktu_akhir_kerja else '' }}">
+                                      <label class="poppins-regular" for="end_time">End Time Works</label>
+                                    </div>
+                                  </div>
+                                </div>
+                              </div>
+                            </div>
+                            <div class="modal-footer">
+                              <button type="button" type="reset" id="reset" class="btn btn-danger poppins-regular"
+                                data-bs-dismiss="modal">Close</button>
+                              <input role="button" type="submit" type="submit" id="submit"
+                                class="btn btn-primary poppins-regular"" disabled=" true" value="Save Changes"></input>
+                            </div>
+                          </form>
+                        </div>
+                      </div>
+                    </div>
+                    <!-- end modal -->
+
+                    <!-- delete modal -->
+                    <div class="modal fade" id="deleteModal{{ data_karyawan_magang[i]._id }}" tabindex="-1" role="dialog"
+                      aria-labelledby="deleteModalLabel" aria-hidden="true">
+                      <div class="modal-dialog" role="document">
+                        <div class="modal-content">
+                          <form action="/dashboard/admin/delete/{{data_karyawan_magang[i]._id}}" method="post">
+                            <div class="modal-header">
+                              <h5 class="modal-title poppins-regular" id="deleteModalLabel">Delete Confirmation</h5>
+                              <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                            </div>
+                            <div class="modal-body">
+                              Are you sure want to delete this person data?
+                              <input type="hidden" name="_method" value="DELETE">
+                              <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                            </div>
+                            <div class="modal-footer">
+                              <button type="button" class="btn btn-secondary poppins-regular"
+                                data-bs-dismiss="modal">Close</button>
+                              <input type="submit" role="button" class="btn btn-danger poppins-regular" value="Delete">
+                            </div>
+                          </form>
+                        </div>
+                      </div>
+                    </div>
+                    <!-- end delete modal -->
+
+                    {% endfor %}
+                  </tbody>
+                </table>
               </div>
             </div>
-            <div class="col-12 col-md-7 d-md-block d-flex justify-content-center">
-              <div class="dataTables_paginate paging_simple_numbers" id="dataTable_paginate">
-                <ul class="pagination">
-                  {# Tombol Previous #}
-                  {% if data.first_table > 1 %}
-                  <li class="paginate_button page-item previous poppins-light" id="dataTable_previous"><a
-                      class="page-link" href="?page_awal={{ data.first_table - 1 }}&length={{ data['table_length'] }}"
-                      aria-label="Previous">
-                      <span aria-hidden="true">&laquo;</span>
-                    </a>
-                  </li>
-                  {% else %}
-                  <li class="paginate_button page-item previous disabled poppins-light" id="dataTable_previous"><a
-                      class="page-link" href="#" aria-label="Previous">
-                      <span aria-hidden="true">&laquo;</span>
-                    </a>
-                  </li>
-                  {% endif %}
-                  {% for i in range(1,data.total_page+1) %}
-                  <li class="paginate_button page-item poppins-light {{ 'active' if i==data['first_table'] else '' }}">
-                    <a href="/dashboard/magang?page_awal={{ i }}&length={{data['table_length']}}"
-                      aria-controls="dataTable" data-dt-idx="1" tabindex="0" class="page-link">
-                      {{ i }}
-                    </a>
-                  </li>
-                  {% endfor %}
-
-                  {# Tombol Previous #}
-                  {% if data.first_table < data.total_page %} <li
-                    class="paginate_button page-item previous poppins-light" id="dataTable_previous"><a
-                      class="page-link" href="?page_awal={{ data.first_table + 1 }}&length={{ data['table_length'] }}"
-                      aria-label="Previous">
-                      <span aria-hidden="true">&raquo;</span>
-                    </a>
+            <div class="row table-responsive">
+              <div class="col-5 d-none d-md-block">
+                <div class="dataTables_info" id="dataTable_info" role="status" aria-live="polite poppins-regular">
+                  {{ data.showing_table_karyawan }}
+                </div>
+              </div>
+              <div class="col-12 col-md-7 d-md-block d-flex justify-content-center">
+                <div class="dataTables_paginate paging_simple_numbers" id="dataTable_paginate">
+                  <ul class="pagination">
+                    {# Tombol Previous #}
+                    {% if data.first_table > 1 %}
+                    <li class="paginate_button page-item previous poppins-light" id="dataTable_previous"><a
+                        class="page-link" href="?page_awal={{ data.first_table - 1 }}&length={{ data['table_length'] }}"
+                        aria-label="Previous">
+                        <span aria-hidden="true">&laquo;</span>
+                      </a>
                     </li>
                     {% else %}
                     <li class="paginate_button page-item previous disabled poppins-light" id="dataTable_previous"><a
                         class="page-link" href="#" aria-label="Previous">
-                        <span aria-hidden="true">&raquo;</span>
+                        <span aria-hidden="true">&laquo;</span>
                       </a>
                     </li>
                     {% endif %}
-                </ul>
+                    {% for i in range(1,data.total_page+1) %}
+                    <li class="paginate_button page-item poppins-light {{ 'active' if i==data['first_table'] else '' }}">
+                      <a href="/dashboard?page_awal={{ i }}&length={{data['table_length']}}"
+                        aria-controls="dataTable" data-dt-idx="1" tabindex="0" class="page-link">
+                        {{ i }}
+                      </a>
+                    </li>
+                    {% endfor %}
+
+                    {# Tombol Previous #}
+                    {% if data.first_table < data.total_page %} <li
+                      class="paginate_button page-item previous poppins-light" id="dataTable_previous"><a
+                        class="page-link" href="?page_awal={{ data.first_table + 1 }}&length={{ data['table_length'] }}"
+                        aria-label="Previous">
+                        <span aria-hidden="true">&raquo;</span>
+                      </a>
+                      </li>
+                      {% else %}
+                      <li class="paginate_button page-item previous disabled poppins-light" id="dataTable_previous"><a
+                          class="page-link" href="#" aria-label="Previous">
+                          <span aria-hidden="true">&raquo;</span>
+                        </a>
+                      </li>
+                      {% endif %}
+                  </ul>
+                </div>
               </div>
             </div>
           </div>
         </div>
       </div>
     </div>
+    {% endblock %}
   </div>
-  {% endblock %}
-</div>
-{% endif %}
-{% endblock content %}
+  {% endif %}
+  {% endblock content %}
+</section>
+{% if not (status or msg) %}
+<!-- loading -->
+{% include 'utility/loading.html' %}
+{% endif %}  
 {% endblock value_body%}
 
 {% block js_custom %}
@@ -626,7 +632,6 @@
 <script src="{{ url_for('static', filename='js/index.js') }}"></script>
 <!-- akan membentuk static/js/admin_dashboard.js -->
 <script src="{{ url_for('static', filename='js/admin_dashboard.js') }}"></script>
-
 {% endblock js_custom %}
 
 {% block message %}
@@ -639,7 +644,7 @@
     text: "{{ msg }}",
     timer: 3000,
     willClose: () => {
-      window.location.replace('/dashboard/magang');
+      window.location.replace('/dashboard');
     }
   })
 </script>
@@ -651,7 +656,7 @@
     text: "{{ msg }}",
     timer: 3000,
     willClose: () => {
-      window.location.replace('/dashboard/magang');
+      window.location.replace('/dashboard');
     }
   })
 </script>
