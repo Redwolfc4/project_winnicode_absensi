@@ -145,67 +145,90 @@
                     <!-- enumerate data_user_all -->
                     {% for index, tr in enumerate(data_user_all) %}
 
-                    <tr id="{{ tr['_id'] }}"><!--  inisiasi id  -->
+                    <tr class="align-middle"
+                        id="{{ tr['_id'] }}"><!--  inisiasi id  -->
                         <td class="poppins-regular">{{ index+1 }}</td>
-
-                        {% for td in range(1,list(tr.values())|length) %}
 
                         {% if not path1 %}
                         <td class="poppins-regular"><a
                                 class="text-dark text-decoration-none"
-                                href="/task?path1={{ list(tr.values())[td] }}"
+                                href="/task?path1={{ tr['jobs'] }}"
                                 style="cursor: pointer;">{{
-                                list(tr.values())[td]
+                                tr.jobs
                                 }}</a></td>
+
                         {% elif path1 in ('Karyawan','Magang') %}
-                        <td class="poppins-regular">{{ list(tr.values())[td]
+                        <td class="poppins-regular">{{ tr.nama
                             }}</td>
+                        <td class="poppins-regular">{{ tr.departement
+                            }}</td>
+                        <td class="poppins-regular">{{ tr.email
+                            }}</td>
+
                         {% else %}
-
-                        <td class="poppins-regular">{% if not
-                            (type(list(tr.values())[td]) == datetime)
-                            %}
-
-                            {% if list(tr.keys())[td] == 'accepted' %}
-                            <select
-                                class="form-control bg-transparent border border-0 shadow-none p-0 text-center"
-                                name="{{ list(tr.keys())[td] }}"
-                                id="list(tr.keys())[td]">
-
-                                {% if list(tr.values())[td] == False %}
-                                <option value="False" selected>False</option>
-                                {% else %}
-                                <option value="False">False</option>
-                                {% endif %}
-
-                                {% if list(tr.values())[td] == True %}
-                                <option value="True" selected>True</option>
-                                {% else %}
-                                <option value="True">True</option>
-                                {% endif %}
-
-                            </select>
-                            {% else %}
-
+                        <!-- taskname -->
+                        <td class="poppins-regular">
                             <input
                                 class="border-0 poppins-regular bg-transparent text-center"
-                                style="outline: 0;" type="text"
-                                value="{{list(tr.values())[td] }}"
-                                id="{{ list(tr.keys())[td] }}">
-                            {% endif %}
-                            {% else %}
+                                type="text"
+                                id="taskName"
+                                style="outline: none;"
+                                value="{{ tr.taskName }}">
+                        </td>
+                        <!-- desc -->
+                        <td class="poppins-regular">
+                            <textarea
+                                class="border-0 poppins-regular bg-transparent text-center"
+                                style="outline: none;"
+                                id="description_task">{{ tr.description_task }}</textarea>
+                        </td>
+                        <!-- link input -->
+                        <td class="poppins-regular">
+                            <input
+                                class="border-0 poppins-regular bg-transparent text-center"
+                                type="text"
+                                id="link_input"
+                                style="outline: none;"
+                                value="{{ tr.link_input }}">
+                        </td>
+                        <!-- deadline -->
+                        <td class="poppins-regular">
                             <input
                                 class="border-0 poppins-regular bg-transparent"
-                                style="outline: 0;"
                                 type="datetime-local"
-                                id="{{ list(tr.keys())[td] }}"
-                                value="{{ list(tr.values())[td] }}">
-                            {% endif %}
+                                id="deadline"
+                                style="outline: none;"
+                                value="{{ tr.deadline }}">
+                        </td>
+                        <!-- sattus tasl -->
+                        <td class="poppins-regular">
+                            <input
+                                class="border-0 poppins-regular bg-transparent text-center"
+                                style="outline:none"
+                                type="text"
+                                id="status_task"
+                                style="outline: none;"
+                                value="{{ tr.status_task }}" readonly>
+                        </td>
+                        <!-- accepted -->
+                        <td class="poppins-regular">
+                            <select
+                                class="form-control bg-transparent border border-0 shadow-none p-0 text-center"
+                                name="accepted"
+                                id="accepted"
+                                {% if tr.status_task !='Success' %}
+                                disabled
+                                {% endif %}>
 
+                                <option value="False" {% if tr['accepted'] ==
+                                    False %} selected {% endif %}>False</option>
+
+                                <option value="True" {% if tr['accepted'] ==
+                                    True %} selected {% endif %}>True</option>
+                            </select>
                         </td>
                         {% endif %}
 
-                        {% endfor %}
                         {% if path1 not in ('Karyawan', 'Magang') and path1
                         %}
                         <td class="text-nowrap">
@@ -218,7 +241,6 @@
                     </tr>
                     {% endfor %}
                 </tbody>
-
             </table>
         </div>
         <!-- Task Modal add -->
@@ -395,7 +417,12 @@
 
                     <tr id="{{user['_id']}}">
 
-                        <td id="Pending" class="sortable">
+                        <td id="Pending" class="sortable"
+                            {% if user.dataSort %}
+                            data-sortable="false"
+                            {% else %}
+                            data-sortable="true"
+                            {% endif %}>
                             {% if user.status_task == 'Pending' %}
                             <div class="card text-start">
 
@@ -413,12 +440,17 @@
                                         class="card-text poppins-regular">{{
                                         user.description_task }}</p>
                                     <p
-                                        class="deadline poppins-regular text-secondary">{{user.deadline}}</p>
+                                        class="deadline poppins-regular {% if user.dataSort %}text-danger{%else%}text-secondary{%endif%}">{{user.deadline}}</p>
                                 </div>
                             </div>
                             {% endif %}
                         </td>
-                        <td id="Progress" class="sortable">
+                        <td id="Progress" class="sortable" {% if user.dataSort
+                            %}
+                            data-sortable="false"
+                            {% else %}
+                            data-sortable="true"
+                            {% endif %}>
                             {% if user.status_task == 'Progress' %}
                             <div class="card text-start mb-4">
 
@@ -436,13 +468,17 @@
                                         class="card-text poppins-regular">{{
                                         user.description_task }}</p>
                                     <p
-                                        class="deadline poppins-regular text-secondary">{{user.deadline}}</p>
+                                        class="deadline poppins-regular {% if user.dataSort %}text-danger{%else%}text-secondary{%endif%}">{{user.deadline}}</p>
                                 </div>
                             </div>
                             {% endif %}
 
                         </td>
-                        <td id="Success" class="sortable">
+                        <td id="Success" class="sortable" {% if user.dataSort %}
+                            data-sortable="false"
+                            {% else %}
+                            data-sortable="true"
+                            {% endif %}>
                             {% if user.status_task == 'Success' %}
                             <div class="card text-start mb-4">
 
@@ -460,7 +496,7 @@
                                         class="card-text poppins-regular">{{
                                         user.description_task }}</p>
                                     <p
-                                        class="deadline poppins-regular text-secondary">{{user.deadline}}</p>
+                                        class="deadline poppins-regular {% if user.dataSort %}text-danger{%else%}text-secondary{%endif%}">{{user.deadline}}</p>
                                 </div>
                             </div>
                             {% endif %}
@@ -513,7 +549,7 @@
         //initalize datatables
         $('#taskTable').DataTable({
             dom: '<"d-flex flex-column flex-md-row gap-3 justify-content-center justify-content-md-between mb-3"<l><f>>t<"mt-3" <i><p>>',
-            scrollX: true, // Enable horizontal scrolling
+            scrollX:true,
             keys: true,
             scrollCollapse: true, // Allow the table to reduce in height if there are fewer rows
             fixedHeader: true,
@@ -768,7 +804,8 @@
     <script>
 
     // edit input
-    $('#taskTable tbody').on('click', 'td input', function (e) {
+    $('#taskTable tbody').on('click', 'td input, td select, td textarea', function (e) {
+        
         //inisiasi
         const cell = $(this)
         const inputId = cell.attr('id').trim();
@@ -779,7 +816,6 @@
         cell.off('blur').on('blur', function () {
             //value baru
             const newValue = $(this).val().trim();
-            
             
             if (!newValue) {
                 if (inputId != 'link_input'){
@@ -810,6 +846,7 @@
                 }
             }
 
+            cell.prop('disabled', true); // Disable input temporarily
             // Kirim data ke server
             $.ajax({
                 url: '/task/edit', // Endpoint backend
@@ -843,24 +880,30 @@
                 },
                 error: function (xhr,status,error) {
                     console.log(xhr, status, error);
-                    const url = new URL(response.redirect,window.location.origin);
+                    const url = new URL(xhr.responseJSON.redirect,window.location.origin);
+                    console.log(url)
                     const msg = url.searchParams.get('msg');
-                    const path = url.pathname
-                    if (xhr.responseJSON.redirect && xhr.status == 500 && url.pathname !== '/sign-in/'){
-                        Swal.fire({
-                            icon: "error",
-                            title: "OOPS!",
-                            html: `${msg}`,
-                            timer: 3000,
-                            willClose: () => {
-                                console.log('Data updated Failedly'),500;
-                            },
-                        });
-                    } else if (xhr.responseJSON.redirect && xhr.status == 500 && url.pathname === '/sign-in/'){
-                        window.location.replace('/task')
+                    if (xhr.responseJSON){
+                        if (xhr.responseJSON.redirect && xhr.status == 500 && url.pathname !== '/sign-in/'){
+                            Swal.fire({
+                                icon: "error",
+                                title: "OOPS!",
+                                html: `${msg}`,
+                                timer: 3000,
+                                willClose: () => {
+                                    console.log('Data updated Failedly'),500;
+                                },
+                            });
+                        } else if (xhr.responseJSON.redirect && xhr.status == 500 && url.pathname === '/sign-in/'){
+                            window.location.replace('/task')
+                        }
                     }
                 },
+                complete: function () {
+                    cell.prop('disabled', false); // Re-enable input
+                },
             });
+            
         });
     });
 </script>
@@ -883,49 +926,80 @@
         multiDrag: true, // Enable multi-dragging
         direction: 'horizontal', // Batasi drag hanya horizontal
         dragClass: 'dragging',
+        onMove: function (evt) {
+            // Validasi apakah row sortable berdasarkan atribut data-sortable
+            const targetRow = evt.related;
+            return targetRow.getAttribute('data-sortable') === 'true';
+        },
         onEnd: function (evt) {
-            //console.log(evt.item.closest('tr'))
-            //console.log(`Moved ${evt.item.innerText} from ${evt.from.id} to ${evt.to.id}`);
 
+            if(!evt.item.querySelector('p.deadline') || evt.item.querySelector('p.deadline').classList.contains('text-danger') || !evt.target || evt.target.getAttribute('data-sortable')==='false'){
+                return;
+            }
+            //ambil deadline
+            const deadlineText = evt.item.querySelector('p.deadline').textContent.trim()
+            //buat objek waktu
+            const deadlineMoment = moment.tz(deadlineText, "YYYY-MM-DD HH:mm:ss", 'Asia/Jakarta');
+            // Ambil waktu sekarang dengan zona waktu Asia/Jakarta
+            const nowMoment = moment.tz("Asia/Jakarta");
+            //saat setelah deadline
+            if(nowMoment.isAfter(deadlineMoment)){
+                console.log('Deadline sudah lewat')
+                Swal.fire({
+                    icon: "error",
+                    title: "Task Timeout!",
+                    html: `Deadline sudah lewat anda tidak boleh melakukan perubahan`,
+                    timer: 3000,
+                    willClose: () => {
+                        return
+                    },
+                });
+                return;
+            }  
             // Ambil elemen <tr>  id yang merupakan parent dari item yang sedang dipindahkan
             const parentTrId = evt.item.closest('tr').id;
             //ambil column id berubah
             const tdId = evt.to.id;
-            
-            $.ajax({
-                type:'POST',
-                url: '/task/user/edit',
-                data:JSON.stringify({
-                    parentTrId_receive: parentTrId,
-                    tdId_receive: tdId
-                }),
-                headers:{
-                    'Content-Type':'Application/json',
-                    'X-CSRFToken':'{{ csrf_token() }}'
-                },
-                success: function (response,status,xhr) {
-                    console.log(response,status,xhr)
-                    if (response.redirect && xhr.status == 200){
-                        window.location.replace(response.redirect),xhr.status
+
+            $("section#menu").fadeOut(200, async function () {
+                $("section#loading").fadeIn(500, function () {
+                    $.ajax({
+                    type:'POST',
+                    url: '/task/user/edit',
+                    data:JSON.stringify({
+                        parentTrId_receive: parentTrId,
+                        tdId_receive: tdId
+                    }),
+                    headers:{
+                        'Content-Type':'Application/json',
+                        'X-CSRFToken':'{{ csrf_token() }}'
+                    },
+                    timeout:10000,
+                    success: function (response,status,xhr) {
+                        console.log(response,status,xhr)
+                        if (response.redirect && xhr.status == 200){
+                            window.location.replace(response.redirect),xhr.status
+                        }
+                    },
+                    error: function (xhr,status,error) {
+                        console.log(xhr,status,error)
+                        if (xhr.responseJSON.redirect && xhr.status == 500){
+                            window.location.replace(xhr.responseJSON.redirect)
+                        }
+                        else{
+                            Swal.fire({
+                                icon: "error",
+                                title: "OOPS!",
+                                html: `${error}`,
+                                timer: 3000,
+                                willClose: () => {
+                                    console.log('Data updated Failedly'),xhr.status;
+                                },
+                            });
+                        }
                     }
-                },
-                error: function (xhr,status,error) {
-                    console.log(xhr,status,error)
-                    if (xhr.responseJSON.redirect && xhr.status == 500){
-                        window.location.replace(xhr.responseJSON.redirect)
-                    }
-                    else{
-                        Swal.fire({
-                            icon: "error",
-                            title: "OOPS!",
-                            html: `${error}`,
-                            timer: 3000,
-                            willClose: () => {
-                                console.log('Data updated Failedly'),xhr.status;
-                            },
-                        });
-                    }
-                }
+                })
+                })
             })
             
         }

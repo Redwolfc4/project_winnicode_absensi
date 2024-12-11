@@ -436,7 +436,7 @@ class replyGmailSender(OtpPasswordGenerator):
 class TaskGmailNotif(OtpPasswordGenerator):
     message_id = None
 
-    def __init__(self, task_id_new: ObjectId, path: str):
+    def __init__(self, task_id_new: ObjectId, path: str, **kwargs):
         from app import db, url_for  # import db
 
         self.__task_id_new = task_id_new
@@ -446,13 +446,9 @@ class TaskGmailNotif(OtpPasswordGenerator):
             print("task_id_new kosong silahkan coba lagi")
             raise Exception("Error Database 1")
 
-        if self.path == "add":
-            self.desc = "<p class='poppins-regular'> Kamu memiliki Task baru dengan detail sebagai berikut: </p>"
-
-        elif self.path == "edit":
-            self.desc = "<p class='poppins-regular'> Task kamu telah di update dengan detail sebagai berikut: </p>"
-
         self.__uuid_ticket = string_to_uuid_like(str(self.__task_id_new))
+        if not self.__uuid_ticket:
+            raise Exception("Decode Error")
 
         self.__pipeline = [
             {"$match": {"_id": ObjectId(self.__task_id_new)}},  # Hanya user_id tertentu
@@ -487,6 +483,18 @@ class TaskGmailNotif(OtpPasswordGenerator):
         if not self.__results:
             print("data gagal didapatkan dari db tasks dan users")
             raise Exception("Database Error 2")
+
+        if self.path == "add":
+            self.desc = "<p class='poppins-regular'> Kamu memiliki Task baru dengan detail sebagai berikut: </p>"
+
+        elif self.path == "edit":
+            if kwargs:
+                if kwargs["newValue"] == True:
+                    self.desc = "<p class='poppins-regular'> Task kamu telah di <span class='poppins-semibold'>Accepted</span> dengan detail sebagai berikut: </p>"
+                else:
+                    self.desc = "<p class='poppins-regular'> Task kamu telah di <span class='poppins-semibold'>Rejected</span> dengan detail sebagai berikut: </p>"
+            else:
+                self.desc = "<p class='poppins-regular'> Task kamu telah di update dengan detail sebagai berikut: </p>"
 
         # perulangan data aggregate
         for self.__result in self.__results:

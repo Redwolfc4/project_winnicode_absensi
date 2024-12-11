@@ -14,6 +14,14 @@ $(window).ready(function () {
     });
   }
 
+  // Minta izin untuk menampilkan notifikasi
+  if (
+    Notification.permission === "default" ||
+    Notification.permission === "denied"
+  ) {
+    Notification.requestPermission();
+  }
+
   // membuat saat lebar lebih dari 992 akan toggle clas
   if ($(this).width() >= 992) {
     $("section#signin form").toggleClass("border");
@@ -106,6 +114,8 @@ $(window).ready(function () {
     });
   });
 
+  console.log(Notification.permission);
+
   // countdown otp timer
   countdownOtp();
 
@@ -135,7 +145,7 @@ $(window).ready(function () {
   }
 });
 
-let tepatWaktu;
+let tepatWaktu = null;
 
 // trigger countdown
 countdownOtp = () => {
@@ -190,7 +200,8 @@ countdownOtp = () => {
 // update aclock funtion
 updateClock = () => {
   // Dapatkan zona waktu secara otomatis berdasarkan lokasi pengguna
-  const userTimeZone = moment.tz.guess();
+  // const userTimeZone = moment.tz.guess();
+  const userTimeZone = "Asia/Jakarta";
   // Formatkan tanggal dan waktu berdasarkan zona waktu pengguna
   const formattedDate = moment()
     .tz(userTimeZone)
@@ -213,13 +224,7 @@ notifAbsen = () => {
   const options = {
     timeZone: "Asia/Jakarta", // Zona waktu WIB
   };
-  // Minta izin untuk menampilkan notifikasi
-  if (
-    Notification.permission === "default" ||
-    Notification.permission === "denied"
-  ) {
-    Notification.requestPermission();
-  }
+
   // Mengambil waktu server sekarang
   $.ajax({
     url: `https://www.timeapi.io/api/time/current/zone?timeZone=${options.timeZone}`,
@@ -338,25 +343,29 @@ function submitAbsen(action, e) {
   e.preventDefault();
   // Ambil parent `section#menu`
   const parentMenu = $(e.target).closest("section#menu");
+  let status_hadir;
 
-  if (parentMenu.length > 0) {
-    console.log("Parent awal ditemukan:", parentMenu);
+  if (parentMenu.length < 0) {
+    return;
   }
   parentMenu.fadeOut(200, function () {
     $("section#loading").fadeIn(500);
   });
+
+  console.log(tepatWaktu, action);
   if (action == "hadir" && tepatWaktu == true) {
-    $("#status_hadir").val(1);
+    status_hadir = 1;
   } else if (action == "hadir" && tepatWaktu == false) {
-    $("#status_hadir").val(2);
+    status_hadir = 2;
   }
+  console.log(status_hadir);
 
   $.ajax({
     type: "post",
     url: "/dashboard/absen",
     data: {
       user_id: $("#user_id").val(),
-      status_hadir: $("#status_hadir").val(),
+      status_hadir: status_hadir,
     },
     headers: {
       "X-CSRF-Token": $("#csrf_token1").val(),

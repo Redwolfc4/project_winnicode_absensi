@@ -1125,6 +1125,7 @@ def dashboardAbsen():
         # ambil data dari form
         userId = request.form.get("user_id")
         status_hadir = request.form.get("status_hadir")
+        print(status_hadir)
 
         # ambil riwayat absen
         riwayat_absen = db.absen_magang.find_one(
@@ -1153,7 +1154,6 @@ def dashboardAbsen():
                 ),
                 200,
             )
-
         # cek status hadir bukan 1 ubah jadi int
         if status_hadir != "1":
             status_hadir = int(status_hadir)
@@ -2312,7 +2312,11 @@ def kelola_admin(path1=None, path2=None):
         # cari data admin
         data_admin_all = list(
             db.users.find(
-                {"jobs": {"$in": ["Admin", "Sub Admin"]}, "role": 1},
+                {
+                    "jobs": {"$in": ["Admin", "Sub Admin"]},
+                    "role": 1,
+                    "_id": {"$ne": ObjectId(payloads["_id"])},
+                },
                 {"password": 0, "role": 0},
             )
         )
@@ -3126,6 +3130,9 @@ def task():
         for user in data_user_all:
             user["_id"] = string_to_uuid_like(str(user["_id"]))
             table_heading = [x for x in user.keys() if x != "_id"]
+            if payload["role"] == 3 and payload["jobs"] in ("Karyawan", "Magang"):
+                if get_time_zone_now() >= user["deadline"]:
+                    user["dataSort"] = "true"
 
         # tampilkan
         return render_template(
@@ -3299,7 +3306,7 @@ def task_post_admin(path):
             task_id_new = result["_id"]
 
             # kirim ke class task gmail notif
-            TaskGmailNotif(task_id_new, path)
+            TaskGmailNotif(task_id_new, path, newValue=newValue)
 
             # buat response
             return make_response(
