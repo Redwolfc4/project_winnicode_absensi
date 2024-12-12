@@ -55,8 +55,8 @@
                   id="profile-pic-preview"
                   src="{{url_for('static',filename=data.photo_profile)}}"
                   alt="avatar"
-                  class="rounded-circle img-fluid bg-body-secondary"
-                  style="width: 150px"
+                  class="border rounded-circle img-fluid bg-body-secondary"
+                  style="max-width: 150px; aspect-ratio: 1/1"
                 />
                 <img
                   src="{{url_for('static',filename='img/camera-icon.svg')}}"

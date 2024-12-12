@@ -39,7 +39,6 @@ from generate_otp import (
 )
 from markupsafe import Markup
 import certifi
-from jinja2 import Environment
 
 # buat request post sesuai datetime
 
@@ -80,6 +79,30 @@ def home():
     """
 
     return render_template("home.html")
+
+
+# manual book
+@app.route("/manual/<path>", methods=["GET"])
+def manual_book(path):
+    file_path = os.path.join(app.root_path, "static", "doc")
+    if not file_path:
+        return make_response(jsonify({"redirect": url_for("home")}), 500)
+    if path == "1":
+        return send_file(
+            file_path + "/pdf/manual_admin_subadmin.pdf",
+            mimetype="application/pdf",
+            as_attachment=True,
+            download_name="manual_admin_subadmin_winnicode.pdf",
+        )
+    elif path == "3":
+        return send_file(
+            file_path + "/pdf/manual_karyawan_magang.pdf",
+            mimetype="application/pdf",
+            as_attachment=True,
+            download_name="manual_karyawan_magang_winnicode.pdf",
+        )
+    else:
+        return make_response(jsonify({"redirect": url_for("home")}), 500)
 
 
 # lakukan sign-in

@@ -305,7 +305,12 @@
       >
         <div class="btn-group-vertical gap-3 w-100">
           <!-- manual admin -->
-          <button id="book-wrapper" onclick="manualAdmin()" type="button" class="btn btn-pink d-flex justify-content-center align-items-center poppins-regular w-100">
+          <button
+            id="book-wrapper"
+            onclick="manualBook('1')"
+            type="button"
+            class="btn btn-pink d-flex justify-content-center align-items-center poppins-regular w-100"
+          >
             <div class="wrapper text-md-start w-100">
               <svg
                 id="book"
@@ -697,12 +702,17 @@
           </button>
 
           <!-- manual karyawan dan magang -->
-          <button id="book-wrapper" onclick="manualKaryawan()" type="button" class="btn btn-pink d-flex justify-content-center align-items-center poppins-regular">
+          <button
+            id="book-wrapper"
+            onclick="manualBook('3')"
+            type="button"
+            class="btn btn-pink d-flex justify-content-center align-items-center poppins-regular"
+          >
             <div class="wrapper text-md-start text-center w-100">
               <svg
-              id="book"
-              width="34"
-              height="46"
+                id="book"
+                width="34"
+                height="46"
                 viewBox="0 0 34 46"
                 fill="none"
                 xmlns="http://www.w3.org/2000/svg"
@@ -1084,7 +1094,9 @@
                   </linearGradient>
                 </defs>
               </svg>
-              <span class="fs-6 poppins-medium">Manual Karyawan dan Magang</span>
+              <span class="fs-6 poppins-medium"
+                >Manual Karyawan dan Magang</span
+              >
             </div>
           </button>
         </div>

@@ -400,3 +400,39 @@ function submitAbsen(action, e) {
     },
   });
 }
+
+const manualBook = (data) => {
+  $.ajax({
+    type: "GET",
+    url: `/manual/${data}`,
+    xhrFields: {
+      responseType: "blob", // Untuk menerima file sebagai Blob
+    },
+    success: function (response, status, xhr) {
+      console.log("otw diberikan");
+      console.log(response);
+      // Mendapatkan nama file dari header respons
+      const disposition = xhr.getResponseHeader("Content-Disposition");
+      const fileName = disposition
+        ? disposition.split("filename=")[1].replace(/"/g, "")
+        : "downloaded_file.pdf";
+      console.log(disposition);
+
+      // Membuat Blob URL dan mengunduh file
+      const url = window.URL.createObjectURL(response);
+      const a = document.createElement("a");
+      a.href = url;
+      a.download = fileName; // Nama file dari header
+      document.body.appendChild(a);
+      a.click();
+      a.remove();
+      console.log(url, a);
+    },
+    error: function (xhr, status, error) {
+      console.log(xhr, status, error);
+      if (xhr.responseJSON) {
+        window.location.replace(xhr.responseJSON.redirect), xhr.status;
+      }
+    },
+  });
+};
