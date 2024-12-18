@@ -6,13 +6,17 @@ from urllib.parse import math
 
 # convert to pdf
 
+
 class PDF(FPDF):
     """
     Class ini digunakan untuk membuat pdf dari data excel
     """
 
-    def create_pdf(self, start_row: int, end_row: int, column_widths: list, ws, currentPage=None):
+    def create_pdf(
+        self, start_row: int, end_row: int, column_widths: list, ws, currentPage=None
+    ):
         from app import app
+
         """
         Fungsi ini digunakan untuk membuat pdf dari data excel
         parameter:
@@ -43,13 +47,24 @@ class PDF(FPDF):
         # tambahkan judul
         self.set_font("Times", "B", 14)
         self.set_text_color(255, 102, 196)
-        if currentPage=='Kelola Admin':
-            self.cell(self.__page_width-10, 10, "Data Admin / Sub Admin", 0, 1, "C")
+        if currentPage == "Kelola Admin":
+            self.cell(self.__page_width - 10, 10, "Data Admin / Sub Admin", 0, 1, "C")
         else:
             self.cell(self.__page_width, 10, "Data Karyawan / Magang", 0, 1, "C")
-        self.cell(self.__page_width-10 if currentPage=='Kelola Admin' else self.__page_width, 10, "PT. Winnicode Garuda Teknologi", 0, 1, "C")
-        if currentPage=='Kelola Admin':
-            self.set_margins(self.__margin_x+55, self.__margin_x, self.__margin_x)
+        self.cell(
+            (
+                self.__page_width - 10
+                if currentPage == "Kelola Admin"
+                else self.__page_width
+            ),
+            10,
+            "PT. Winnicode Garuda Teknologi",
+            0,
+            1,
+            "C",
+        )
+        if currentPage == "Kelola Admin":
+            self.set_margins(self.__margin_x + 55, self.__margin_x, self.__margin_x)
         else:
             self.set_margins(self.__margin_x, self.__margin_x, self.__margin_x)
         self.ln(10)
@@ -137,7 +152,7 @@ class PDF(FPDF):
                         # Geser posisi X untuk sel berikutnya
                         self.set_xy(x + self.__column_widths[column] + 3.1, y)
                         continue
-                
+
                 # If the text is too long, use multi_cell to wrap it
                 if (
                     len(data_cell_value.strip()) > self.__column_widths[column]
@@ -169,9 +184,11 @@ class PDF(FPDF):
 
         return self
 
+
 # convert ke excel
 def convert_to_excel(ws, result, currentPage=None, start=None, stop=None):
     from app import app
+
     """
     Converts data to Excel format and writes it to the provided worksheet.
 
@@ -212,7 +229,7 @@ def convert_to_excel(ws, result, currentPage=None, start=None, stop=None):
         cleaned_data = [item for item in x.values() if not isinstance(item, dict)]
         cleaned_data.insert(0, i + 1)
 
-        if currentPage !='Kelola Admin':
+        if currentPage != "Kelola Admin":
             cleaned_data.append(x["absen"]["hadir"])
             cleaned_data.append(x["absen"]["telat"])
             cleaned_data.append(x["absen"]["tidak_hadir"])
