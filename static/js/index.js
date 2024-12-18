@@ -14,6 +14,33 @@ $(window).ready(function () {
     });
   }
 
+  // untuk button dark mode
+  const html = $("html");
+  const checkbox = document.querySelector("#darkModeSwitch #hide-checkbox");
+
+  if (localStorage.getItem("darkMode") === "true") {
+    // darkmode
+    checkbox.checked = false;
+  } else if (localStorage.getItem("darkMode") === "false") {
+    // non darkmode
+    checkbox.checked = true;
+  } else {
+    // Set default ke cerah
+    checkbox.checked = true;
+  }
+
+  // === Toggle Dark Mode dan simpan status ke localStorage ===
+  $("#darkModeSwitch #hide-checkbox").on("click", function () {
+    if (html.attr("data-bs-theme") === "dark") {
+      html.removeAttr("data-bs-theme"); // Hapus atribut
+      localStorage.setItem("darkMode", "false"); // Simpan status
+    } else {
+      html.attr("data-bs-theme", "dark"); // Tambah atribut
+      localStorage.setItem("darkMode", "true"); // Simpan status
+    }
+  });
+  // end
+
   // Minta izin untuk menampilkan notifikasi
   if (
     Notification.permission === "default" ||
