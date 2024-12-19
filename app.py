@@ -2497,7 +2497,7 @@ def kelola_admin_export(path1):
         if not os.access(file_path, os.W_OK):
             # Jika tidak bisa menulis ke folder static, simpan ke /tmp
             print("Tidak dapat menulis ke folder static. Menyimpan ke /tmp...")
-            file_path = os.path.join("/tmp")
+            file_path = os.path.join("tmp")
         # save for extractor excel
         wb.save(file_path + "/excel/data_admin_sub_admin.xlsx")
         # excel
@@ -3006,7 +3006,7 @@ def export(path):
         if not os.access(file_path, os.W_OK):
             # Jika tidak bisa menulis ke folder static, simpan ke /tmp
             print("Tidak dapat menulis ke folder static. Menyimpan ke /tmp...")
-            file_path = os.path.join("/tmp")
+            file_path = os.path.join("tmp")
         # save for extractor excel
         wb.save(file_path + "/excel/data_karyawan.xlsx")
         # excel
