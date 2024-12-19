@@ -706,10 +706,7 @@
                             //saat success
                             console.log(response,status,xhr)
                             $('section#loading').fadeOut(500,function(){
-                                console.log(xhr.getAllResponseHeaders());
-                                console.log(status==='success', xhr.status===200 , xhr.getResponseHeader('CSRF_TOKEN') , xhr.getResponseHeader('Content-Type'))
-                                if (status==='success' && xhr.status===200 && xhr.getResponseHeader('CSRF_TOKEN') && xhr.getResponseHeader('Content-Type')) {
-                                    console.log('jalan')
+                                if (status==='success' && xhr.status===200) {
                                     window.location.replace(response.redirect),xhr.status
                                 }
                             });
