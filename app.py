@@ -8,6 +8,7 @@ from absensiMethod import (
     uuid_like_to_string,
     cipher,
     get_time_zone_now,
+    is_valid_datetime_format,
 )
 from convert import convert_to_excel, PDF
 import cryptography.fernet as Fernet
@@ -3335,6 +3336,9 @@ def task_post_admin(path):
             if newValue in ("True", "False"):
                 newValue = True if newValue == "True" else False
 
+            if is_valid_datetime_format(newValue):
+                newValue = datetime.datetime.strptime(newValue, "%Y-%m-%dT%H:%M")
+
             # edit database berdasarkan id
             result = db.tasks.find_one_and_update(
                 {"_id": ObjectId(rowId)}, {"$set": {inputId: newValue}}
@@ -3393,20 +3397,20 @@ def task_post_admin(path):
         return make_response(
             jsonify({"redirect": url_for("signIn", msg="Anda telah logout")}), 500
         )
-    # except Exception as e:
-    #     # jikakosong
-    #     if not e.args:
-    #         return make_response(
-    #             jsonify(
-    #                 {
-    #                     "redirect": url_for(
-    #                         "dashboard", msg="An unexpected error occurred"
-    #                     )
-    #                 }
-    #             ),
-    #             500,
-    #         )
-    #     return make_response(jsonify({"redirect": url_for("task", msg=e.args[0])}), 500)
+    except Exception as e:
+        # jikakosong
+        if not e.args:
+            return make_response(
+                jsonify(
+                    {
+                        "redirect": url_for(
+                            "dashboard", msg="An unexpected error occurred"
+                        )
+                    }
+                ),
+                500,
+            )
+        return make_response(jsonify({"redirect": url_for("task", msg=e.args[0])}), 500)
 
 
 @app.route("/task/user/<path>", methods=["POST"])
