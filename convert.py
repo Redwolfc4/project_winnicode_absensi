@@ -2,7 +2,7 @@ from openpyxl.styles import Border, Side, Font, Alignment
 from openpyxl.drawing.image import Image
 import os
 from fpdf import FPDF
-from urllib.parse import math
+import math
 
 # convert to pdf
 
