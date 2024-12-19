@@ -842,6 +842,8 @@ def myProfiles():
         return redirect(url_for("signIn", msg="Anda telah logout"))
     except ValueError as ve:
         return redirect(url_for("signIn", msg=ve.args[0]))
+    except Exception as e:
+        return redirect(url_for("signIn", msg=e.args[0]))
 
 
 # dasboard magang get
