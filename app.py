@@ -3037,8 +3037,8 @@ def export(path):
         return redirect(url_for("signIn", msg="Session Expired"))
     except jwt.DecodeError:
         return redirect(url_for("signIn", msg="Anda telah logout"))
-    except Exception as e:
-        return redirect(url_for("dashboard", msg=e.args[0]))
+    # except Exception as e:
+    #     return redirect(url_for("dashboard", msg=e.args[0]))
 
 
 # task page
