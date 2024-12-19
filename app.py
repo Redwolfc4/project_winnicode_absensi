@@ -2918,12 +2918,17 @@ def adminDelete(id):
         # database:
         result1 = db.users.delete_one({"_id": ObjectId(id)})
         result2 = db.absen_magang.delete_many({"user_id": ObjectId(id)})
+        result3 = db.tasks.delete_many({"user_id": ObjectId(id)})
 
         # The above Python code is checking if the `deleted_count` attribute of `result1` is greater
         # than 0 and the `deleted_count` attribute of `result2` is greater than or equal to 0. If both
         # conditions are met, it will redirect the user to the "dashboard" route with a success
         # message indicating that employee/intern data has been successfully deleted.
-        if result1.deleted_count > 0 and result2.deleted_count >= 0:
+        if (
+            result1.deleted_count > 0
+            and result2.deleted_count >= 0
+            and result3.deleted_count >= 0
+        ):
             return redirect(
                 url_for(
                     "dashboard",
