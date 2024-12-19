@@ -16,6 +16,7 @@ def get_time_zone_now(location: str = "asia/jakarta"):
     url = f"https://www.timeapi.io/api/time/current/zone?timeZone={location}"
     waktu_str = requests.get(url).json()["dateTime"]
     waktu_sekarang = datetime.datetime.fromisoformat(waktu_str)
+    print(waktu_sekarang)
     return waktu_sekarang
 
 
