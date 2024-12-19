@@ -2,10 +2,10 @@
 <title>Abstraksi|My Profile</title>
 {% endblock %} {% block value_body %}
 <!-- Profile -->
-<section id="profile" style="background-color: #eee">
+<section id="profile">
   <div class="container py-5">
     <div
-      class="row bg-light rounded-3 p-3 mb-4"
+      class="row rounded-3 p-3 mb-4"
       data-aos="fade-up"
       data-aos-delay="0"
       data-aos-duration="800"
@@ -117,7 +117,7 @@
                     type="email"
                     id="email"
                     name="email"
-                    class="text-muted poppins-regular mb-0 border border-0 w-100"
+                    class="text-muted bg-transparent poppins-regular mb-0 border border-0 w-100"
                     readonly
                     value="{{ data.email }}"
                   />
@@ -137,7 +137,7 @@
                     type="text"
                     id="nama"
                     name="nama"
-                    class="text-muted poppins-regular mb-0 border border-0 w-100"
+                    class="text-muted bg-transparent poppins-regular mb-0 border border-0 w-100"
                     value="{{ data.nama }}"
                   />
                 </div>
@@ -158,7 +158,7 @@
                     type="number"
                     id="nik"
                     name="nik"
-                    class="text-muted poppins-regular mb-0 border border-0 w-100"
+                    class="text-muted bg-transparent poppins-regular mb-0 border border-0 w-100"
                     value="{{ data.nik }}"
                   />
                 </div>
@@ -177,7 +177,7 @@
                     type="text"
                     id="tempat_lahir"
                     name="tempat_lahir"
-                    class="text-muted poppins-regular mb-0 border border-0 w-100"
+                    class="text-muted bg-transparent poppins-regular mb-0 border border-0 w-100"
                     value="{{ data.tempat_lahir }}"
                   />
                 </div>
@@ -196,7 +196,7 @@
                     type="date"
                     id="tanggal_lahir"
                     name="tanggal_lahir"
-                    class="text-muted poppins-regular mb-0 border border-0 w-100"
+                    class="text-muted bg-transparent poppins-regular mb-0 border border-0 w-100"
                     value="{{'' if data.tanggal_lahir == '' else data.tanggal_lahir | format_date}}"
                   />
                 </div>

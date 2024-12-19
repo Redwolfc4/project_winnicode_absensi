@@ -60,7 +60,10 @@ app.config["SECRET_KEY"] = secretKey
 csrf = CSRFProtect(app)
 
 # Tentukan folder untuk menyimpan gambar
-UPLOAD_FOLDER = os.path.join(app.root_path, "static/img/user")
+UPLOAD_FOLDER = os.path.join("/tmp", "static/img/user")
+# Cek apakah path dapat ditulis
+os.makedirs(UPLOAD_FOLDER, exist_ok=True)
+
 app.config["UPLOAD_FOLDER"] = UPLOAD_FOLDER
 
 # Daftarkan filter ke Jinja
