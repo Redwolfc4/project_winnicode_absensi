@@ -2487,13 +2487,13 @@ def kelola_admin_export(path1):
             return redirect(url_for("kelola_admin", msg="Data user not found"))
         # save excel data
         file_path = os.path.join(app.root_path, "static", "doc")
-        wb = load_workbook(file_path + "\\excel\\template_kelola_admin.xlsx")
+        wb = load_workbook(file_path + "/excel/template_kelola_admin.xlsx")
         ws = wb.active
         column_widths, start, stop = convert_to_excel(
             ws, result=result, currentPage="Kelola Admin"
         )
         # save for extractor excel
-        wb.save(file_path + "\\excel\\data_karyawan.xlsx")
+        wb.save(file_path + "/excel/data_karyawan.xlsx")
         # excel
         if path1 == "excel":
             # Save the modified workbook to BytesIO
@@ -2521,7 +2521,7 @@ def kelola_admin_export(path1):
             )
             # Buat objek BytesIO
             outputs = BytesIO()
-            pdf.output(file_path + "\\pdf\\data_karyawan.pdf")
+            pdf.output(file_path + "/pdf/data_karyawan.pdf")
             # Kirim file PDF sebagai attachment
             return send_file(
                 file_path + "/pdf/data_karyawan.pdf",
@@ -2992,11 +2992,11 @@ def export(path):
             raise Exception("Data user not found")
         # save excel data
         file_path = os.path.join(app.root_path, "static", "doc")
-        wb = load_workbook(file_path + "\\excel\\template_data_karyawan.xlsx")
+        wb = load_workbook(file_path + "/excel/template_data_karyawan.xlsx")
         ws = wb.active
         column_widths, start, stop = convert_to_excel(ws, result=result)
         # save for extractor excel
-        wb.save(file_path + "\\excel\\data_karyawan.xlsx")
+        wb.save(file_path + "/excel/data_karyawan.xlsx")
         # excel
         if path == "excel":
             # Save the modified workbook to BytesIO
@@ -3021,7 +3021,7 @@ def export(path):
             pdf.create_pdf(start - 1, stop, column_widths, ws)
             # Buat objek BytesIO
             output = BytesIO()
-            pdf.output(file_path + "\\pdf\\data_karyawan.pdf")
+            pdf.output(file_path + "/pdf/data_karyawan.pdf")
             # Kirim file PDF sebagai attachment
             return send_file(
                 file_path + "/pdf/data_karyawan.pdf",
