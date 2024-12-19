@@ -2497,7 +2497,10 @@ def kelola_admin_export(path1):
         if not os.access(file_path, os.W_OK):
             # Jika tidak bisa menulis ke folder static, simpan ke /tmp
             print("Tidak dapat menulis ke folder static. Menyimpan ke /tmp...")
-            file_path = os.path.join("tmp")
+            file_path = "/tmp"
+            os.makedirs(os.path.join(file_path, "excel"), exist_ok=True)
+            os.makedirs(os.path.join(file_path, "pdf"), exist_ok=True)
+            file_path = os.path.join(file_path)
         # save for extractor excel
         wb.save(file_path + "/excel/data_admin_sub_admin.xlsx")
         # excel
@@ -3005,8 +3008,12 @@ def export(path):
         # Cek apakah path dapat ditulis
         if not os.access(file_path, os.W_OK):
             # Jika tidak bisa menulis ke folder static, simpan ke /tmp
+            file_path = "/tmp"
+            os.makedirs(os.path.join(file_path, "excel"), exist_ok=True)
+            os.makedirs(os.path.join(file_path, "pdf"), exist_ok=True)
+            file_path = os.path.join(file_path)
             print("Tidak dapat menulis ke folder static. Menyimpan ke /tmp...")
-            file_path = os.path.join("tmp")
+
         # save for extractor excel
         wb.save(file_path + "/excel/data_karyawan.xlsx")
         # excel
