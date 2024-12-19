@@ -3056,8 +3056,8 @@ def export(path):
         return redirect(url_for("signIn", msg="Session Expired"))
     except jwt.DecodeError:
         return redirect(url_for("signIn", msg="Anda telah logout"))
-    # except Exception as e:
-    #     return redirect(url_for("dashboard", msg=e.args[0]))
+    except Exception as e:
+        return redirect(url_for("dashboard", msg=e.args[0]))
 
 
 # task page
@@ -3393,20 +3393,20 @@ def task_post_admin(path):
         return make_response(
             jsonify({"redirect": url_for("signIn", msg="Anda telah logout")}), 500
         )
-    except Exception as e:
-        # jikakosong
-        if not e.args:
-            return make_response(
-                jsonify(
-                    {
-                        "redirect": url_for(
-                            "dashboard", msg="An unexpected error occurred"
-                        )
-                    }
-                ),
-                500,
-            )
-        return make_response(jsonify({"redirect": url_for("task", msg=e.args[0])}), 500)
+    # except Exception as e:
+    #     # jikakosong
+    #     if not e.args:
+    #         return make_response(
+    #             jsonify(
+    #                 {
+    #                     "redirect": url_for(
+    #                         "dashboard", msg="An unexpected error occurred"
+    #                     )
+    #                 }
+    #             ),
+    #             500,
+    #         )
+    #     return make_response(jsonify({"redirect": url_for("task", msg=e.args[0])}), 500)
 
 
 @app.route("/task/user/<path>", methods=["POST"])
