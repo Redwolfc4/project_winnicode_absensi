@@ -2487,16 +2487,17 @@ def kelola_admin_export(path1):
             return redirect(url_for("kelola_admin", msg="Data user not found"))
         # save excel data
         file_path = os.path.join(app.root_path, "static", "doc")
-        # Cek apakah path dapat ditulis
-        if not os.access(file_path, os.W_OK):
-            # Jika tidak bisa menulis ke folder static, simpan ke /tmp
-            print("Tidak dapat menulis ke folder static. Menyimpan ke /tmp...")
-            file_path = os.path.join("/tmp")
         wb = load_workbook(file_path + "/excel/template_kelola_admin.xlsx")
         ws = wb.active
         column_widths, start, stop = convert_to_excel(
             ws, result=result, currentPage="Kelola Admin"
         )
+
+        # Cek apakah path dapat ditulis
+        if not os.access(file_path, os.W_OK):
+            # Jika tidak bisa menulis ke folder static, simpan ke /tmp
+            print("Tidak dapat menulis ke folder static. Menyimpan ke /tmp...")
+            file_path = os.path.join("/tmp")
         # save for extractor excel
         wb.save(file_path + "/excel/data_admin_sub_admin.xlsx")
         # excel
@@ -2997,15 +2998,15 @@ def export(path):
             raise Exception("Data user not found")
         # save excel data
         file_path = os.path.join(app.root_path, "static", "doc")
+        wb = load_workbook(file_path + "/excel/template_data_karyawan.xlsx")
+        ws = wb.active
+        column_widths, start, stop = convert_to_excel(ws, result=result)
+
         # Cek apakah path dapat ditulis
         if not os.access(file_path, os.W_OK):
             # Jika tidak bisa menulis ke folder static, simpan ke /tmp
             print("Tidak dapat menulis ke folder static. Menyimpan ke /tmp...")
             file_path = os.path.join("/tmp")
-
-        wb = load_workbook(file_path + "/excel/template_data_karyawan.xlsx")
-        ws = wb.active
-        column_widths, start, stop = convert_to_excel(ws, result=result)
         # save for extractor excel
         wb.save(file_path + "/excel/data_karyawan.xlsx")
         # excel
