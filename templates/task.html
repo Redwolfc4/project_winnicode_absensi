@@ -779,15 +779,41 @@
         });
     });
 
+    let color = null
+    if ($('html').attr('data-bs-theme') === 'dark'){
+        console.log('jalan1')
+        color = 'text-light'
+        $('tr td a').addClass(color).removeClass('text-dark')
+    } else {
+        console.log('jalann1')
+        color = 'text-dark'
+        $('tr td a').addClass(color).removeClass('text-light')
+    }
+
+
+    $("#darkModeSwitch #hide-checkbox").on("click", function () {
+        //jika data lama adalah dark maka ubah ke white
+        if ($('html').attr('data-bs-theme') === 'dark'){
+            console.log('jalan')
+            color = 'text-dark'
+            $('tr td a').addClass(color).removeClass('text-white')
+         //jika data lama adalah nondark maka ubah ke dark
+        } else {
+            console.log('jalann')
+            color = 'text-white'
+            $('tr td a').addClass(color).removeClass('text-dark')
+        }
+    })
+
     //function handle link td a href saat mouse over dan mouse out
     $(document).on('mouseover', 'tr td a', function() {
-        $(this).removeClass('text-dark')
+        $(this).removeClass(color)
         $(this).removeClass('text-decoration-none')
         
     });
     //hadle mouse out
     $(document).on('mouseout', 'tr td a', function() {
-        $(this).addClass('text-dark')
+        $(this).addClass(color)
         $(this).addClass('text-decoration-none')
     });
 
