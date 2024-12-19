@@ -2498,7 +2498,7 @@ def kelola_admin_export(path1):
             ws, result=result, currentPage="Kelola Admin"
         )
         # save for extractor excel
-        wb.save(file_path + "/excel/data_karyawan.xlsx")
+        wb.save(file_path + "/excel/data_admin_sub_admin.xlsx")
         # excel
         if path1 == "excel":
             # Save the modified workbook to BytesIO
@@ -2510,7 +2510,7 @@ def kelola_admin_export(path1):
                 output,
                 mimetype="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
                 as_attachment=True,
-                download_name="data_karyawan_winnicode.xlsx",
+                download_name="data_admin_sub_admin_winnicode.xlsx",
             )
 
         # pdf
@@ -2526,13 +2526,13 @@ def kelola_admin_export(path1):
             )
             # Buat objek BytesIO
             outputs = BytesIO()
-            pdf.output(file_path + "/pdf/data_karyawan.pdf")
+            pdf.output(file_path + "/pdf/data_admin_sub_admin.pdf")
             # Kirim file PDF sebagai attachment
             return send_file(
-                file_path + "/pdf/data_karyawan.pdf",
+                file_path + "/pdf/data_admin_sub_admin.pdf",
                 mimetype="application/pdf",
                 as_attachment=True,
-                download_name="data_karyawan_winnicode.pdf",
+                download_name="data_admin_sub_admin_winnicode.pdf",
             )
 
         # jika tidak ada
