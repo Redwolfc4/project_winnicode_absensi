@@ -34,7 +34,6 @@ def upload_to_imgbb(file: FileStorage, imgbb_api_key: str):
     response = requests.post(f"{url}?key={imgbb_api_key}", files=files)
     if response.status_code == 200:
         data = response.json()
-        print(data)
         print(data["status"])
         if data["status"] == 200:
             return {

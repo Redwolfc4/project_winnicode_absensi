@@ -740,6 +740,7 @@ def myProfiles():
 
                 # Kirim ke Imgbb
                 response = upload_to_imgbb(gambar, imgbb_api_key)
+                print(response)
                 if response["status"] == "success":
                     filepath_db = response["url"] + " " + response["filename"]
                 else:
