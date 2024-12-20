@@ -6,10 +6,43 @@ from cryptography.fernet import Fernet
 import requests
 import datetime
 import re
+from werkzeug.datastructures import FileStorage
 
 # Generate a key for encryption (this should be securely stored)
 key = Fernet.generate_key()
 cipher = Fernet(key)
+
+
+# upload img with imgbb
+def upload_to_imgbb(file: FileStorage, imgbb_api_key: str):
+    """Fungsi untuk upload gambar ke Imgbb"""
+
+    # check if file is provided
+    if not file:
+        return {"status": "failed", "message": "No file provided"}
+
+    # # Read the image file and encode it to base64
+    # image_data = base64.b64encode(file.read()).decode("utf-8")
+    # print(image_data)
+
+    # cek url
+    url = "https://api.imgbb.com/1/upload"
+    # buat payload
+    files = {
+        "image": (file.filename, file.stream, file.content_type),
+    }
+    response = requests.post(f"{url}?key={imgbb_api_key}", files=files)
+    if response.status_code == 200:
+        data = response.json()
+        print(data)
+        print(data["status"])
+        if data["status"] == 200:
+            return {
+                "status": "success",
+                "url": data["data"]["image"]["url"].replace("i.ibb.co", "i.ibb.co.com"),
+                "filename": data["data"]["image"]["filename"],
+            }
+    return {"status": "failed"}
 
 
 # ambil waktu berdasarkan api

@@ -115,7 +115,7 @@
         <td class="poppins-regular align-middle">{{ data_user_admin[i-1].email }}</td>
         <td class="poppins-regular align-middle">{{ data_user_admin[i-1].departement }}</td>
         <td class="poppins-regular align-middle">{{ data_user_admin[i-1].jobs }}</td>
-        <td class="poppins-regular align-middle"><img src="{{ url_for('static',filename=data_user_admin[i-1].photo_profile) }}" alt="{{ data_user_admin[i-1].nama }}.png" width="50em"
+        <td class="poppins-regular align-middle"><img src="{{ data_user_admin[i-1].photo_profile.split(' ')[0] }}" alt="{{ data_user_admin[i-1].photo_profile.split(' ')[1] }}" width="50em"
           height="50em"></td>
         {% if data.role==1 and data.jobs=='Admin' and data.departement=='Superuser' %}
         <!-- trigger modal edit -->

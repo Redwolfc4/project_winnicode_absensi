@@ -9,6 +9,7 @@ from absensiMethod import (
     cipher,
     get_time_zone_now,
     is_valid_datetime_format,
+    upload_to_imgbb,
 )
 from convert import convert_to_excel, PDF
 import cryptography.fernet as Fernet
@@ -59,16 +60,20 @@ app.config["SECRET_KEY"] = secretKey
 # buat csrfprotect
 csrf = CSRFProtect(app)
 
-# Tentukan folder untuk menyimpan gambar
-UPLOAD_FOLDER = os.path.join("/tmp", "static/img/user")
-# Cek apakah path dapat ditulis
-os.makedirs(UPLOAD_FOLDER, exist_ok=True)
 
-app.config["UPLOAD_FOLDER"] = UPLOAD_FOLDER
+# Tentukan folder untuk menyimpan gambar
+upload_folder = os.path.join("/tmp", "img", "user")
+# Cek apakah path dapat dituli  s
+os.makedirs(upload_folder, exist_ok=True)
+
+app.config["UPLOAD_FOLDER"] = upload_folder
 
 # Daftarkan filter ke Jinja
 app.jinja_env.filters["format_date"] = format_date
 app.jinja_env.filters["format_time"] = format_time
+
+# url imgbb
+imgbb_api_key = os.getenv("IMGBB_API_KEY")
 
 
 # home
@@ -305,7 +310,7 @@ def signUp():
                 "password": hashlib.sha256(password.encode()).hexdigest(),
                 "role": 3,
                 "nik": "",
-                "photo_profile": "img/default/user.png",
+                "photo_profile": "https://i.ibb.co.com/5Yd94zx/user.png",
                 "tempat_lahir": "",
                 "tanggal_lahir": "",
                 "mulai_kerja": "",
@@ -726,19 +731,21 @@ def myProfiles():
             if type(gambar) == str:
                 filepath_db = gambar
             elif type(gambar) == FileStorage:
+
                 # cek ectension gambar
                 if gambar.filename.endswith((".png", ".jpg", ".jpeg")) == False:
                     return redirect(
                         url_for("myProfiles", msg="undefined extension .png .jpg .jpeg")
                     )
-                # Amankan nama file
-                filename = secure_filename(gambar.filename)
-                # Simpan file ke folder yang ditentukan
-                filepath = os.path.join(app.config["UPLOAD_FOLDER"], filename)
-                gambar.save(filepath)
-                filepath_db = "img/user/" + filename
+
+                # Kirim ke Imgbb
+                response = upload_to_imgbb(gambar, imgbb_api_key)
+                if response["status"] == "success":
+                    filepath_db = response["url"] + " " + response["filename"]
+                else:
+                    raise Exception("Gagal Upload Gambar ke Imgbb")
             else:
-                return redirect(url_for("myProfiles", msg="Something Wrong Files!"))
+                raise Exception("Gambar tidak valid")
 
             # The above code is updating user information in a MongoDB database based on the role of
             # the user. If the user's role is 3, it updates the user's email, name, ID number, place
@@ -786,7 +793,7 @@ def myProfiles():
                     )
                 )
             else:
-                return redirect(url_for("myProfiles", msg="Update Profile Gagal"))
+                raise Exception("Update Profil Gagal")
 
         # The above code snippet is handling exceptions in a Python function. It is using a try-except
         # block to catch specific exceptions and then redirecting the user to the "signIn" route with
@@ -797,6 +804,8 @@ def myProfiles():
             return redirect(url_for("signIn", msg="Anda telah logout"))
         except ValueError as e:
             return redirect(url_for("signIn", msg=e.args[0]))
+        except Exception as e:
+            return redirect(url_for("myProfiles", msg=e.args[0]))
 
     # get method
     # The above code snippet is written in Python and it seems to be part of a web application using a
@@ -2662,7 +2671,14 @@ def dashboardAdminCreateAccount():
             raise ValueError("your password and confirm password not same")
 
         # cek email apakah sudah ada di database
-        if db.users.find_one({"email": email.strip(), "nama": nama.strip()}):
+        if db.users.find_one(
+            {
+                "email": email.strip(),
+                "nama": nama.strip(),
+                "jobs": jobs.strip(),
+                "departement": departement.strip(),
+            }
+        ):
             raise ValueError("email or name already exist")
 
         # ambil callback insert user
@@ -2674,7 +2690,7 @@ def dashboardAdminCreateAccount():
                 "departement": departement.strip(),
                 "jobs": jobs.strip(),
                 "role": 1,
-                "photo_profile": "img/default/user.png",
+                "photo_profile": "https://i.ibb.co.com/5Yd94zx/user.png",
             }
         )
         # berhasi/ tidak
