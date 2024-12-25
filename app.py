@@ -103,15 +103,6 @@ swagger_template = {
         "url": "http://swagger.io",
     },
     "schemes": ["http", "https"],
-    "securityDefinitions": {
-        "api_key": {
-            "type": "apiKey",
-            "name": "x-api-key",
-            "required": True,
-            "in": "header",
-            "description": "Provide your API Key in the header as 'x-api-key'.",
-        }
-    },
     "tags": [
         {
             "name": "Admin / Sub Admin",
@@ -1439,21 +1430,6 @@ swagger_template = {
 swagger = Swagger(app, template=swagger_template)
 
 
-# Dekorator untuk memvalidasi API Key
-def api_key_required(f):
-    @wraps(f)
-    def decorated(*args, **kwargs):
-        api_key = request.headers.get("x-api-key")
-        if not api_key or api_key != os.getenv("API_KEY_SWAGGER"):
-            return (
-                jsonify({"message": "Unauthorized: Invalid or missing API Key!"}),
-                401,
-            )
-        return f(*args, **kwargs)
-
-    return decorated
-
-
 # default url dokumentasi
 @app.before_request
 def update_host_for_api_docs():
@@ -1534,7 +1510,6 @@ def manual_book(path):
 # lakukan sign-in
 @app.route("/sign-in", methods=["GET", "POST"])
 @app.route("/sign-in/", methods=["GET", "POST"])
-@api_key_required
 def signIn():
     """
     Sign In Function
@@ -1718,7 +1693,6 @@ def signIn():
 # lakukan sign-up
 @app.route("/sign-up", methods=["GET", "POST"])
 @app.route("/sign-up/", methods=["GET", "POST"])
-@api_key_required
 def signUp():
     """
     Sign Up
@@ -1798,7 +1772,6 @@ def signUp():
 
 # logout
 @app.route("/api/auth/logout", methods=["GET"])
-@api_key_required
 def signOut():
     """
     Logout API
@@ -1838,7 +1811,6 @@ def signOut():
 
 # lupa password get and post
 @app.route("/sign-in/forget", methods=["GET", "POST"])
-@api_key_required
 def forgetPassword():
     """
     Lupa Password
@@ -1916,7 +1888,6 @@ def forgetPassword():
 
 # bagian otp lupa password
 @app.route("/sign-in/forget/otp/<jwt_otp>", methods=["GET", "POST"])
-@api_key_required
 def forgetPasswordOtp(jwt_otp):
     """
     Forget Password OTP
@@ -2027,7 +1998,6 @@ def forgetPasswordOtp(jwt_otp):
 
 # ballon_faq post
 @app.route("/ask", methods=["POST"])
-@api_key_required
 def ask():
     """
     Menangani pengiriman pertanyaan/kendala dari pengguna.
@@ -2141,7 +2111,6 @@ def ask():
 
 # update my profile
 @app.route("/myProfiles", methods=["GET", "POST"])
-@api_key_required
 def myProfiles():
     """
     My Profile
@@ -2358,7 +2327,6 @@ def myProfiles():
 
 # dasboard magang get
 @app.route("/dashboard", methods=["GET"])
-@api_key_required
 def dashboard():
     """
     Halaman Dashboard Pengguna / admin
@@ -2641,7 +2609,6 @@ def dashboard():
 
 # dashboard absen
 @app.route("/dashboard/absen", methods=["POST"])
-@api_key_required
 def dashboardAbsen():
     """
     Catat Kehadiran
@@ -2784,7 +2751,6 @@ def dashboardAbsen():
 
 # change password
 @app.route("/change-password", methods=["GET", "POST"])
-@api_key_required
 def change_password():
     """
     Ubah Password
@@ -2964,7 +2930,6 @@ def change_password():
 
 # riwayat kehadiran
 @app.route("/riwayat-kehadiran", methods=["GET"])
-@api_key_required
 def riwayat_kehadiran():
     """
     Tambah Riwayat Kehadiran
@@ -3129,7 +3094,6 @@ def riwayat_kehadiran():
 # lanjutkan disini
 @app.route("/riwayat-kehadiran/<path1>", methods=["POST"])
 @app.route("/riwayat-kehadiran/<path1>/<path2>", methods=["POST"])
-@api_key_required
 def riwayat_kehadiran_post(path1=None, path2=None):
     """
     Fungsi untuk mengelola riwayat kehadiran
@@ -3432,7 +3396,6 @@ def riwayat_kehadiran_post(path1=None, path2=None):
 
 # riwayat bantuan
 @app.route("/riwayat-bantuan", methods=["GET"])
-@api_key_required
 def riwayat_bantuan():
     """
     Fungsi riwayat_bantuan
@@ -3547,7 +3510,6 @@ def riwayat_bantuan():
 
 # update status bantuan
 @app.route("/update-status-bantuan", methods=["POST"])
-@api_key_required
 def riwayat_bantuan_post():
     """
     Dokumentasi riwayat_bantuan_post
@@ -3720,7 +3682,6 @@ def riwayat_bantuan_post():
 @app.route("/kelola-admin/", methods=["GET"])
 @app.route("/kelola-admin/<path1>", methods=["POST"])
 @app.route("/kelola-admin/<path1>/<path2>", methods=["POST"])
-@api_key_required
 def kelola_admin(path1=None, path2=None):
     """
     Fungsi ini digunakan untuk mengelola data admin dan sub admin.
@@ -4005,7 +3966,6 @@ def kelola_admin(path1=None, path2=None):
 # kelola admin export
 @app.route("/kelola-admin/<path1>", methods=["GET"])
 @app.route("/kelola-admin/<path1>/", methods=["GET"])
-@api_key_required
 def kelola_admin_export(path1):
     """
     Kelola Admin Export
@@ -4195,7 +4155,6 @@ def kelola_admin_export(path1):
 
 # add account admin / sub admin
 @app.route("/kelola-admin/create-account", methods=["POST"])
-@api_key_required
 def dashboardAdminCreateAccount():
     """
     Buat Akun admin / sub admin
@@ -4380,7 +4339,6 @@ def dashboardAdminCreateAccount():
 
 # mengedit data karyawan melalui admin
 @app.route("/dashboard/admin/edit", methods=["POST"])
-@api_key_required
 def dashboardAdminEdit():
     """
     Edit Data Karyawan melalui Admin
@@ -4614,7 +4572,6 @@ def dashboardAdminEdit():
 
 # delete user karyawan / magang melalui admin
 @app.route("/dashboard/admin/delete/<id>", methods=["POST"])
-@api_key_required
 def adminDelete(id):
     """
     Delete account Karyawan / Magang
@@ -4761,7 +4718,6 @@ def adminDelete(id):
 
 
 @app.route("/dashboard/admin/<path>", methods=["GET"])
-@api_key_required
 def export(path):
     """
     Export data karyawan / magang ke excel atau pdf
@@ -4894,7 +4850,6 @@ def export(path):
 
 # task page
 @app.route("/task", methods=["GET"])
-@api_key_required
 def task():
     """
     Task Page
@@ -5102,9 +5057,7 @@ def task():
         )
 
 
-# task post sisi admin
 @app.route("/task/<path>", methods=["POST"])
-@api_key_required
 def task_post_admin(path):
     """
     Manajement Tugas Karyawan / Magang
@@ -5434,9 +5387,7 @@ def task_post_admin(path):
         return make_response(jsonify({"redirect": url_for("task", msg=e.args[0])}), 500)
 
 
-# task dari sisi user
 @app.route("/task/user/<path>", methods=["POST"])
-@api_key_required
 def task_post_user(path):
     """
     Manajement Progress Tugas
