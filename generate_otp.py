@@ -437,6 +437,44 @@ class TaskGmailNotif(OtpPasswordGenerator):
     message_id = None
 
     def __init__(self, task_id_new: ObjectId, path: str, **kwargs):
+        """
+        API Endpoint: /task_gmail_notif
+        -----------------------------
+        description: API untuk mengirimkan notifikasi task ke email yang terdaftar di Winnicode.
+        parameters:
+        - in: path
+          name: task_id_new
+          required: false
+          description: ID task yang akan di notifikasi
+          schema:
+            type: string
+        - in: query
+          name: path
+          required: false
+          description: Path untuk mengarahkan halaman
+          schema:
+            type: string
+        responses:
+        - 200 OK: Sukses mengirimkan notifikasi task
+        - 400 Bad Request: Request tidak valid
+        - 500 Internal Server Error: Terjadi kesalahan di server
+        examples:
+        - parameters:
+            - name: task_id_new
+              value: "1234567890abcdef"
+            - name: path
+              value: "/task"
+          response:
+            - Sukses mengirimkan notifikasi task
+        - parameters:
+            - name: task_id_new
+              value: "1234567890abcdef"
+            - name: path
+              value: "/task"
+          response:
+            - Gagal mengirimkan notifikasi task
+        """
+
         from app import db, url_for  # import db
 
         self.__task_id_new = task_id_new
@@ -555,6 +593,25 @@ class TaskGmailNotif(OtpPasswordGenerator):
             )
 
     def send_add_task_gmail_notif(self, receiver_email: str, subject: str, body: str):
+        """
+        Kirimkan notifikasi task ke email user yang bersangkutan
+
+        Parameters:
+        receiver_email (str): Email address yang akan di kirimkan email.
+        subject (str): Subject email yang akan di kirimkan.
+        body (str): Body email yang akan di kirimkan.
+
+        Returns:
+        str: Message ID jika berhasil, None jika gagal.
+
+        Examples:
+        >>> from generate_otp import TaskGmailNotif
+        >>> task = TaskGmailNotif(task_id_new=ObjectId, path="add")
+        >>> message_id = task.send_add_task_gmail_notif(receiver_email="john.doe@example.com", subject="Tasks Winnicode", body="<p>ini adalah contoh body email</p>")
+        >>> print(message_id)
+        <Message-ID>
+        """
+
         self.message_id = super().send_otp_via_gmail(
             receiver_email=receiver_email, subject=subject, body=body
         )  # jangan kupa ubah ke string to uuid

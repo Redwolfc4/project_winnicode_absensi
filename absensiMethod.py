@@ -6,6 +6,7 @@ from cryptography.fernet import Fernet
 import requests
 import datetime
 import re
+import certifi
 from werkzeug.datastructures import FileStorage
 
 # Generate a key for encryption (this should be securely stored)
@@ -15,7 +16,31 @@ cipher = Fernet(key)
 
 # upload img with imgbb
 def upload_to_imgbb(file: FileStorage, imgbb_api_key: str):
-    """Fungsi untuk upload gambar ke Imgbb"""
+    """Upload gambar ke Imgbb dan return url gambar yang di upload
+
+    Args:
+        file (FileStorage): File yang akan di upload
+        imgbb_api_key (str): Api key Imgbb
+
+    Returns:
+        dict: Berisi status dan url gambar yang di upload
+
+    Raises:
+        Exception: Jika tidak ada file yang di upload
+
+    Examples:
+        >>> from flask import request
+        >>> from app import upload_to_imgbb
+        >>> file = request.files['image']
+        >>> imgbb_api_key = "your_imgbb_api_key"
+        >>> response = upload_to_imgbb(file, imgbb_api_key)
+        >>> print(response)
+        {
+            'status': 'success',
+            'url': 'https://i.ibb.co.com/your-image-url.jpg',
+            'filename': 'your-image-filename.jpg'
+        }
+    """
 
     # check if file is provided
     if not file:
@@ -46,13 +71,45 @@ def upload_to_imgbb(file: FileStorage, imgbb_api_key: str):
 
 # ambil waktu berdasarkan api
 def get_time_zone_now(location: str = "asia/jakarta"):
+    """
+    API untuk mengambil waktu sekarang berdasarkan lokasi timezone.
+
+    Parameter:
+        location (str): Lokasi timezone yang akan diambil waktu sekarangnya. Default: "asia/jakarta".
+
+    Response:
+        datetime.datetime: Waktu sekarang berdasarkan lokasi timezone yang di request.
+
+    Contoh:
+        >>> import requests
+        >>> response = requests.get("https://absensi.winnicode.com/api/time/now?location=asia/jakarta")
+        >>> print(response.json())
+        datetime.datetime(2023, 3, 14, 10, 32, 45)
+    """
+
     url = f"https://www.timeapi.io/api/time/current/zone?timeZone={location}"
-    waktu_str = requests.get(url).json()["dateTime"]
+    waktu_str = requests.get(url, verify=certifi.where()).json()["dateTime"]
     waktu_sekarang = datetime.datetime.fromisoformat(waktu_str)
     return waktu_sekarang
 
 
 def is_valid_datetime_format(value):
+    """
+    API untuk memeriksa apakah datetime format yang diberikan valid atau tidak.
+
+    Parameter:
+        value (str): String datetime yang akan di cek validitasnya.
+
+    Response:
+        bool: True jika datetime formatnya valid, False jika tidak.
+
+    Contoh:
+        >>> import requests
+        >>> response = requests.get("https://absensi.winnicode.com/api/valid_datetime?value=2023-03-14T10:32")
+        >>> print(response.json())
+        True
+    """
+
     # Pola regex untuk "YYYY-MM-DDTHH:MM"
     pattern = r"^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}$"
     return bool(re.match(pattern, value))
@@ -61,21 +118,24 @@ def is_valid_datetime_format(value):
 # tidak hadir untuk magang / karyawan
 def unhadir_absensi():
     """
-    Fungsi untuk mengupdate status tidak hadir untuk magang/karyawan setiap 1 jam sekali.
-
-    Pemanggilan:
-    Fungsi ini dipanggil oleh BackgroundScheduler yang di jalankan di dalam file app.py.
-    BackgroundScheduler ini di setting agar menjalankan fungsi ini setiap 1 jam sekali.
+    API untuk menghapus data absensi magang / karyawan yang tidak hadir.
 
     Parameter:
-    Tidak ada parameter yang dibutuhkan.
+        None
 
-    Return:
-    Tidak ada nilai return yang dihasilkan oleh fungsi ini.
+    Response:
+        None
 
     Contoh:
-    Fungsi ini akan dijalankan setiap 1 jam sekali dan akan mengupdate status tidak hadir
-    untuk magang/karyawan yang tidak hadir.
+        >>> import requests
+        >>> response = requests.get("https://absensi.winnicode.com/api/unhadir_absensi")
+        >>> print(response.text)
+        None
+
+    Description:
+        API ini digunakan untuk menghapus data absensi magang / karyawan yang tidak hadir.
+        Data yang dihapus adalah data yang memiliki tanggal hadir sama dengan hari ini.
+        API ini akan berjalan secara otomatis setiap 1 menit sekali.
     """
 
     from app import db

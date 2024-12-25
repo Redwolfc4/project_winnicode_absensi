@@ -153,6 +153,7 @@
 {% include 'utility/ballon_faq.html' %} {% endblock %} {% block message %} {% if
 (status and msg) %}
 <script>
+  console.log("jalan");
   Swal.fire({
     icon: "success",
     title: "{{ title }}",

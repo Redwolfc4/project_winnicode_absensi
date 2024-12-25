@@ -541,6 +541,7 @@
     <script
         src="{{ url_for('static', filename='js/index.js') }}"></script>
 
+    <!-- for admin -->
     {% if data.role==1 %}
 
     <script>
@@ -885,7 +886,7 @@
                 }),
                 headers:{
                     'Content-Type':'Application/json',
-                    'X-CSRFToken':'{{ csrf_token() }}'
+                    'X-CSRF-Token   ':'{{ csrf_token() }}'
                 },
                 success: function (response,status,xhr) {
                     console.log(response,status,xhr)
@@ -936,6 +937,7 @@
     {% endif %}
     {% endif %}
 
+    <!-- for user  -->
     {% if data.role!=1 %}
     <script>
     $('#taskTableUser').DataTable({

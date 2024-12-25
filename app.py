@@ -41,6 +41,8 @@ from generate_otp import (
 )
 from markupsafe import Markup
 import certifi
+from flasgger import Swagger
+from functools import wraps
 
 # buat request post sesuai datetime
 
@@ -75,24 +77,1439 @@ app.jinja_env.filters["format_time"] = format_time
 # url imgbb
 imgbb_api_key = os.getenv("IMGBB_API_KEY")
 
+# Ambil data license dari MongoDB
+license_name = "Server Side Public License (SSPL) MongoDB"
+license_url = "https://www.mongodb.com/licensing/server-side-public-license"
+# Konfigurasi Swagger
+swagger_template = {
+    "swagger": "2.0",
+    "info": {
+        "title": "API AbsensiKu Winnicode",
+        "description": "Dokumentasi API untuk aplikasi absensi Winnicode",
+        "version": "1.0.0",
+        "termsOfService": "https://www.mongodb.com/legal/terms-and-conditions/cloud#:~:text=MongoDB%20Cloud%20Terms%20of%20Service%201%201.%20Cloud,...%208%208.%20No%20Warranty.%20...%20More%20items?msockid=0963a9adaf8f6eaa1fc1bd71ae8e6f69",
+        "contact": {
+            "email": "salahudinkoliq10@gmail.com",
+        },
+        "license": {
+            "name": license_name,
+            "url": license_url,
+        },
+    },
+    "host": "",
+    "basePath": "/",
+    "externalDocs": {
+        "description": "Find out more about Swagger",
+        "url": "http://swagger.io",
+    },
+    "schemes": ["http", "https"],
+    "securityDefinitions": {
+        "api_key": {
+            "type": "apiKey",
+            "name": "x-api-key",
+            "required": True,
+            "in": "header",
+            "description": "Provide your API Key in the header as 'x-api-key'.",
+        }
+    },
+    "tags": [
+        {
+            "name": "Admin / Sub Admin",
+            "description": "all endpoint merupakan halaman / proses yang dilakukan di bagian Admin / Sub Admin",
+        },
+        {
+            "name": "Magang / Karyawan",
+            "description": "all endpoint merupakan halaman / proses yang dilakukan di bagian Magang / Karyawan",
+        },
+        {
+            "name": "Autentikasi",
+            "description": "all endpoint merupakan bagian Autentikasi yaitu sebelum halaman utaama AbsensiKu",
+        },
+        {
+            "name": "Bantuan",
+            "description": "all endpoint merupakan bagian Bantuan yaitu Pertanyaan user tiap role dalam mengalami kendala",
+        },
+        {
+            "name": "Landing Page",
+            "description": "berisi endpoint pembuka halaman pertama",
+        },
+        {
+            "name": "Error",
+            "description": "berisi endpoint mengaami error page atau server",
+        },
+        {
+            "name": "Export",
+            "description": "berisi endpoint melakukan export data ke pdf,word, dst",
+        },
+        {
+            "name": "Dokumentasi",
+            "description": "berisi endpoint tata cara penggunaan website",
+        },
+    ],
+    "paths": {
+        "/": {
+            "get": {
+                "tags": ["Landing Page"],
+                "summary": "Halaman Beranda",
+                "description": "Menampilkan halaman beranda dari aplikasi.",
+                "responses": {"200": {"description": "Halaman berhasil dimuat."}},
+            }
+        },
+        "/manual/{path}": {
+            "get": {
+                "tags": ["Dokumentasi"],
+                "summary": "Download Manual Book",
+                "description": "Endpoint ini digunakan untuk mengunduh manual book berdasarkan path yang diberikan.",
+                "parameters": [
+                    {
+                        "name": "path",
+                        "in": "path",
+                        "required": True,
+                        "type": "string",
+                        "description": "Path untuk menentukan manual book yang akan diunduh.",
+                        "example": "1",
+                    }
+                ],
+                "responses": {
+                    "200": {"description": "Manual book berhasil diunduh."},
+                    "500": {"description": "Terjadi kesalahan internal server."},
+                },
+            }
+        },
+        "/sign-in": {
+            "get": {
+                "tags": ["Autentikasi"],
+                "summary": "Halaman Masuk Pengguna",
+                "description": "Menjalankan halaman auttentikasi signin",
+                "parameters": [
+                    {
+                        "name": "msg",
+                        "in": "query",
+                        "type": "string",
+                        "required": False,
+                        "description": "Pesan untuk pengguna",
+                        "example": "Selamat datang di AbsensiKu",
+                    },
+                    {
+                        "name": "title",
+                        "in": "query",
+                        "type": "string",
+                        "required": False,
+                        "description": "Judul Pesan untuk pengguna",
+                        "example": "SignIn",
+                    },
+                    {
+                        "name": "status",
+                        "in": "query",
+                        "type": "string",
+                        "enum": ["success"],
+                        "required": False,
+                        "description": "status pesan untuk pengguna",
+                        "example": "Selamat datang di AbsensiKu",
+                    },
+                ],
+                "responses": {
+                    "200": {"description": "Halaman Berhasil dimuat"},
+                    "404": {"description": "Not Found"},
+                },
+            },
+            "post": {
+                "tags": ["Autentikasi"],
+                "summary": "Proses Masuk Pengguna",
+                "description": "Mengizinkan pengguna untuk masuk ke aplikasi dengan memberikan kredensial yang valid.",
+                "consumes": ["application/json"],
+                "parameters": [
+                    {
+                        "in": "body",
+                        "name": "body",
+                        "description": "Data login pengguna berupa email, password, dan jobs ('Karyawan', 'Magang', 'Admin','Sub Admin').",
+                        "required": True,
+                        "schema": {
+                            "type": "object",
+                            "properties": {
+                                "email": {
+                                    "type": "string",
+                                    "example": "user@example.com",
+                                },
+                                "password": {
+                                    "type": "string",
+                                    "example": "password123",
+                                },
+                                "jobs": {
+                                    "type": "string",
+                                    "enum": [
+                                        "Karyawan",
+                                        "Magang",
+                                        "Admin",
+                                        "Sub Admin",
+                                    ],
+                                    "example": "Karyawan",
+                                },
+                            },
+                        },
+                    },
+                    {
+                        "name": "X-CSRF-Token",
+                        "in": "header",
+                        "required": True,
+                        "schema": {"type": "string", "example": "abc123xyz"},
+                    },
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Login berhasil.",
+                        "schema": {
+                            "type": "object",
+                            "properties": {
+                                "message": {
+                                    "type": "string",
+                                    "example": "login berhasil",
+                                },
+                                "status": {"type": "string", "example": "success"},
+                            },
+                        },
+                    },
+                    "302": {
+                        "description": "Redirect ke halaman dashboard dengan pesan sukses.",
+                        "headers": {
+                            "Location": {
+                                "description": "URL tujuan redirect dengan parameter query.",
+                                "type": "string",
+                                "example": "/dashboard?msg=login success&status=success&title=SignUp%21",
+                            },
+                        },
+                    },
+                    "400": {
+                        "description": "Input tidak valid.",
+                        "properties": {
+                            "type": "object",
+                            "message": {
+                                "type": "string",
+                                "example": "Input tidak valid.",
+                            },
+                        },
+                    },
+                    "500": {
+                        "description": "Terjadi kesalahan internal server.",
+                        "properties": {
+                            "type": "object",
+                            "message": {
+                                "type": "string",
+                                "example": "Input tidak valid.",
+                            },
+                        },
+                    },
+                },
+            },
+        },
+        "/sign-in/forget": {
+            "post": {
+                "tags": ["Autentikasi"],
+                "summary": "Lupa Password Post",
+                "description": "Mengizinkan pengguna untuk mengatur ulang kata sandi mereka. Memerlukan email dan token CSRF yang valid.",
+                "consumes": ["application/x-www-form-urlencoded"],
+                "parameters": [
+                    {
+                        "name": "csrf_token",
+                        "in": "formData",
+                        "required": True,
+                        "description": "Token CSRF untuk keamanan.",
+                        "type": "string",
+                    },
+                    {
+                        "name": "email",
+                        "in": "formData",
+                        "required": True,
+                        "description": "Alamat email pengguna.",
+                        "schema": {"type": "string"},
+                    },
+                    {
+                        "name": "password_new",
+                        "in": "formData",
+                        "required": True,
+                        "description": "Kata sandi baru pengguna.",
+                        "schema": {"type": "string"},
+                    },
+                    {
+                        "name": "password2_new",
+                        "in": "formData",
+                        "required": True,
+                        "description": "Konfirmasi kata sandi baru.",
+                        "schema": {"type": "string"},
+                    },
+                ],
+                "responses": {
+                    "302": {
+                        "description": "OTP telah dikirimkan",
+                        "schema": {
+                            "type": "object",
+                            "properties": {
+                                "message": {
+                                    "type": "string",
+                                    "example": "OTP berhasil dikirimkan",
+                                },
+                                "status": {"type": "string", "example": "success"},
+                            },
+                        },
+                    },
+                    "400": {
+                        "description": "Input tidak valid.",
+                        "schema": {
+                            "type": "object",
+                            "properties": {
+                                "message": {
+                                    "type": "string",
+                                    "example": "Input tidak valid",
+                                },
+                                "status": {"type": "string", "example": "error"},
+                            },
+                        },
+                    },
+                    "500": {
+                        "description": "Terjadi kesalahan internal server.",
+                        "schema": {
+                            "type": "object",
+                            "properties": {
+                                "message": {
+                                    "type": "string",
+                                    "example": "Terjadi kesalahan saat mengatur ulang kata sandi.",
+                                },
+                                "status": {"type": "string", "example": "error"},
+                            },
+                        },
+                    },
+                },
+            },
+            "get": {
+                "tags": ["Autentikasi"],
+                "summary": "Halaman lupa password",
+                "description": "Menjalankan halaman lupa password",
+                "parameters": [
+                    {
+                        "name": "msg",
+                        "in": "query",
+                        "type": "string",
+                        "required": False,
+                        "description": "Pesan untuk pengguna",
+                        "example": "OTP Expired",
+                    },
+                ],
+                "responses": {
+                    "200": {"description": "Halaman berhasil dimuat"},
+                    "404": {"description": "Not Found"},
+                },
+            },
+        },
+        "/sign-in/forget/otp/<jwt_otp>": {
+            "post": {
+                "tags": ["Autentikasi"],
+                "summary": "Verifikasi OTP untuk Reset Password",
+                "description": "Mengizinkan pengguna untuk memverifikasi OTP yang dikirim ke email mereka untuk mengatur ulang kata sandi.",
+                "parameters": [
+                    {
+                        "name": "jwt_otp",
+                        "in": "path",
+                        "required": True,
+                        "description": "Token JWT yang berisi OTP.",
+                        "schema": {"type": "string"},
+                    },
+                    {
+                        "in": "body",
+                        "name": "body",
+                        "required": True,
+                        "description": "OTP yang dimasukkan oleh pengguna.",
+                        "schema": {
+                            "type": "string",
+                            "properties": {
+                                "otp": {"type": "string", "example": "123456"},
+                            },
+                        },
+                    },
+                    {
+                        "name": "csrf_token",
+                        "in": "header",
+                        "required": True,
+                        "description": "Token CSRF untuk keamanan.",
+                        "type": "string",
+                    },
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OTP berhasil diverifikasi dan kata sandi diperbarui.",
+                        "schema": {
+                            "type": "object",
+                            "properties": {
+                                "redirect": {"type": "string", "example": "/sign-in"},
+                                "msg": {
+                                    "type": "string",
+                                    "example": "Password updated",
+                                },
+                                "status": {"type": "string", "example": "success"},
+                            },
+                        },
+                    },
+                    "400": {
+                        "description": "OTP tidak valid.",
+                        "schema": {
+                            "type": "object",
+                            "properties": {
+                                "message": {
+                                    "type": "string",
+                                    "example": "OTP tidak valid",
+                                },
+                                "status": {"type": "string", "example": "error"},
+                            },
+                        },
+                    },
+                    "500": {
+                        "description": "Terjadi kesalahan internal server.",
+                        "schema": {
+                            "type": "object",
+                            "properties": {
+                                "message": {
+                                    "type": "string",
+                                    "example": "Terjadi kesalahan saat memverifikasi OTP.",
+                                },
+                                "status": {"type": "string", "example": "error"},
+                            },
+                        },
+                    },
+                },
+            },
+            "get": {
+                "tags": ["Autentikasi"],
+                "summary": "Halaman lupa password dengan OTP",
+                "description": "Menjalankan halaman untuk memasukkan OTP.",
+                "parameters": [
+                    {
+                        "name": "jwt_otp",
+                        "in": "path",
+                        "required": True,
+                        "description": "Token JWT yang berisi OTP.",
+                        "schema": {"type": "string"},
+                    }
+                ],
+                "responses": {
+                    "200": {"description": "Halaman berhasil dimuat"},
+                    "404": {"description": "Not Found"},
+                },
+            },
+        },
+        "/sign-up": {
+            "get": {
+                "tags": ["Autentikasi"],
+                "summary": "Halaman Pendaftaran",
+                "description": "Menampilkan halaman pendaftaran untuk pengguna baru.",
+                "responses": {
+                    "200": {"description": "Halaman pendaftaran berhasil dimuat."}
+                },
+            },
+            "post": {
+                "tags": ["Autentikasi"],
+                "summary": "Proses Pendaftaran Pengguna",
+                "description": "Endpoint ini digunakan untuk mendaftar pengguna baru ke dalam aplikasi.",
+                "consumes": ["application/x-www-form-urlencoded"],
+                "parameters": [
+                    {
+                        "name": "csrf_token",
+                        "in": "formData",
+                        "required": True,
+                        "description": "Token CSRF untuk keamanan.",
+                        "type": "string",
+                        "example": "IjFhMGU1ODI0NDA0Nzk1MjdkOWM4NWM1ZmU4MGJkNWZiNTM0MDdjMjci.Z2lUCQ.jTybc72d55jThpGfqU9ey_p7C1I",
+                    },
+                    {
+                        "name": "nama",
+                        "in": "formData",
+                        "required": True,
+                        "description": "Nama lengkap pengguna.",
+                        "schema": {"type": "string"},
+                    },
+                    {
+                        "name": "departement",
+                        "in": "formData",
+                        "required": True,
+                        "enum": [
+                            "Fullstack Developer",
+                            "Web Developer Laravel",
+                            "Copywriting",
+                        ],
+                        "description": "Departemen pengguna.",
+                        "schema": {"type": "string"},
+                    },
+                    {
+                        "name": "email",
+                        "in": "formData",
+                        "required": True,
+                        "description": "Alamat email pengguna.",
+                        "schema": {"type": "string"},
+                    },
+                    {
+                        "name": "password",
+                        "in": "formData",
+                        "required": True,
+                        "description": "Kata sandi untuk akun baru.",
+                        "schema": {"type": "string"},
+                    },
+                    {
+                        "name": "jobs",
+                        "in": "formData",
+                        "required": True,
+                        "enum": ["Karyawan", "Magang"],
+                        "description": "Jabatan pengguna (misalnya, 'Karyawan', 'Magang').",
+                        "schema": {"type": "string"},
+                    },
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Pendaftaran berhasil.",
+                        "schema": {
+                            "type": "object",
+                            "properties": {
+                                "message": {
+                                    "type": "string",
+                                    "example": "Pendaftaran berhasil, silakan masuk.",
+                                },
+                                "status": {"type": "string", "example": "success"},
+                            },
+                        },
+                    },
+                    "302": {
+                        "description": "Redirect ke halaman Sign In dengan pesan sukses.",
+                        "headers": {
+                            "Location": {
+                                "description": "URL tujuan redirect dengan parameter query.",
+                                "type": "string",
+                                "example": "/signIn?msg=Sign+Up+Success&status=success&title=SignUp%21",
+                            },
+                        },
+                    },
+                    "400": {
+                        "description": "Permintaan tidak valid atau parameter yang diperlukan hilang.",
+                        "schema": {
+                            "type": "object",
+                            "properties": {
+                                "message": {
+                                    "type": "string",
+                                    "example": "Nama tidak boleh kosong.",
+                                },
+                            },
+                        },
+                    },
+                    "500": {
+                        "description": "Terjadi kesalahan di server.",
+                        "schema": {
+                            "type": "object",
+                            "properties": {
+                                "message": {
+                                    "type": "string",
+                                    "example": "Terjadi kesalahan saat mendaftar.",
+                                },
+                            },
+                        },
+                    },
+                },
+            },
+        },
+        "/api/auth/logout": {
+            "get": {
+                "tags": ["Autentikasi"],
+                "summary": "Logout Pengguna",
+                "description": "Menghapus sesi pengguna dan menghapus cookie autentikasi.",
+                "responses": {
+                    "200": {
+                        "description": "Logout berhasil.",
+                        "schema": {
+                            "type": "object",
+                            "properties": {
+                                "status": {"type": "string", "example": "success"},
+                                "redirect": {"type": "string", "example": "/sign-in"},
+                                "msg": {
+                                    "type": "string",
+                                    "example": "Logout berhasil.",
+                                },
+                            },
+                        },
+                    }
+                },
+            },
+        },
+        "/ask": {
+            "post": {
+                "tags": ["Bantuan"],
+                "summary": "Ajukan Pertanyaan",
+                "description": "Mengizinkan pengguna untuk mengajukan pertanyaan atau masalah yang mereka hadapi.",
+                "parameters": [
+                    {
+                        "name": "X-CSRF-TOKEN",
+                        "in": "header",
+                        "required": True,
+                        "description": "Token CSRF untuk keamanan.",
+                        "type": "string",
+                        "example": "IjFhMGU1ODI0NDA0Nzk1MjdkOWM4NWM1ZmU4MGJkNWZiNTM0MDdjMjci.Z2lUCQ.jTybc72d55jThpGfqU9ey_p7C1I",
+                    },
+                    {
+                        "name": "body",
+                        "in": "body",
+                        "required": True,
+                        "description": "Berisi nama, email, jobs, departement, dan kendala.",
+                        "schema": {
+                            "type": "object",
+                            "properties": {
+                                "name": {"type": "string", "example": "John Doe"},
+                                "email": {
+                                    "type": "string",
+                                    "example": "pZf9M@gmail.com",
+                                },
+                                "jobs": {
+                                    "type": "string",
+                                    "example": "Karyawan",
+                                    "enum": [
+                                        "Karyawan",
+                                        "Magang",
+                                        "Admin",
+                                        "Sub Admin",
+                                    ],
+                                },
+                                "departement": {
+                                    "type": "string",
+                                    "example": "Fullstack Developer",
+                                    "enum": [
+                                        "Fullstack Developer",
+                                        "Web Developer Laravel",
+                                        "Copywriting",
+                                    ],
+                                },
+                                "issue": {"type": "string", "example": "Kendala 1"},
+                            },
+                        },
+                    },
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Pertanyaan berhasil diajukan.",
+                        "schema": {
+                            "type": "object",
+                            "properties": {
+                                "redirect": {"type": "string"},
+                                "msg": {"type": "string"},
+                            },
+                        },
+                    },
+                    "400": {
+                        "description": "Input tidak valid.",
+                        "schema": {
+                            "type": "object",
+                            "properties": {"message": {"type": "string"}},
+                        },
+                    },
+                    "500": {
+                        "description": "Terjadi kesalahan internal server.",
+                        "schema": {
+                            "type": "object",
+                            "properties": {"message": {"type": "string"}},
+                        },
+                    },
+                },
+            }
+        },
+        "/myProfiles": {
+            "get": {
+                "tags": ["Admin / Sub Admin", "Magang / Karyawan"],
+                "summary": "Lihat Profil Pengguna",
+                "description": "Endpoint untuk mendapatkan informasi profil pengguna.",
+                "parameters": [
+                    {
+                        "name": "msg",
+                        "in": "query",
+                        "required": False,
+                        "description": "Pesan untuk pengguna.",
+                        "type": "string",
+                        "example": "Profil berhasil ditampilkan.",
+                    },
+                    {
+                        "name": "status",
+                        "in": "query",
+                        "required": False,
+                        "description": "Status untuk pengguna.",
+                        "type": "string",
+                        "example": "success",
+                    },
+                    {
+                        "name": "token_key",
+                        "in": "cookie",
+                        "required": True,
+                        "description": "Token untuk keamanan.",
+                        "type": "string",
+                    },
+                    {
+                        "name": "csrf_token",
+                        "in": "cookie",
+                        "required": True,
+                        "description": "Token CSRF untuk keamanan.",
+                        "type": "string",
+                        "example": "IjFhMGU1ODI0NDA0Nzk1MjdkOWM4NWM1ZmU4MGJkNWZiNTM0MDdjMjci.Z2lZcw.GjsOiVWeyKP1DjYSaxXHrPGDmHM",
+                    },
+                ],
+                "responses": {
+                    "200": {"description": "Profil pengguna berhasil ditampilkan."},
+                    "400": {"description": "Permintaan tidak valid."},
+                    "500": {"description": "Terjadi kesalahan internal server."},
+                },
+            },
+            "post": {
+                "tags": ["Admin / Sub Admin", "Magang / Karyawan"],
+                "summary": "Perbarui Profil Pengguna",
+                "description": "Endpoint untuk memperbarui informasi profil pengguna.",
+                "parameters": [
+                    {
+                        "name": "token_key",
+                        "in": "cookie",
+                        "required": True,
+                        "description": "Token untuk keamanan.",
+                        "type": "string",
+                    },
+                    {
+                        "name": "csrf_token",
+                        "in": "formData",
+                        "required": True,
+                        "description": "Token CSRF untuk validasi keamanan.",
+                        "type": "string",
+                        "example": "IjFhMGU1ODI0NDA0Nzk1MjdkOWM4NWM1ZmU4MGJkNWZiNTM0MDdjMjci.Z2lZcw.GjsOiVWeyKP1DjYSaxXHrPGDmHM",
+                    },
+                    {
+                        "name": "email",
+                        "in": "formData",
+                        "required": True,
+                        "description": "Alamat email pengguna.",
+                        "type": "string",
+                        "example": "admin@gmail.com",
+                    },
+                    {
+                        "name": "nama",
+                        "in": "formData",
+                        "required": True,
+                        "description": "Nama lengkap pengguna.",
+                        "type": "string",
+                        "example": "john doe",
+                    },
+                    {
+                        "name": "nik",
+                        "in": "formData",
+                        "required": False,
+                        "description": "Nomor Induk Kependudukan (NIK) pengguna. (Hanya untuk role tertentu)",
+                        "type": "integer",
+                        "example": "12238398131313813",
+                    },
+                    {
+                        "name": "tempat_lahir",
+                        "in": "formData",
+                        "required": False,
+                        "description": "Tempat lahir pengguna. (Hanya untuk role tertentu)",
+                        "type": "string",
+                        "example": "Jakarta",
+                    },
+                    {
+                        "name": "tanggal_lahir",
+                        "in": "formData",
+                        "required": False,
+                        "description": "Tanggal lahir pengguna dalam format YYYY-MM-DD. (Hanya untuk role tertentu)",
+                        "type": "string",
+                        "format": "date",
+                        "example": "2010-08-12",
+                    },
+                    {
+                        "name": "profile-pic",
+                        "in": "formData",
+                        "required": False,
+                        "description": "Gambar profil pengguna.",
+                        "type": "file",
+                        "example": "datas.png",
+                    },
+                ],
+                "responses": {
+                    "200": {"description": "Profil berhasil diperbarui."},
+                    "400": {"description": "Input tidak valid."},
+                    "500": {"description": "Terjadi kesalahan internal server."},
+                },
+            },
+        },
+        "/change-password": {
+            "get": {
+                "tags": ["Admin / Sub Admin", "Magang / Karyawan"],
+                "summary": "Halaman Ubah Password Pengguna",
+                "description": "Mengizinkan pengguna untuk mengakses halaman ubah password mereka.",
+                "parameters": [
+                    {
+                        "name": "token_key",
+                        "in": "cookie",
+                        "type": "string",
+                        "required": True,
+                        "description": "token key dari cookie",
+                    },
+                    {
+                        "name": "csrf_token",
+                        "in": "cookie",
+                        "type": "string",
+                        "required": True,
+                        "description": "csrf dari cookie",
+                    },
+                    {
+                        "name": "result",
+                        "in": "query",
+                        "type": "string",
+                        "enum": ["success"],
+                        "required": False,
+                        "description": "result dari untuk pesan",
+                        "example": "success",
+                    },
+                    {
+                        "name": "msg",
+                        "in": "query",
+                        "type": "string",
+                        "required": False,
+                        "description": "result dari untuk pesan",
+                        "example": "ini merupakan pesan dari error",
+                    },
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Halaman ubah password berhasil ditampilkan."
+                    },
+                    "401": {"description": "Akses tidak sah atau sesi kedaluwarsa."},
+                },
+            },
+            "post": {
+                "tags": ["Admin / Sub Admin", "Magang / Karyawan"],
+                "summary": "Ubah Password Pengguna",
+                "description": "Mengizinkan pengguna untuk mengubah kata sandi lama mereka ke yang baru.",
+                "consumes": ["application/x-www-form-urlencoded"],
+                "parameters": [
+                    {
+                        "name": "token_key",
+                        "in": "cookie",
+                        "type": "string",
+                        "required": True,
+                        "description": "token key dari cookie",
+                    },
+                    {
+                        "name": "csrf_token",
+                        "in": "cookie",
+                        "type": "string",
+                        "required": True,
+                        "description": "csrf dari cookie",
+                    },
+                    {
+                        "name": "X-CSRFToken",
+                        "in": "header",
+                        "type": "string",
+                        "required": True,
+                        "description": "csrf dari cookie",
+                    },
+                    {
+                        "name": "old_password",
+                        "in": "formData",
+                        "type": "string",
+                        "required": True,
+                        "description": "Kata sandi saat ini pengguna.",
+                    },
+                    {
+                        "name": "new_password",
+                        "in": "formData",
+                        "type": "string",
+                        "required": True,
+                        "description": "Kata sandi baru yang diinginkan pengguna.",
+                    },
+                ],
+                "responses": {
+                    "200": {"description": "Password berhasil diubah."},
+                    "400": {
+                        "description": "Input tidak valid atau kata sandi tidak cocok."
+                    },
+                    "401": {
+                        "description": "Kesalahan autentikasi (sesi/token kedaluwarsa)."
+                    },
+                },
+            },
+        },
+        "/riwayat-kehadiran/{path1}": {
+            "post": {
+                "tags": ["Admin / Sub Admin"],
+                "summary": "Mengelola Riwayat Kehadiran",
+                "description": "Mengelola riwayat kehadiran pengguna berdasarkan parameter yang diberikan yaitu edit.",
+                "parameters": [
+                    {
+                        "name": "path1",
+                        "in": "path",
+                        "required": True,
+                        "type": "string",
+                        "enum": ["edit", "delete"],
+                        "description": "Tindakan yang akan dilakukan (edit/delete).",
+                    },
+                    {
+                        "name": "csrf_token",
+                        "in": "cookie",
+                        "required": True,
+                        "description": "Token CSRF yang valid.",
+                        "type": "string",
+                    },
+                    {
+                        "name": "token_key",
+                        "in": "cookie",
+                        "required": True,
+                        "description": "Token Key yang valid.",
+                        "type": "string",
+                    },
+                    {
+                        "name": "__method",
+                        "in": "formData",
+                        "required": True,
+                        "description": "Input method [PUT / DELETE]",
+                        "enum": ["PUT", "DELETE"],
+                        "type": "string",
+                    },
+                    {
+                        "name": "__csrf_token",
+                        "in": "formData",
+                        "required": True,
+                        "description": "Input csrf form roken",
+                        "type": "string",
+                    },
+                    {
+                        "name": "__id_riwayat_absent",
+                        "in": "formData",
+                        "required": False,
+                        "description": "Input id riwayat absen (required for edit)",
+                        "type": "string",
+                    },
+                    {
+                        "name": "nik",
+                        "in": "formData",
+                        "required": False,
+                        "description": "Input nik user ( required for edit)",
+                        "type": "string",
+                    },
+                    {
+                        "name": "email",
+                        "in": "formData",
+                        "required": False,
+                        "description": "Input email user ( required for edit)",
+                        "type": "string",
+                    },
+                    {
+                        "name": "status_hadir",
+                        "in": "formData",
+                        "required": False,
+                        "enum": ["1", "2", "0", "3"],
+                        "description": "Input status_hadir user ( required for edit)",
+                        "type": "string",
+                        "example": "1",
+                    },
+                ],
+                "responses": {
+                    "200": {"description": "Riwayat kehadiran berhasil dikelola."},
+                    "400": {"description": "Input tidak valid."},
+                    "401": {
+                        "description": "Token CSRF atau cookie tidak valid atau telah kedaluwarsa."
+                    },
+                    "500": {"description": "Terjadi kesalahan di server."},
+                },
+            }
+        },
+        "/riwayat-kehadiran/{path1}/{path2}": {
+            "post": {
+                "tags": ["Admin / Sub Admin"],
+                "summary": "Mengelola Riwayat Kehadiran",
+                "description": "Mengelola riwayat kehadiran pengguna berdasarkan parameter yang diberikan yaitu delete.",
+                "parameters": [
+                    {
+                        "name": "path1",
+                        "in": "path",
+                        "required": True,
+                        "type": "string",
+                        "enum": ["edit", "delete"],
+                        "description": "Tindakan yang akan dilakukan (edit/delete).",
+                    },
+                    {
+                        "name": "path2",
+                        "in": "path",
+                        "required": True,
+                        "type": "string",
+                        "description": "input uuid",
+                    },
+                    {
+                        "name": "csrf_token",
+                        "in": "cookie",
+                        "required": True,
+                        "description": "Token CSRF yang valid.",
+                        "type": "string",
+                    },
+                    {
+                        "name": "token_key",
+                        "in": "cookie",
+                        "required": True,
+                        "description": "Token Key yang valid.",
+                        "type": "string",
+                    },
+                    {
+                        "name": "__method",
+                        "in": "formData",
+                        "required": True,
+                        "description": "Input method [PUT / DELETE]",
+                        "enum": ["PUT", "DELETE"],
+                        "type": "string",
+                    },
+                    {
+                        "name": "__csrf_token",
+                        "in": "formData",
+                        "required": True,
+                        "description": "Input csrf form roken",
+                        "type": "string",
+                    },
+                ],
+                "responses": {
+                    "200": {"description": "Riwayat kehadiran berhasil dikelola."},
+                    "400": {"description": "Input tidak valid."},
+                    "401": {
+                        "description": "Token CSRF atau cookie tidak valid atau telah kedaluwarsa."
+                    },
+                    "500": {"description": "Terjadi kesalahan di server."},
+                },
+            }
+        },
+        "/riwayat-bantuan": {
+            "get": {
+                "tags": ["Admin / Sub Admin"],
+                "summary": "Riwayat Bantuan",
+                "description": "Menampilkan riwayat bantuan yang diajukan oleh pengguna.",
+                "parameters": [
+                    {
+                        "name": "token_key",
+                        "in": "cookie",
+                        "type": "string",
+                        "required": True,
+                        "description": "token key dari cookie",
+                    },
+                    {
+                        "name": "csrf_token",
+                        "in": "cookie",
+                        "type": "string",
+                        "required": True,
+                        "description": "csrf dari cookie",
+                    },
+                    {
+                        "name": "status",
+                        "in": "query",
+                        "type": "string",
+                        "enum": ["success"],
+                        "required": False,
+                        "description": "result dari untuk pesan",
+                        "example": "success",
+                    },
+                    {
+                        "name": "msg",
+                        "in": "query",
+                        "type": "string",
+                        "required": False,
+                        "description": "result dari untuk pesan",
+                        "example": "ini merupakan pesan dari error",
+                    },
+                ],
+                "responses": {
+                    "200": {"description": "Berhasil menampilkan riwayat bantuan."},
+                    "401": {"description": "Akses ditolak."},
+                    "500": {"description": "Terjadi kesalahan server."},
+                },
+            }
+        },
+        "/update-status-bantuan": {
+            "post": {
+                "tags": ["Admin / Sub Admin"],
+                "summary": "Perbarui Status Bantuan",
+                "description": "Endpoint ini digunakan untuk memperbarui status permintaan bantuan yang diajukan oleh pengguna.",
+                "parameters": [
+                    {
+                        "name": "body",
+                        "in": "body",
+                        "required": True,
+                        "description": "Body permintaan yang berisi status dan ID permintaan bantuan yang akan diperbarui.",
+                        "schema": {
+                            "type": "object",
+                            "properties": {
+                                "status": {
+                                    "type": "string",
+                                    "description": "Status baru dari permintaan bantuan.",
+                                    "enum": ["Selesai", "Pending", "Diproses"],
+                                    "default": "Pending",
+                                    "example": "Selesai",
+                                },
+                                "status_id": {
+                                    "type": "string",
+                                    "description": "ID permintaan bantuan yang akan diperbarui.",
+                                    "example": "5f4e2b2a2f8d4e38b2d0f5b1",
+                                },
+                            },
+                        },
+                    },
+                    {
+                        "name": "token_key",
+                        "in": "cookie",
+                        "type": "string",
+                        "required": True,
+                        "description": "token key dari cookie",
+                    },
+                    {
+                        "name": "csrf_token",
+                        "in": "cookie",
+                        "type": "string",
+                        "required": True,
+                        "description": "csrf dari cookie",
+                    },
+                    {
+                        "name": "X-Requested-With",
+                        "in": "header",
+                        "type": "string",
+                        "required": True,
+                        "description": "requested with",
+                        "example": "XMLHttpRequest",
+                    },
+                    {
+                        "name": "X-CSRF-TOKEN",
+                        "in": "header",
+                        "type": "string",
+                        "required": True,
+                        "description": "input X-CSRF-TOKEN",
+                        "example": "your-csrf-token",
+                    },
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Status permintaan bantuan berhasil diperbarui."
+                    },
+                    "400": {"description": "Permintaan tidak valid."},
+                    "401": {
+                        "description": "Token CSRF atau cookie tidak valid atau telah kedaluwarsa."
+                    },
+                    "500": {"description": "Terjadi kesalahan di server."},
+                },
+            }
+        },
+        "/kelola-admin": {
+            "get": {
+                "tags": ["Admin / Sub Admin"],
+                "summary": "Halaman Kelola Admin",
+                "description": "Menampilkan halaman untuk mengelola admin dan sub-admin.",
+                "parameters": [
+                    {
+                        "name": "token_key",
+                        "in": "cookie",
+                        "type": "string",
+                        "required": True,
+                        "description": "token key dari cookie",
+                    },
+                    {
+                        "name": "csrf_token",
+                        "in": "cookie",
+                        "type": "string",
+                        "required": True,
+                        "description": "csrf dari cookie",
+                    },
+                    {
+                        "name": "status",
+                        "in": "query",
+                        "type": "string",
+                        "enum": ["success"],
+                        "required": False,
+                        "description": "result dari untuk pesan",
+                        "example": "success",
+                    },
+                    {
+                        "name": "msg",
+                        "in": "query",
+                        "type": "string",
+                        "required": False,
+                        "description": "result dari untuk pesan",
+                        "example": "ini merupakan pesan dari error",
+                    },
+                ],
+                "responses": {
+                    "200": {"description": "Halaman berhasil dimuat."},
+                    "401": {"description": "Akses tidak sah."},
+                    "500": {"description": "Terjadi kesalahan internal server."},
+                },
+            }
+        },
+        "/kelola-admin/": {
+            "get": {
+                "tags": ["Admin / Sub Admin"],
+                "summary": "Halaman Kelola Admin (dengan trailing slash)",
+                "description": "Menampilkan halaman untuk mengelola admin dan sub-admin.",
+                "parameters": [
+                    {
+                        "name": "token_key",
+                        "in": "cookie",
+                        "type": "string",
+                        "required": True,
+                        "description": "token key dari cookie",
+                    },
+                    {
+                        "name": "csrf_token",
+                        "in": "cookie",
+                        "type": "string",
+                        "required": True,
+                        "description": "csrf dari cookie",
+                    },
+                    {
+                        "name": "result",
+                        "in": "query",
+                        "type": "string",
+                        "enum": ["success"],
+                        "required": False,
+                        "description": "result dari untuk pesan",
+                        "example": "success",
+                    },
+                    {
+                        "name": "msg",
+                        "in": "query",
+                        "type": "string",
+                        "required": False,
+                        "description": "result dari untuk pesan",
+                        "example": "ini merupakan pesan dari error",
+                    },
+                ],
+                "responses": {
+                    "200": {"description": "Halaman berhasil dimuat."},
+                    "401": {"description": "Akses tidak sah."},
+                    "500": {"description": "Terjadi kesalahan internal server."},
+                },
+            }
+        },
+        "/kelola-admin/<path1>": {
+            "post": {
+                "tags": ["Admin / Sub Admin"],
+                "summary": "Edit Admin / Sub Admin",
+                "description": "Endpoint ini digunakan untuk mengedit  data admin atau sub-admin.",
+                "parameters": [
+                    {
+                        "name": "token_key",
+                        "in": "cookie",
+                        "type": "string",
+                        "required": True,
+                        "description": "token key dari cookie",
+                    },
+                    {
+                        "name": "csrf_token",
+                        "in": "cookie",
+                        "type": "string",
+                        "required": True,
+                        "description": "csrf dari cookie",
+                    },
+                    {
+                        "name": "path1",
+                        "in": "path",
+                        "required": True,
+                        "description": "Operasi yang akan dilakukan, bisa 'edit' atau 'delete'.",
+                        "enum": ["edit", "delete"],
+                        "example": "edit",
+                        "type": "string",
+                    },
+                    {
+                        "name": "__csrf_token",
+                        "in": "formData",
+                        "required": True,
+                        "description": "Token CSRF Form yang valid.",
+                        "type": "string",
+                    },
+                    {
+                        "name": "__method",
+                        "in": "formData",
+                        "required": True,
+                        "description": "method Form yang valid.",
+                        "enum": ["PUT", "DELETE"],
+                        "type": "string",
+                    },
+                    {
+                        "name": "__id_data_user_admin",
+                        "in": "formData",
+                        "required": True,
+                        "description": "method id user yang valid.",
+                        "type": "string",
+                    },
+                    {
+                        "name": "nama",
+                        "in": "formData",
+                        "required": True,
+                        "description": "Nama admin yang akan diedit (hanya untuk edit).",
+                        "type": "string",
+                    },
+                    {
+                        "name": "email",
+                        "in": "formData",
+                        "required": True,
+                        "description": "Alamat email admin yang akan diedit (hanya untuk edit).",
+                        "type": "string",
+                    },
+                    {
+                        "name": "jobs",
+                        "in": "formData",
+                        "required": True,
+                        "description": "Jabatan admin yang akan diedit (hanya untuk edit).",
+                        "type": "string",
+                    },
+                    {
+                        "name": "departement",
+                        "in": "formData",
+                        "required": True,
+                        "description": "Departemen admin yang akan diedit (hanya untuk edit).",
+                        "type": "string",
+                    },
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Data admin berhasil diperbarui atau dihapus."
+                    },
+                    "400": {"description": "Permintaan tidak valid."},
+                    "401": {"description": "Token CSRF atau cookie tidak valid."},
+                    "500": {"description": "Terjadi kesalahan di server."},
+                },
+            }
+        },
+        "/kelola-admin/<path1>/<path2>": {
+            "post": {
+                "tags": ["Admin / Sub Admin"],
+                "summary": "Operasi delete pada Admin / Sub Admin",
+                "description": "Endpoint ini digunakan untuk melakukan operasi delete pada admin atau sub-admin berdasarkan parameter yang diberikan.",
+                "parameters": [
+                    {
+                        "name": "path1",
+                        "in": "path",
+                        "required": True,
+                        "type": "string",
+                        "enum": ["edit", "delete"],
+                        "description": "Tindakan yang akan dilakukan (edit/delete).",
+                    },
+                    {
+                        "name": "path2",
+                        "in": "path",
+                        "required": True,
+                        "type": "string",
+                        "description": "input uuid",
+                    },
+                    {
+                        "name": "csrf_token",
+                        "in": "cookie",
+                        "required": True,
+                        "description": "Token CSRF yang valid.",
+                        "type": "string",
+                    },
+                    {
+                        "name": "token_key",
+                        "in": "cookie",
+                        "required": True,
+                        "description": "Token Key yang valid.",
+                        "type": "string",
+                    },
+                    {
+                        "name": "__method",
+                        "in": "formData",
+                        "required": True,
+                        "description": "Input method [PUT / DELETE]",
+                        "enum": ["PUT", "DELETE"],
+                        "type": "string",
+                    },
+                    {
+                        "name": "__csrf_token",
+                        "in": "formData",
+                        "required": True,
+                        "description": "Input csrf form roken",
+                        "type": "string",
+                    },
+                ],
+                "responses": {
+                    "200": {"description": "Operasi berhasil dilakukan."},
+                    "400": {"description": "Permintaan tidak valid."},
+                    "401": {"description": "Token CSRF atau cookie tidak valid."},
+                    "500": {"description": "Terjadi kesalahan di server."},
+                },
+            }
+        },
+    },
+}
+
+swagger = Swagger(app, template=swagger_template)
+
+
+# Dekorator untuk memvalidasi API Key
+def api_key_required(f):
+    @wraps(f)
+    def decorated(*args, **kwargs):
+        api_key = request.headers.get("x-api-key")
+        if not api_key or api_key != os.getenv("API_KEY_SWAGGER"):
+            return (
+                jsonify({"message": "Unauthorized: Invalid or missing API Key!"}),
+                401,
+            )
+        return f(*args, **kwargs)
+
+    return decorated
+
+
+# default url dokumentasi
+@app.before_request
+def update_host_for_api_docs():
+    # Cek jika URL yang diakses adalah /api_docs/
+    if request.path == "/apidocs/":
+        global swagger_template
+        host_name = request.host
+        # Update template global
+        swagger_template["host"] = host_name
+        # Update Swagger instance
+        app.config["SWAGGER"] = {"template": swagger_template}
+
 
 # home
 @app.route("/", methods=["GET"])
 def home():
     """
     Home Page
-    ----------
+    -
+
+    tags:
+      - Landing Page
 
     This function will return the home.html which is the home page of the application.
     The home page will redirect to the signIn page if the user is not authenticated.
     """
-
     return render_template("home.html")
 
 
 # manual book
 @app.route("/manual/<path>", methods=["GET"])
 def manual_book(path):
+    """
+    Download Manual Book
+    -
+
+    This function will return the manual book of the application.
+    The manual book is a PDF file that contains the user manual of the application.
+    The function will check if the path is valid and if the file exists.
+    If the file exists, it will return the file as a PDF attachment.
+    If the file does not exist, it will return a 500 error.
+
+    tags:
+        - Export
+
+    Parameters:
+    -
+    path : str
+        The path of the manual book to download.
+        The path should be a string that contains the version number of the manual book.
+        The version number should be a single digit number.
+
+    Returns:
+    -
+    A PDF file that contains the user manual of the application.
+    """
     file_path = os.path.join(app.root_path, "static", "doc")
     if not file_path:
         return make_response(jsonify({"redirect": url_for("home")}), 500)
@@ -117,21 +1534,54 @@ def manual_book(path):
 # lakukan sign-in
 @app.route("/sign-in", methods=["GET", "POST"])
 @app.route("/sign-in/", methods=["GET", "POST"])
+@api_key_required
 def signIn():
     """
-    Sign In Page
-    -------------
+    Sign In Function
+    -
 
-    This function will return the signIn.html which is the sign in page of the application
+    This function handles the user sign-in process for the application. It supports both GET and POST
+    methods to facilitate the sign-in workflow.
 
-    The page will have a form with input fields for user to fill in and a submit button.
-    The form will be sent to the '/sign-in' route as a POST request when the submit button is clicked.
+    tags:
+        - Autentikasi
 
-    The page will also have a link to the '/sign-up' route for user to register if they don't have an account yet.
+    Usage:
+    -
+    1. Send a POST request to the "/sign-in" endpoint with the following JSON payload:
+        {
+            "email": "<user_email>",
+            "password": "<user_password>",
+            "jobs": "<user_jobs>"
+        }
+        Additionally, include the CSRF token in the request headers as "X-CSRF-Token".
+
+    2. If the email field is empty, an exception will be raised indicating that the email cannot be
+        empty.
+
+    Parameters:
+    -
+    - email: str
+        The user's email address used for authentication.
+    - password: str
+        The user's password for authentication.
+    - jobs: str
+        The user's job or position, required for role-based access control.
+    - csrf_token: str
+        The CSRF token for security validation, passed in the request headers.
 
     Returns:
-        signIn.html
+    -
+    A response indicating the success or failure of the sign-in attempt. On success, the user is
+    authenticated and redirected to their dashboard. On failure, an appropriate error message is
+    returned.
+
+    Note:
+    -
+    Ensure that the CSRF token is valid and included in the request headers to avoid security errors.
+
     """
+
     if request.method == "POST":
         try:
             email, password, jobs, csrf_token = (
@@ -268,39 +1718,46 @@ def signIn():
 # lakukan sign-up
 @app.route("/sign-up", methods=["GET", "POST"])
 @app.route("/sign-up/", methods=["GET", "POST"])
+@api_key_required
 def signUp():
     """
-    Sign Up Page
-    ------------
+    Sign Up
+    -
+    This endpoint is used to sign up new users.
 
-    This function will return the signUp.html which is the sign up page of the application
+    tags:
+        - Autentikasi
 
-    The page will have a form with input fields for user to fill in and a submit button.
-    The form will be sent to the '/sign-up' route as a POST request when the submit button is clicked.
-
-    The page will also have a link to the '/sign-in' route for user to sign in if they already have an account.
+    Parameters:
+        - csrf_token (string): CSRF token
+        - nama (string): Name of the user
+        - departement (string): Department of the user
+        - email (string): Email of the user
+        - password (string): Password of the user
+        - jobs (string): Jobs of the user
 
     Returns:
-        signUp.html
+        - Redirect to dashboard if success
+        - Redirect to sign up page with error message if failed
     """
     if request.method == "POST":
         csrf_token, nama, departement, email, password, jobs = request.form.values()
         if nama == "":
-            return redirect(url_for("signUp", msg="Nama cannot empty"))
+            return redirect(url_for("signUp", msg="Nama cannot empty")), 402
         elif departement == "None":
-            return redirect(url_for("signUp", msg="Departement cannot empty"))
+            return redirect(url_for("signUp", msg="Departement cannot empty")), 402
         elif jobs == "None":
-            return redirect(url_for("signUp", msg="Jobs cannot empty"))
+            return redirect(url_for("signUp", msg="Jobs cannot empty")), 402
         elif email == "":
-            return redirect(url_for("signUp", msg="Email cannot empty"))
+            return redirect(url_for("signUp", msg="Email cannot empty")), 402
         elif password == "":
-            return redirect(url_for("signUp", msg="Password cannot empty"))
+            return redirect(url_for("signUp", msg="Password cannot empty")), 402
         elif csrf_token == "":
-            return redirect(url_for("signUp", msg="csrf token cannot empty"))
+            return redirect(url_for("signUp", msg="csrf token cannot empty")), 402
 
         cek_data = db.users.find_one({"email": email.lower()})
         if cek_data:
-            return redirect(url_for("signUp", msg="Account Already Exist"))
+            return redirect(url_for("signUp", msg="Account Already Exist")), 402
         result = db.users.insert_one(
             {
                 "nama": nama,
@@ -322,40 +1779,48 @@ def signUp():
             }
         )
         if result:
-            return redirect(
-                url_for(
-                    "signIn", msg="Sign Up Success", status="success", title="SignUp!"
-                )
+            return (
+                redirect(
+                    url_for(
+                        "signIn",
+                        msg="Sign Up Success",
+                        status="success",
+                        title="SignUp!",
+                    )
+                ),
+                200,
             )
         else:
-            return redirect(url_for("signUp", msg="Sign Up Failed"))
+            return redirect(url_for("signUp", msg="Sign Up Failed")), 402
     else:
-        return render_template("signUp.html", msg=request.args.get("msg"))
+        return render_template("signUp.html", msg=request.args.get("msg")), 200
 
 
 # logout
-@app.route("/api/auth/logout")
+@app.route("/api/auth/logout", methods=["GET"])
+@api_key_required
 def signOut():
     """
-    Sign Out
-    --------
+    Logout API
+    -
 
-    This function handles the sign-out process for a user. It performs the following tasks:
+    This function is used to logout from the application.
 
-    - Creates a response object with a JSON payload indicating the sign-out was successful.
-    - Sets the 'token_key', 'csrf_token', and 'session' cookies to expire immediately, effectively logging the user out.
-
-    Usage:
-        This function is automatically called when a GET request is made to the '/api/auth/logout' route.
-        It does not require any parameters to be passed and will log the user out by expiring the relevant cookies.
+    Parameters:
+    -
+        - None
 
     Returns:
-        A response object with a JSON payload containing:
-        - status: 'success' indicating the sign-out was successful.
-        - redirect: URL to redirect the user to the sign-in page.
-        - msg: A message indicating the logout was successful.
+    -
+        - JSON response with status, redirect and message
+        - status (string): Status of the response
+        - redirect (string): URL to redirect after logout
+        - msg (string): Message after logout
 
-        The response will have a status code of 200.
+    Example:
+    -
+        - GET /api/auth/logout
+
     """
     # Function implementation continues...
     resp = make_response(
@@ -373,18 +1838,25 @@ def signOut():
 
 # lupa password get and post
 @app.route("/sign-in/forget", methods=["GET", "POST"])
+@api_key_required
 def forgetPassword():
     """
-    Forget Password
-    ===============
+    Lupa Password
+    -
+    tags:
+        - Autentikasi
 
-    Fungsi ini digunakan untuk proses forget password, berikut adalah cara penggunaannya:
+    Endpoint ini digunakan untuk mengubah password lama dengan password yang baru. Memerlukan input OTP yang dikirimkan melalui email.
 
-    - Jika request method GET, maka akan menampilkan form untuk penginputan email.
-    - Jika request method POST, maka akan mengirimkan email yang berisi link untuk reset password.
-    - Jika email yang diinputkan tidak valid, maka akan muncul pesan error.
-    - Jika email yang diinputkan valid, maka akan mengirimkan email yang berisi link untuk reset password.
-    - Link yang dikirimkan akan berisi token yang akan digunakan untuk reset password.
+    Parameters:
+        - csrf_token (string): CSRF token
+        - email (string): Email pengguna
+        - password_new (string): Password yang ingin diubah
+        - password2_new (string): Konfirmasi password yang ingin diubah
+
+    Returns:
+        - Redirect ke halaman login jika berhasil
+        - Redirect ke halaman lupa password dengan pesan error jika gagal
     """
     if request.method == "POST":
         try:
@@ -444,15 +1916,29 @@ def forgetPassword():
 
 # bagian otp lupa password
 @app.route("/sign-in/forget/otp/<jwt_otp>", methods=["GET", "POST"])
+@api_key_required
 def forgetPasswordOtp(jwt_otp):
     """
-    Handle route /sign-in/forget/otp/<jwt_otp>, menampilkan form untuk penginputan OTP yang dikirimkan ke email.
+    Forget Password OTP
+    -
 
-    Parameters:
-        jwt_otp (str): token yang berisi OTP yang dikirimkan ke email dan password yang akan diupdate.
+    tags:
+        - Autentikasi
+
+    Halaman untuk menginputkan OTP yang dikirimkan ke email pengguna.
+    Fungsi ini digunakan untuk menginputkan OTP yang dikirimkan ke email pengguna.
+    OTP berupa angka yang dikirimkan ke email pengguna dan berlaku hanya dalam 5 menit saja.
+
+    Args:
+    - jwt_otp (string): Token yang berisi OTP, password hash, dan id pengguna.
 
     Returns:
-        str: render template forgetPasswordOtp.html
+    - Halaman input OTP jika request method GET.
+    - Redirect ke halaman reset password jika OTP benar.
+    - Redirect ke halaman lupa password jika OTP salah atau kadaluarsa.
+
+    Raises:
+    - Exception: OTP tidak valid atau kadaluarsa.
     """
 
     if request.method == "POST":
@@ -541,25 +2027,39 @@ def forgetPasswordOtp(jwt_otp):
 
 # ballon_faq post
 @app.route("/ask", methods=["POST"])
+@api_key_required
 def ask():
     """
-    Fungsi ini digunakan untuk menghandle form balonFAQ yang dikirimkan melalui metode POST.
+    Menangani pengiriman pertanyaan/kendala dari pengguna.
 
-    Fungsi ini akan mengambil nilai dari form yang dikirimkan dan menyimpannya ke dalam collection
-    `faq` di database. Jika ada error selama proses, maka fungsi ini akan mengembalikan response
-    dengan status 404 dan isi pesan error.
+    Membutuhkan request JSON dengan field berikut:
+    - name: Nama lengkap pengguna
+    - email: Alamat email pengguna
+    - jobs: Jabatan/posisi pengguna
+    - departement: Departemen pengguna
+    - kendala: Deskripsi masalah/pertanyaan
 
-    Parameters:
-        csrf_token (str): Token csrf yang dikirimkan melalui form
-        name (str): Nama yang dikirimkan melalui form
-        email (str): Email yang dikirimkan melalui form
-        jobs (str): Jabatan yang dikirimkan melalui form
-        departement (str): Departemen yang dikirimkan melalui form
-        kendala (str): Kendala yang dikirimkan melalui form
+    Header yang dibutuhkan:
+    - X-CSRF-TOKEN: Token CSRF yang valid
 
-    Returns:
-        Response: Response dengan status 200 dan isi pesan success jika proses berhasil, atau response
-        dengan status 404 dan isi pesan error jika terjadi error
+    Mengembalikan:
+    - Sukses: Response JSON dengan status dan pesan berhasil
+    - Error: Response JSON dengan detail error dan status code 400
+
+    Contoh penggunaan:
+    ```
+    POST /ask
+    Headers:
+        X-CSRF-TOKEN: token123
+    Body:
+        {
+            "name": "Budi Santoso",
+            "email": "budi@email.com",
+            "jobs": "Developer",
+            "departement": "IT",
+            "kendala": "Tidak bisa login ke sistem"
+        }
+    ```
     """
     try:
         csrf_token = request.headers.get("X-CSRF-TOKEN")
@@ -622,7 +2122,7 @@ def ask():
                     "redirect": url_for(
                         "signIn",
                         msg=Markup(
-                            'Pengaduan anda dengan no ticket <b class="poppins-semibold">#'
+                            "Pengaduan anda dengan no ticket <b class='poppins-semibold'>#"
                             + result_kirim_email.uuid_ticket
                             + "</b> telah kami terima"
                         ),
@@ -641,38 +2141,38 @@ def ask():
 
 # update my profile
 @app.route("/myProfiles", methods=["GET", "POST"])
+@api_key_required
 def myProfiles():
     """
-    Update my profile
+    My Profile
+    -
 
-    Parameters:
-    user_id (str): user id of the user who want to update their profile
-    nama (str): new name of the user
-    email (str): new email of the user
-    photo_profile (file): new photo profile of the user
-    tempat_lahir (str): new place of birth of the user
-    tanggal_lahir (str): new date of birth of the user
-    mulai_kerja (str): new start date of work of the user
-    akhir_kerja (str): new end date of work of the user
-    waktu_awal_kerja (str): new start time of work of the user
-    waktu_akhir_kerja (str): new end time of work of the user
-    work_hours (int): new total work hours of the user
+    tags:
+        - Admin / Sub Admin
+        - Magang / Karyawan
 
-    Returns:
-    Json response with result, redirect, and msg
-        result (str): success jika berhasil, unsuccess jika gagal
-        redirect (str): url yang akan di redirect
-        msg (str): pesan yang akan ditampilkan jika gagal
+    Fungsi ini digunakan untuk melihat dan memperbarui profil pengguna.
 
-    Example:
-    >>> import requests
-    >>> url = 'http://localhost:5000/myProfiles'
-    >>> data = {'user_id':'62d8a6d5f2f7f7a3f80f8f8b','nama':'new name','email':'new email','photo_profile':'','tempat_lahir':'','tanggal_lahir':'','mulai_kerja':'','akhir_kerja':'','waktu_awal_kerja':'','waktu_akhir_kerja':'','work_hours':0}
-    >>> headers = {'X-CSRF-Token':'b0a2f43a-58a7-4d1e-8b7f-6f5f6f6f6f6f'}
-    >>> response = requests.post(url, json=data, headers=headers)
-    >>> response.json()
-    {'result': 'success', 'redirect': '/dashboard', 'msg': ''}
+    Jika metode permintaan adalah GET, fungsi ini akan menampilkan halaman profil pengguna.
+    Jika metode permintaan adalah POST, fungsi ini akan memperbarui informasi profil pengguna.
+
+    Cara Penggunaan:
+    - Untuk melihat profil pengguna:
+      1. Pastikan pengguna telah login dan memiliki token yang valid.
+      2. Kirim permintaan GET ke endpoint "/myProfiles".
+      3. Halaman profil pengguna akan ditampilkan.
+
+    - Untuk memperbarui profil pengguna:
+      1. Pastikan pengguna telah login dan memiliki token yang valid.
+      2. Siapkan data yang akan diperbarui, seperti email, nama, dan jika perlu, foto profil.
+      3. Kirim permintaan POST ke endpoint "/myProfiles" dengan menyertakan data yang diperbarui.
+      4. Jika berhasil, profil pengguna akan diperbarui.
+
+    Catatan:
+    - Permintaan POST memerlukan token CSRF yang valid untuk mencegah serangan CSRF.
+    - Jika ada kesalahan dalam memperbarui profil, pesan kesalahan akan diberikan.
     """
+
     if request.method == "POST":
         try:
             # The above code is attempting to retrieve the value of the "token_key" cookie from the
@@ -800,9 +2300,9 @@ def myProfiles():
         # block to catch specific exceptions and then redirecting the user to the "signIn" route with
         # a specific message based on the type of exception caught.
         except jwt.ExpiredSignatureError:
-            return redirect(url_for("signIn", msg="Session Expired"))
+            return redirect(url_for("signIn", msg="Session Expired")), 401
         except jwt.DecodeError:
-            return redirect(url_for("signIn", msg="Anda telah logout"))
+            return redirect(url_for("signIn", msg="Anda telah logout")), 401
         except ValueError as e:
             return redirect(url_for("signIn", msg=e.args[0]))
         except Exception as e:
@@ -847,9 +2347,9 @@ def myProfiles():
 
     # The above code is handling different exceptions that may occur in a Python application.
     except jwt.ExpiredSignatureError:
-        return redirect(url_for("signIn", msg="Session Expired"))
+        return redirect(url_for("signIn", msg="Session Expired")), 401
     except jwt.DecodeError:
-        return redirect(url_for("signIn", msg="Anda telah logout"))
+        return redirect(url_for("signIn", msg="Anda telah logout")), 401
     except ValueError as ve:
         return redirect(url_for("signIn", msg=ve.args[0]))
     except Exception as e:
@@ -858,28 +2358,47 @@ def myProfiles():
 
 # dasboard magang get
 @app.route("/dashboard", methods=["GET"])
+@api_key_required
 def dashboard():
     """
-    Dashboard Magang
-    ================
-
-    This function handles requests to the '/dashboard' route, which is used to display the dashboard for interns. It performs the following tasks:
-
-    - Retrieves the 'result' and 'msg' parameters from the request.
-    - Checks for the presence and validity of CSRF token and authentication cookies.
-    - Decodes JWT token from the cookies to get the user's payload.
-    - Retrieves user data from the database based on the payload.
-    - Renders the 'change_password.html' template with the user data, result, and message.
-
-    If any validation fails (e.g., expired token, missing cookies), the function redirects the user to the sign-in page with an appropriate message.
-
-    Usage:
-    ------
-    This function is automatically called when a GET request is made to the '/dashboard' route. It requires valid authentication cookies and a CSRF token to process the request successfully. If the user has the proper role, they can access the intern dashboard.
-
-    Returns:
-    --------
-    Redirects to the sign-in page with a message if validation fails, or renders the 'change_password.html' template with user data if successful.
+    Halaman Dashboard Pengguna / admin
+    ---
+    tags:
+      - Admin / Sub Admin
+      - Magang / Karyawan
+    description: Menampilkan dashboard berdasarkan peran admin dan data kehadiran.
+    parameters:
+      - name: result
+        in: query
+        type: string
+        required: false
+        description: Hasil operasi sebelumnya (misalnya, sukses atau gagal).
+        example: "success"
+      - name: msg
+        in: query
+        type: string
+        required: false
+        description: Pesan tambahan yang akan ditampilkan di dashboard.
+        example: "Login berhasil"
+      - name : token_key
+        in: cookie
+        type: string
+        required: true
+        description: Token key yang digunakan untuk autentikasi pengguna.
+        example: "your_token_key"
+      - name : csrf_token
+        in: cookie
+        type: string
+        required: true
+        description: CSRF token yang digunakan untuk keamanan pengguna.
+        example: "your_csrf_token"
+    responses:
+      200:
+        description: Dashboard berhasil dimuat.
+      401:
+        description: Pengguna tidak terautentikasi.
+      500:
+        description: Terjadi kesalahan internal server.
     """
     result = request.args.get("result")
     msg = request.args.get("msg")
@@ -1025,7 +2544,7 @@ def dashboard():
                     result=result,
                 )
             else:
-                return redirect(url_for("signIn", msg="Anda bukan Magang / Karyawan"))
+                raise Exception("Anda bukan Magang / Karyawan")
         # bagian admin
         elif data["role"] == 1:
             if data["jobs"] == "Admin" or data["jobs"] == "Sub Admin":
@@ -1107,45 +2626,61 @@ def dashboard():
                     result=result,
                 )
             else:
-                return redirect(url_for("signIn", msg="Anda bukan administration"))
+                raise Exception("Anda bukan administration")
 
         else:
-            return redirect(url_for("signIn", msg="Anda bukan bagian dari perusahaan"))
+            raise Exception("Anda bukan bagian dari perusahaan")
     # handle error
     except jwt.ExpiredSignatureError:
-        return redirect(url_for("signIn", msg="Session Expired"))
+        return redirect(url_for("signIn", msg="Session Expired")), 401
     except jwt.DecodeError:
-        return redirect(url_for("signIn", msg="Anda telah logout"))
+        return redirect(url_for("signIn", msg="Anda telah logout")), 401
     except Exception as e:
         return redirect(url_for("signIn", msg=e.args[0]))
 
 
 # dashboard absen
 @app.route("/dashboard/absen", methods=["POST"])
+@api_key_required
 def dashboardAbsen():
     """
-    Buat absensi magang berdasarkan tanggal sekarang
-
-    Parameters:
-    user_id (str): id user yang diambil dari cookie
-    status_hadir (str): status hadir yang diinputkan oleh user
-        1 jika hadir
-        0 jika tidak hadir
-    Returns:
-    Json response with result, redirect, and msg
-        result (str): success jika berhasil, unsuccess jika gagal
-        redirect (str): url yang akan di redirect
-        msg (str): pesan yang akan ditampilkan jika gagal
-
-    Example:
-    >>> import requests
-    >>> url = 'http://localhost:5000/dashboard/absen'
-    >>> data = {'user_id':'62d8a6d5f2f7f7a3f80f8f8b','status_hadir':'1'}
-    >>> headers = {'X-CSRF-Token':'b0a2f43a-58a7-4d1e-8b7f-6f5f6f6f6f6f'}
-    >>> response = requests.post(url, json=data, headers=headers)
-    >>> response.json()
-    {'result': 'success', 'redirect': '/dashboard/magang', 'msg': ''}
+    Catat Kehadiran
+    ---
+    tags:
+      - Magang / Karyawan
+    description: Mengizinkan pengguna untuk mencatat kehadiran mereka.
+    consumes:
+      - "application/x-www-form-urlencoded"
+    parameters:
+      - name: user_id
+        in: formData
+        type: string
+        required: true
+        description: ID pengguna.
+      - name: status_hadir
+        in: formData
+        type: string
+        required: true
+        description: Status hadir pengguna.
+      - name: "X-CSRF-Token"
+        in: header
+        required: true
+        type: string
+        description: CSRF token.
+      - name: "csrf_token"
+        in: cookie
+        type: string
+        required: true
+        description: CSRF token Cookie.
+    responses:
+      200:
+        description: Kehadiran berhasil dicatat.
+      400:
+        description: Input tidak valid.
+      500:
+        description: Terjadi kesalahan internal server.
     """
+
     # ambil tanggal sekarang dan waktu sekarang
     now = get_time_zone_now()
     time_now = now.time()
@@ -1164,7 +2699,6 @@ def dashboardAbsen():
         # ambil data dari form
         userId = request.form.get("user_id")
         status_hadir = request.form.get("status_hadir")
-        print(status_hadir)
 
         # ambil riwayat absen
         riwayat_absen = db.absen_magang.find_one(
@@ -1250,27 +2784,27 @@ def dashboardAbsen():
 
 # change password
 @app.route("/change-password", methods=["GET", "POST"])
+@api_key_required
 def change_password():
     """
-    Change Password
-    ===============
+    Ubah Password
+    -
+    tags:
+        - admin / sub admin
+        - magang / karyawan
 
-    This function handles requests to the '/change-password' route, which allows users to change their password. It performs the following tasks:
+    Endpoint ini digunakan untuk mengubah password pengguna.
 
-    - GET request: Renders the 'change_password.html' template.
-    - POST request: Validates CSRF token and authentication cookies, checks for the presence of X-CSRFToken header, and processes the password change if valid.
-
-    If any validation fails (e.g., expired token, missing cookies), the function returns a JSON response with a status code indicating failure and redirects to the sign-in page with an appropriate message.
-
-    Usage:
-    ------
-    This function is automatically called when a GET or POST request is made to the '/change-password' route. It requires valid authentication cookies and a CSRF token to process the request successfully.
+    Parameters:
+        - old_password (string): Password lama pengguna.
+        - new_password (string): Password baru pengguna.
+        - confirm_password (string): Konfirmasi password baru pengguna.
 
     Returns:
-    --------
-    - Renders the 'change_password.html' template on a GET request.
-    - On a POST request, returns a JSON response with a status code and redirect URL if validation fails.
+        - Redirect ke halaman login dengan pesan sukses jika berhasil.
+        - Redirect ke halaman login dengan pesan gagal jika gagal.
     """
+
     # method post
     if request.method == "POST":
         try:
@@ -1418,29 +2952,60 @@ def change_password():
             }
         )
         data["heading_title_body"] = "Change Password"
-        return render_template(
-            "change_password.html", data=data, result=result, msg=msg
+        return (
+            render_template("change_password.html", data=data, result=result, msg=msg),
+            200,
         )
     except jwt.ExpiredSignatureError:
-        return redirect(url_for("signIn", msg="Session Expired"))
+        return redirect(url_for("signIn", msg="Session Expired")), 401
     except jwt.DecodeError:
-        return redirect(url_for("signIn", msg="Anda telah logout"))
+        return redirect(url_for("signIn", msg="Anda telah logout")), 401
 
 
 # riwayat kehadiran
 @app.route("/riwayat-kehadiran", methods=["GET"])
+@api_key_required
 def riwayat_kehadiran():
     """
-    Fungsi ini digunakan untuk menampilkan riwayat kehadiran karyawan dan magang.
-
-    Parameter:
-    - Tidak ada parameter
-
-    Return:
-    - Halaman riwayat kehadiran karyawan dan magang
-
-    Contoh penggunaan:
-    - /riwayat-kehadiran
+    Tambah Riwayat Kehadiran
+    ---
+    tags:
+      - Admin / Sub Admin
+      - Magang / Karyawan
+    summary: Tambahkan Riwayat Kehadiran
+    description: Menambahkan data kehadiran baru untuk pengguna.
+    parameters:
+      - name: msg
+        in: query
+        type: string
+        required: false
+        description: pesan message error atau success.
+        example: 'ini pesan message'
+      - name: result
+        in: query
+        type: string
+        required: false
+        description: status pesan dari alert .
+        example: 'success'
+      - name : token_key
+        in: cookie
+        type: string
+        required: true
+        description: Token key yang digunakan untuk autentikasi pengguna.
+        example: "your_token_key"
+      - name : csrf_token
+        in: cookie
+        type: string
+        required: true
+        description: CSRF token yang digunakan untuk keamanan pengguna.
+        example: "your_csrf_token"
+    responses:
+      200:
+        description: Kehadiran berhasil ditambahkan.
+      400:
+        description: Input tidak valid.
+      500:
+        description: Terjadi kesalahan internal server.
     """
 
     try:
@@ -1553,34 +3118,53 @@ def riwayat_kehadiran():
     # The above code is a Python snippet that includes multiple `except` blocks to handle different
     # types of exceptions.
     except jwt.ExpiredSignatureError:
-        return redirect(url_for("signIn", msg="Session Expired"))
+        return redirect(url_for("signIn", msg="Session Expired")), 401
     except jwt.DecodeError:
-        return redirect(url_for("signIn", msg="Anda telah logout"))
+        return redirect(url_for("signIn", msg="Anda telah logout")), 401
     except Exception:
         return redirect(url_for("signIn", msg="something went wrong!"))
 
 
 # riwayat kehadiran post
+# lanjutkan disini
 @app.route("/riwayat-kehadiran/<path1>", methods=["POST"])
 @app.route("/riwayat-kehadiran/<path1>/<path2>", methods=["POST"])
+@api_key_required
 def riwayat_kehadiran_post(path1=None, path2=None):
     """
-    Handle route /riwayat-kehadiran/<path1> and /riwayat-kehadiran/<path1>/<path2> to edit riwayat kehadiran.
+    Fungsi untuk mengelola riwayat kehadiran
+    =
 
-    Args:
-        path1 (str): The first path parameter.
-        path2 (str): The second path parameter.
+    Fungsi ini digunakan untuk mengelola riwayat kehadiran karyawan dan magang.
 
-    Returns:
-        str: redirect to /riwayat-kehadiran if success, otherwise redirect to signIn with appropriate message.
+    Parameters
+    -
 
-    Usage:
-        /riwayat-kehadiran/edit/<id_riwayat_absent> to edit riwayat kehadiran with id <id_riwayat_absent>
+    * path1 : str
+        Path pertama yang digunakan untuk mengelola riwayat kehadiran. Nilai yang valid adalah "edit" dan "delete".
+    * path2 : str, optional
+        Path kedua yang digunakan untuk mengelola riwayat kehadiran. Nilai yang valid adalah id riwayat kehadiran.
+
+    Returns
+    -
+
+    * redirect : str
+        Redirect ke halaman riwayat kehadiran dengan pesan.
+
+    Notes
+    -
+
+    * Fungsi ini hanya dapat diakses oleh admin dan sub admin.
+    * Fungsi ini menggunakan JWT untuk validasi cookie.
+    * Fungsi ini menggunakan MongoDB untuk menyimpan data riwayat kehadiran.
+    * Fungsi ini menggunakan Flask untuk membuat aplikasi web.
     """
+
     try:
         # lakukan validasi cooke masih ada
         csrf_token = request.cookies.get("csrf_token")
         cookies = request.cookies.get("token_key")
+        print(csrf_token, cookies)
         if csrf_token == None:
             return redirect(url_for("signIn", msg="csrf token expired"))
         if cookies == None:
@@ -1827,48 +3411,52 @@ def riwayat_kehadiran_post(path1=None, path2=None):
 
     # handle error
     except jwt.ExpiredSignatureError:
-        return redirect(url_for("signIn", msg="Session Expired"))
+        return redirect(url_for("signIn", msg="Session Expired")), 401
     except jwt.DecodeError:
-        return redirect(url_for("signIn", msg="Anda telah logout"))
+        return redirect(url_for("signIn", msg="Anda telah logout")), 401
     except Fernet.InvalidToken:
-        return redirect(
-            url_for(
-                "riwayat_kehadiran", msg="Token update invalid please refresh your page"
-            )
+        return (
+            redirect(
+                url_for(
+                    "riwayat_kehadiran",
+                    msg="Token update invalid please refresh your page",
+                )
+            ),
+            402,
         )
     except Exception as e:
         if not e.args:
             e.args = ("terjadi kesalahan data",)
-        return redirect(url_for("riwayat_kehadiran", msg=e.args[0]))
+        return (redirect(url_for("riwayat_kehadiran", msg=e.args[0])),)
 
 
 # riwayat bantuan
 @app.route("/riwayat-bantuan", methods=["GET"])
+@api_key_required
 def riwayat_bantuan():
     """
-    Riwayat Bantuan
-    ---------------
+    Fungsi riwayat_bantuan
+    -
 
-    This function handles requests to the '/riwayat-bantuan' route, which is used to display the
-    history of assistance requests. It performs the following tasks:
+    Fungsi ini digunakan untuk menampilkan riwayat bantuan dalam aplikasi.
+    Fungsi ini akan memeriksa keberadaan dan validitas token CSRF dan cookie dalam permintaan web.
+    Jika token atau cookie tidak valid, pengguna akan diarahkan kembali ke halaman masuk dengan pesan yang sesuai.
 
-    - Checks for the presence and validity of CSRF token and authentication cookies.
-    - Decodes JWT token from the cookies to get the user's payload.
-    - Validates the user's role to ensure they have the appropriate access.
-    - Retrieves status and message parameters from the request.
-    - Handles any exceptions that may occur during processing.
+    Parameter:
+    -
+    - Tidak ada parameter yang diterima oleh fungsi ini.
 
-    If any validation fails (e.g., expired token, missing cookies), the function redirects the user
-    to the sign-in page with an appropriate message.
+    Proses:-
+    1. Mendapatkan token CSRF dan cookie dari permintaan.
+    2. Memeriksa apakah token CSRF dan cookie ada dan valid.
+    3. Jika tidak valid, mengarahkan pengguna kembali ke halaman masuk.
+    4. Mendekode payload dari cookie untuk mendapatkan informasi pengguna.
+    5. Memeriksa peran (role) pengguna, jika bukan admin, mengarahkan ke dashboard dengan pesan akses ditolak.
+    6. Mengambil data pengguna dari basis data berdasarkan ID yang terdapat dalam payload cookie.
 
-    Usage:
-        This function is automatically called when a GET request is made to the '/riwayat-bantuan'
-        route. It requires valid authentication cookies and a CSRF token to process the request
-        successfully. If the user has the proper role, they can access the assistance history.
-
-    Returns:
-        Redirects to the sign-in page with a message if validation fails, or processes the request
-        to display the assistance history if successful.
+    Pengembalian:
+    -
+    - Tidak ada pengembalian data secara langsung, tetapi mengarahkan pengguna ke halaman lain berdasarkan hasil pemeriksaan token dan cookie.
     """
 
     # Function implementation continues...
@@ -1957,8 +3545,26 @@ def riwayat_bantuan():
         return redirect(url_for("riwayat_bantuan", msg=e.args[0]))
 
 
+# update status bantuan
 @app.route("/update-status-bantuan", methods=["POST"])
+@api_key_required
 def riwayat_bantuan_post():
+    """
+    Dokumentasi riwayat_bantuan_post
+    -
+    Fungsi ini digunakan untuk memperbarui status bantuan yang telah diajukan pengguna.
+    Fungsi ini menerima parameter berupa 'status' dan 'status_id' yang dikirimkan melalui request form-data.
+
+    Parameter:
+
+    - status: string, status yang akan di update (Diproses, Selesai, Ditolak)
+    - status_id: int, id dari riwayat bantuan yang akan di update
+
+    Return:
+    - redirect: string, url yang akan di redirect ke halaman riwayat bantuan
+    - 500: jika terjadi kesalahan internal server
+    """
+
     # The above Python code snippet is checking for the presence and validity of a CSRF token and a
     # cookie in a web request. Here is a breakdown of the code:
     cookie = request.cookies.get("token_key")
@@ -2114,33 +3720,26 @@ def riwayat_bantuan_post():
 @app.route("/kelola-admin/", methods=["GET"])
 @app.route("/kelola-admin/<path1>", methods=["POST"])
 @app.route("/kelola-admin/<path1>/<path2>", methods=["POST"])
+@api_key_required
 def kelola_admin(path1=None, path2=None):
     """
-    Kelola Admin
-    ===========
+    Fungsi ini digunakan untuk mengelola data admin dan sub admin.
 
-    Fungsi ini digunakan untuk mengelola data admin, berikut adalah cara penggunaannya:
+    Parameter path1 dan path2 digunakan untuk mengatur operasi yang akan dilakukan terhadap data admin dan sub admin.
+    Path1 dapat berisi nilai `tambah`, `edit`, `hapus`, atau `daftar`.
+    Path2 digunakan untuk mengatur ID admin yang akan dihapus.
 
-    - Jika request method GET, maka akan menampilkan data admin.
-    - Jika request method POST, maka akan mengupdate atau menambahkan data admin.
-    - Jika parameter path1 bernilai "create", maka akan menambahkan data admin.
-    - Jika parameter path1 bernilai "update", maka akan mengupdate data admin.
-    - Jika parameter path1 bernilai "delete", maka akan menghapus data admin.
-    - Jika parameter path1 bernilai "show", maka akan menampilkan data admin berdasarkan parameter path2.
+    Fungsi ini akan mengembalikan status 200 jika operasi berhasil dilakukan.
+    Fungsi ini akan mengembalikan status 400 jika input tidak valid.
+    Fungsi ini akan mengembalikan status 500 jika terjadi kesalahan di server.
 
-    Contoh pemakaiannya:
-    >>> import requests
-    >>> url = 'http://localhost:5000/kelola-admin'
-    >>> data = {
-    ...     'nama':'admin baru',
-    ...     'email':'adminbaru@example.com',
-    ...     'password':'password',
-    ...     'role':1
-    ... }
-    >>> response = requests.post(url, data=data)
-    >>> response.url
-    'http://localhost:5000/kelola-admin?msg=data+admin+berhasil+ditambahkan&result=success'
+    Contoh penggunaan:
+    - Tambah data admin: /kelola-admin/tambah
+    - Edit data admin: /kelola-admin/edit/<id_admin>
+    - Hapus data admin: /kelola-admin/hapus/<id_admin>
+    - Daftar admin: /kelola-admin/daftar
     """
+
     try:
         # The above Python code is checking for the presence of a CSRF token and a token key in the
         # request cookies. If the CSRF token is not found (i.e., None), it redirects the user to the
@@ -2406,46 +4005,72 @@ def kelola_admin(path1=None, path2=None):
 # kelola admin export
 @app.route("/kelola-admin/<path1>", methods=["GET"])
 @app.route("/kelola-admin/<path1>/", methods=["GET"])
+@api_key_required
 def kelola_admin_export(path1):
     """
     Kelola Admin Export
-    ===================
-
-    Functionality:
-    --------------
-    This function handles requests to the '/kelola-admin/<path1>' route, enabling admin users to export
-    data in either Excel or PDF format. It validates user permissions and checks for valid cookies and
-    CSRF tokens before processing the export request.
-
-    Parameters:
-    ------------
-    - path1 (str): The export format, either 'excel' or 'pdf'.
-
-    Validations:
-    ------------
-    - Ensures the user has the 'admin' role.
-    - Confirms the user's department is either 'Superuser' or 'Subuser'.
-    - Validates the presence of a valid CSRF token and authentication cookie.
-
-    Returns:
-    --------
-    - Redirects to 'notFound' if the path is not 'excel' or 'pdf'.
-    - Redirects to 'signIn' with appropriate messages if validation fails.
-    - Returns the generated export file if successful.
-
-    Usage:
-    ------
-    >>> import requests
-    >>> url = 'http://localhost:5000/kelola-admin/excel'
-    >>> response = requests.get(url)
-    >>> response.status_code
-    200
-
-    >>> url = 'http://localhost:5000/kelola-admin/pdf'
-    >>> response = requests.get(url)
-    >>> response.status_code
-    200
+    ---
+    tags:
+      - Export
+    summary: Kelola Admin Export
+    description: This endpoint is used to export admin data in different formats. It requires valid authentication cookies and a CSRF token to access the data.
+    parameters:
+      - name: path1
+        in: path
+        required: true
+        enum:
+          - excel
+          - pdf
+        description: The format in which to export the data. Accepted values are "excel" or "pdf".
+        type: string
+        example: excel
+    responses:
+      200:
+        description: The data export is successful.
+        schema:
+          type: object
+          properties:
+            message:
+              type: string
+              example: "Data exported successfully"
+            status:
+              type: string
+              example: "success"
+      401:
+        description: CSRF token or cookie is invalid or expired.
+        schema:
+          type: object
+          properties:
+            message:
+              type: string
+              example: "CSRF token expired"
+            status:
+              type: string
+              example: "error"
+      404:
+        description: The specified export path is invalid.
+        schema:
+          type: object
+          properties:
+            message:
+              type: string
+              example: "Export path not found"
+            status:
+              type: string
+              example: "error"
+      500:
+        description: An error occurred on the server.
+        schema:
+          type: object
+          properties:
+            message:
+              type: string
+              example: "An error occurred while exporting data"
+            status:
+              type: string
+              example: "error"
     """
+
     if path1 not in ["excel", "pdf"]:
         return redirect(url_for("notFound"))
     try:
@@ -2453,15 +4078,15 @@ def kelola_admin_export(path1):
         cookie = request.cookies.get("token_key")
         csrf_token = request.cookies.get("csrf_token")
         if csrf_token == None:
-            return redirect(url_for("signIn", msg="csrf token expired"))
+            return redirect(url_for("signIn", msg="csrf token expired")), 401
         if cookie == None or cookie == "":
-            return redirect(url_for("signIn", msg="Anda Telah logout"))
+            return redirect(url_for("signIn", msg="Anda Telah logout")), 401
         cookie = uuid_like_to_string(cookie)
         if not cookie:
-            return redirect(url_for("signIn", msg="Cookie Expired"))
+            return redirect(url_for("signIn", msg="Cookie Expired")), 401
         csrf_token = uuid_like_to_string(csrf_token)
         if not csrf_token:
-            return redirect(url_for("signIn", msg="CSRF Token Expired"))
+            return redirect(url_for("signIn", msg="CSRF Token Expired")), 401
         # decode payload
         payloads = jwt.decode(cookie, secretKey, algorithms=["HS256"])
 
@@ -2500,7 +4125,7 @@ def kelola_admin_export(path1):
             )
         )
         if result == None or result == "" or not result:
-            return redirect(url_for("kelola_admin", msg="Data user not found"))
+            return redirect(url_for("kelola_admin", msg="Data user not found")), 402
         # save excel data
         file_path = os.path.join(app.root_path, "static", "doc")
         wb = load_workbook(file_path + "/excel/template_kelola_admin.xlsx")
@@ -2557,46 +4182,83 @@ def kelola_admin_export(path1):
 
         # jika tidak ada
         else:
-            return redirect(url_for("notFound"))
+            return redirect(url_for("notFound")), 402
 
     # handle error
     except jwt.ExpiredSignatureError:
-        return redirect(url_for("signIn", msg="Session Expired"))
+        return redirect(url_for("signIn", msg="Session Expired")), 401
     except jwt.DecodeError:
-        return redirect(url_for("signIn", msg="Anda telah logout"))
+        return redirect(url_for("signIn", msg="Anda telah logout")), 401
     except Exception as e:
         return redirect(url_for("dashboard", msg=e.args[0]))
 
 
 # add account admin / sub admin
-@app.route("/dashboard/admin/create-account", methods=["POST"])
+@app.route("/kelola-admin/create-account", methods=["POST"])
+@api_key_required
 def dashboardAdminCreateAccount():
     """
-    Create new account admin / sub admin
-
-    Parameters:
-    - nama (str): nama dari akun yang akan dibuat
-    - email (str): email dari akun yang akan dibuat
-    - password (str): password dari akun yang akan dibuat
-    - role (int): role dari akun yang akan dibuat, 1 untuk admin dan 2 untuk sub admin
-
-    Returns:
-    - redirect to dashboard with message "akun berhasil dibuat" if success
-    - redirect to dashboard with message "akun gagal dibuat" if failed
-
-    Pemakaian:
-    >>> import requests
-    >>> url = 'http://localhost:5000/dashboard/admin/create-account'
-    >>> data = {
-    ...     'nama':'admin baru',
-    ...     'email':'adminbaru@example.com',
-    ...     'password':'password',
-    ...     'role':1
-    ... }
-    >>> response = requests.post(url, data=data)
-    >>> response.url
-    'http://localhost:5000/dashboard?msg=akun+berhasil+dibuat&result=success'
+    Buat Akun admin / sub admin
+    ---
+    tags:
+      - Admin / Sub Admin
+    summary: Create Admin Account
+    description: This endpoint is used to create a new admin or sub-admin account. It requires valid authentication cookies and a CSRF token to perform the operation.
+    parameters:
+      - name: csrf_token
+        in: formData
+        required: true
+        description: CSRF token from the form.
+        type: string
+      - name: nama
+        in: formData
+        required: true
+        description: Full name of the user.
+        type: string
+      - name: email
+        in: formData
+        required: true
+        description: Email address of the user.
+        type: string
+      - name: departement
+        in: formData
+        required: true
+        enum:
+          - Superuser
+          - Mentor
+        description: Department of the user.
+        type: string
+      - name: jobs
+        in: formData
+        required: true
+        enum:
+          - Admin
+          - Sub Admin
+        description: Job title of the user (e.g., "Admin", "Sub Admin").
+        type: string
+      - name: password
+        in: formData
+        required: true
+        description: Password for the new account.
+        type: string
+      - name: password2
+        in: formData
+        required: true
+        description: Password confirmation for validation.
+        type: string
+    responses:
+      200:
+        description: The account creation is successful.
+      400:
+        description: The request was invalid or cannot be served.
+      401:
+        description: CSRF token or cookie is invalid or expired.
+      403:
+        description: The user does not have access to create an account.
+      500:
+        description: An error occurred on the server.
     """
+
     try:
         # The above Python code is checking for the presence of a CSRF token and a token key in the
         # request cookies. If the CSRF token is not found (i.e., None), it redirects the user to the
@@ -2707,53 +4369,137 @@ def dashboardAdminCreateAccount():
         )
     # handling error
     except jwt.ExpiredSignatureError:
-        return redirect(url_for("signIn", msg="Session Expired"))
+        return redirect(url_for("signIn", msg="Session Expired")), 401
     except jwt.DecodeError:
-        return redirect(url_for("signIn", msg="Anda telah logout"))
+        return redirect(url_for("signIn", msg="Anda telah logout")), 401
     except ValueError as e:
-        return redirect(url_for("kelola_admin", msg=e.args[0]))
+        return redirect(url_for("kelola_admin", msg=e.args[0])), 402
     except Exception as e:
-        return redirect(url_for("dashboard", msg=e.args[0]))
+        return redirect(url_for("dashboard", msg=e.args[0])), 402
 
 
 # mengedit data karyawan melalui admin
 @app.route("/dashboard/admin/edit", methods=["POST"])
+@api_key_required
 def dashboardAdminEdit():
     """
-    Mengedit data karyawan melalui admin
-    ====================================
-
-    Fungsi ini digunakan untuk mengedit data karyawan melalui admin. Data yang dapat diubah
-    meliputi nama, email, departemen, pekerjaan, tanggal mulai dan akhir kerja, serta waktu
-    mulai dan akhir kerja.
-
-    Cara Penggunaan:
-    ----------------
-    1. Pastikan method form adalah PUT.
-    2. Kirimkan data yang akan diubah melalui form dengan field:
-        - nama (str): Nama karyawan yang akan diedit.
-        - email (str): Email karyawan yang akan diedit.
-        - departement (str): Departemen karyawan.
-        - jobs (str): Pekerjaan karyawan.
-        - start_date (str): Tanggal mulai kerja dalam format 'YYYY-MM-DD'.
-        - end_date (str): Tanggal akhir kerja dalam format 'YYYY-MM-DD'.
-        - start_time (str): Waktu mulai kerja dalam format 'HH:MM'.
-        - end_time (str): Waktu akhir kerja dalam format 'HH:MM'.
-    3. Pastikan csrf_token dan token_key cookies tersedia dan valid.
-
-    Returns:
-    --------
-    - Jika berhasil, redirect ke dashboard dengan pesan sukses.
-    - Jika gagal, redirect ke dashboard dengan pesan error.
-
-    Example:
-    --------
-    >>> from flask import Flask, url_for
-    >>> app = Flask(__name__)
-    >>> with app.test_request_context():
-    >>>     print(url_for('dashboardAdminEdit'))
-    '/dashboard/admin/edit'
+    Edit Data Karyawan melalui Admin
+    ---
+    tags:
+      - Admin / Sub Admin
+    summary: Edit Karyawan Data
+    description: Endpoint ini digunakan untuk melakukan edit data karyawan / magang melalui admin. ini membutuhkan autentikasi valid cookie dan csrf token.
+    parameters:
+      - name: _method
+        in: formData
+        required: true
+        enum:
+          - PUT
+        description: Should be "PUT".
+        type: string
+      - name: csrf_token
+        in: formData
+        required: true
+        description: CSRF token that is valid.
+        type: string
+      - name: nik
+        in: formData
+        required: true
+        description: Nik of the employee to edit.
+        type: string
+      - name: nama
+        in: formData
+        required: true
+        description: Name of the employee to edit.
+        type: string
+      - name: email
+        in: formData
+        required: true
+        description: Email of the employee to edit.
+        type: string
+      - name: departement
+        in: formData
+        required: true
+        enum:
+          - Superuser
+          - Mentor
+        description: Department of the employee to edit.
+        type: string
+      - name: jobs
+        in: formData
+        required: true
+        enum:
+          - Admin
+          - Sub Admin
+        description: Job title of the employee to edit.
+        type: string
+      - name: start_date
+        in: formData
+        required: true
+        description: "Start date of the employee (format: YYYY-MM-DD)."
+        type: string
+      - name: end_date
+        in: formData
+        required: true
+        description: "End date of the employee (format: YYYY-MM-DD)."
+        type: string
+      - name: start_time
+        in: formData
+        required: true
+        description: "Start time of the employee (format: hh:mm:ss)."
+        type: string
+      - name: end_time
+        in: formData
+        required: true
+        description: "End time of the employee (format: hh:mm:ss)."
+        type: string
+    responses:
+      200:
+        description: The request is successful.
+        schema:
+          type: object
+          properties:
+            message:
+              type: string
+              example: "Employee data updated successfully"
+            status:
+              type: string
+              example: "success"
+      400:
+        description: Input is invalid.
+        schema:
+          type: object
+          properties:
+            message:
+              type: string
+              example: "Invalid input data"
+            status:
+              type: string
+              example: "error"
+      401:
+        description: CSRF token or cookie is invalid or expired.
+        schema:
+          type: object
+          properties:
+            message:
+              type: string
+              example: "CSRF token expired"
+            status:
+              type: string
+              example: "error"
+      500:
+        description: An error occurred on the server.
+        schema:
+          type: object
+          properties:
+            message:
+              type: string
+              example: "An error occurred while updating employee data"
+            status:
+              type: string
+              example: "error"
     """
+
     # apakah method put /nukan
     if request.form.get("_method") != "PUT":
         return redirect(url_for("dashboard"))
@@ -2857,35 +4603,79 @@ def dashboardAdminEdit():
         )
     # handle error
     except jwt.ExpiredSignatureError:
-        return redirect(url_for("signIn", msg="Session Expired"))
+        return redirect(url_for("signIn", msg="Session Expired")), 401
     except jwt.DecodeError:
-        return redirect(url_for("signIn", msg="Anda telah logout"))
+        return redirect(url_for("signIn", msg="Anda telah logout")), 401
     except ValueError as e:
-        return redirect(url_for("signIn", msg=e.args[0]))
+        return redirect(url_for("signIn", msg=e.args[0])), 402
     except Exception as e:
-        return redirect(url_for("kelola_admin", msg=e.args[0]))
+        return redirect(url_for("kelola_admin", msg=e.args[0])), 402
 
 
 # delete user karyawan / magang melalui admin
 @app.route("/dashboard/admin/delete/<id>", methods=["POST"])
+@api_key_required
 def adminDelete(id):
     """
-    Delete user karyawan / magang melalui admin
-
-    Parameters:
-    id (str): id user yang akan dihapus
-
-    Returns:
-    redirect to dashboard with message "data karyawan / magang berhasil di hapus" if success
-    redirect to dashboard with message "data karyawan / magang gagal di hapus" if failed
-
-    Pemakaian:
-    >>> import requests
-    >>> url = 'http://localhost:5000/dashboard/admin/delete/62d8a6d5f2f7f7a3f80f8f8b'
-    >>> response = requests.post(url, data={'_method':'DELETE'})
-    >>> response.url
-    'http://localhost:5000/dashboard?msg=data+karyawan+%2F+magang+berhasil+di+hapus&result=success'
+    Delete account Karyawan / Magang
+    ---
+    tags:
+      - Admin / Sub Admin
+    summary: Delete User Karyawan / Magang
+    description: Endpoint ini digunakan untuk menghapus akun karyawan / magang melalui admin. ini membutuhkan autentikasi valid cookie dan csrf token.
+    parameters:
+      - name: id
+        in: path
+        required: true
+        description: The ID of the user to be deleted.
+        type: string
+    responses:
+      200:
+        description: The request is successful.
+        schema:
+          type: object
+          properties:
+            message:
+              type: string
+              example: "Data karyawan / magang berhasil dihapus"
+            status:
+              type: string
+              example: "success"
+      400:
+        description: Input is invalid.
+        schema:
+          type: object
+          properties:
+            message:
+              type: string
+              example: "Invalid input data"
+            status:
+              type: string
+              example: "error"
+      401:
+        description: CSRF token or cookie is invalid or expired.
+        schema:
+          type: object
+          properties:
+            message:
+              type: string
+              example: "CSRF token expired"
+            status:
+              type: string
+              example: "error"
+      500:
+        description: An error occurred on the server.
+        schema:
+          type: object
+          properties:
+            message:
+              type: string
+              example: "An error occurred while deleting the user"
+            status:
+              type: string
+              example: "error"
     """
+
     # The above code is checking if the value of the "_method" key in the request form is not equal to
     # "DELETE". If the condition is true, the code inside the if block will be executed.
     if request.form.get("_method") != "DELETE":
@@ -2963,29 +4753,43 @@ def adminDelete(id):
         )
     # The above code is handling different exceptions that may occur in a Python application.
     except jwt.DecodeError:
-        return redirect(url_for("signIn", msg="Anda telah logout"))
+        return redirect(url_for("signIn", msg="Anda telah logout")), 401
     except jwt.ExpiredSignatureError:
-        return redirect(url_for("signIn", msg="Session Expired"))
+        return redirect(url_for("signIn", msg="Session Expired")), 401
     except ValueError as e:
-        return redirect(url_for("signIn", msg=e.args[0]))
+        return redirect(url_for("signIn", msg=e.args[0])), 402
 
 
 @app.route("/dashboard/admin/<path>", methods=["GET"])
+@api_key_required
 def export(path):
     """
-    export(path)
-
-    Parameter:
-    - path: path yang akan di export
-
-    Fungsi:
-    - Fungsi ini digunakan untuk mengexport data dalam bentuk excel atau pdf.
-    - Fungsi ini hanya dapat diakses oleh admin.
-
-    Contoh pemakaian:
-    - /dashboard/admin/excel
-    - /dashboard/admin/pdf
+    Export data karyawan / magang ke excel atau pdf
+    ---
+    tags:
+      - Export
+    summary: Ekspor Data Admin
+    description: Endpoint ini digunakan untuk mengekspor data karyawan / magang dalam berbagai format. Memerlukan cookie autentikasi dan token CSRF yang valid untuk mengakses data.
+    parameters:
+      - name: path1
+        in: path
+        enum:
+          - pdf
+          - excel
+        required: true
+        description: Format untuk mengekspor data. Nilai yang diterima adalah "excel" atau "pdf".
+        type: string
+    responses:
+      200:
+        description: Ekspor data berhasil.
+      401:
+        description: Token CSRF atau cookie tidak valid atau telah kedaluwarsa.
+      404:
+        description: Jalur ekspor yang ditentukan tidak valid.
+      500:
+        description: Terjadi kesalahan di server.
     """
+
     if path not in ["excel", "pdf"]:
         return redirect(url_for("notFound"))
     try:
@@ -3077,20 +4881,77 @@ def export(path):
                 download_name="data_karyawan_winnicode.pdf",
             )
         else:
-            return redirect(url_for("notFound"))
+            return redirect(url_for("notFound")), 404
     # The above code is handling exceptions related to JWT (JSON Web Token) authentication. It catches
     # different types of exceptions that can occur during JWT verification:
     except jwt.ExpiredSignatureError:
-        return redirect(url_for("signIn", msg="Session Expired"))
+        return redirect(url_for("signIn", msg="Session Expired")), 401
     except jwt.DecodeError:
-        return redirect(url_for("signIn", msg="Anda telah logout"))
+        return redirect(url_for("signIn", msg="Anda telah logout")), 401
     except Exception as e:
-        return redirect(url_for("dashboard", msg=e.args[0]))
+        return redirect(url_for("dashboard", msg=e.args[0])), 402
 
 
 # task page
 @app.route("/task", methods=["GET"])
+@api_key_required
 def task():
+    """
+    Task Page
+    ---
+    tags:
+      - Magang / Karyawan
+      - Admin / Sub Admin
+    summary: Halaman Tugas
+    description: Endpoint ini menampilkan halaman manajemen tugas untuk pengguna dan admin. Memerlukan cookie autentikasi dan token CSRF yang valid.
+    parameters:
+      - name: status
+        in: query
+        required: false
+        description: Status dari tugas.
+        type: string
+      - name: msg
+        in: query
+        required: false
+        description: Pesan terkait tugas.
+        type: string
+      - name: path1
+        in: query
+        required: false
+        description: Jalur untuk mengarahkan halaman ['Karyawan', 'Magang', id_custom, ''].
+        type: string
+    responses:
+      200:
+        description: Halaman tugas berhasil ditampilkan.
+        schema:
+          type: object
+          properties:
+            data:
+              type: object
+              description: Data pengguna dan informasi tugas.
+      401:
+        description: Akses tidak sah karena token CSRF atau cookie tidak valid atau telah kedaluwarsa.
+        schema:
+          type: object
+          properties:
+            message:
+              type: string
+              example: "Token CSRF kedaluwarsa"
+            status:
+              type: string
+              example: "error"
+      500:
+        description: Terjadi kesalahan di server.
+        schema:
+          type: object
+          properties:
+            message:
+              type: string
+              example: "Terjadi kesalahan yang tidak terduga"
+            status:
+              type: string
+              example: "error"
+    """
 
     # The above Python code snippet is checking for the presence and validity of a CSRF token and a
     # cookie in a web request. Here is a breakdown of the code:
@@ -3226,19 +5087,152 @@ def task():
     # exception caught). This is likely part of a mechanism to handle expired or invalid JWT tokens
     # during user authentication or authorization processes.
     except jwt.ExpiredSignatureError:
-        return redirect(url_for("signIn", msg="Session Expired"))
+        return redirect(url_for("signIn", msg="Session Expired")), 401
     except jwt.DecodeError:
-        return redirect(url_for("signIn", msg="Anda telah logout"))
+        return redirect(url_for("signIn", msg="Anda telah logout")), 401
     except Exception as e:
-        return redirect(
-            url_for(
-                "dashboard", msg=e.args[0] if e.args else "An unexpected error occurred"
-            )
+        return (
+            redirect(
+                url_for(
+                    "dashboard",
+                    msg=e.args[0] if e.args else "An unexpected error occurred",
+                )
+            ),
+            402,
         )
 
 
+# task post sisi admin
 @app.route("/task/<path>", methods=["POST"])
+@api_key_required
 def task_post_admin(path):
+    """
+    Manajement Tugas Karyawan / Magang
+    ---
+    tags:
+      - Admin / Sub Admin
+    summary: Buat atau Perbarui Tugas Melalui Admin/Sub Admin
+    description: Endpoint ini digunakan untuk membuat atau memperbarui tugas untuk pengguna. Memerlukan cookie autentikasi dan token CSRF yang valid.
+    parameters:
+      - name: path
+        in: path
+        required: true
+        enum: ['add', 'edit', 'delete']
+        description: Operasi yang akan dilakukan (misalnya, "add", "edit", "delete").
+        type: string
+      - name: body
+        in: body
+        required: true
+        description: data json yang diperlukan wajib diisi sesuai keperluan di model.
+        schema:
+          type: object
+          properties:
+            taskName:
+              type: string
+              description: judul task (add)
+              example: "judul-task"
+            description_task:
+              type: string
+              description: descripsi task (add)
+              example: 'ini deskripsi'
+            link_input:
+              type: string
+              description: link task [https | http] (add)
+              example: "https://"
+            deadline:
+              description: deadline task (add)
+              type: string
+              format: date-time
+              example: "2024-12-25T12:30:00"
+            send_to_user:
+              type: string
+              description: email user Karyawan / Magang (add)
+              example: 'xxx@gmail.com'
+            jobs:
+              type: string
+              description: jobs user Karyawan / Magang (add)
+              example: 'Karyawan'
+            departement:
+              type: string
+              description: departement user Karyawan / Magang (add)
+              example: 'IT'
+            rowId_receive:
+              type: string
+              description: Id user Karyawan / Magang (edit)
+              example: 'input-id-user'
+            inputId_receive:
+              type: string
+              description: key task Karyawan / Magang (edit)
+              example: 'input-key-user'
+            newValue_receive:
+              type: string
+              description: value baru task Karyawan / Magang (edit)
+              example: 'input-value-user'
+            'id':
+              type: string
+              description: id user Karyawan / Magang (delete)
+              example: 'input-id-user'
+      - name: X-CSRF-Token
+        in: header
+        required: true
+        type: string
+        description: masukkan csrf mu
+        example: 'your-csrf-form'
+      - name: Content-Type
+        in: header
+        required: true
+        type: string
+        enum: ['application/json']
+        description: your content type
+        example: 'application/json'
+
+    responses:
+      200:
+        description: Tugas berhasil dibuat atau diperbarui.
+        schema:
+          type: object
+          properties:
+            message:
+              type: string
+              example: "Tugas berhasil dibuat"
+            status:
+              type: string
+              example: "sukses"
+      400:
+        description: Permintaan tidak valid atau parameter yang diperlukan hilang.
+        schema:
+          type: object
+          properties:
+            message:
+              type: string
+              example: "Permintaan tidak valid"
+            status:
+              type: string
+              example: "error"
+      401:
+        description: Token CSRF atau cookie tidak valid atau telah kedaluwarsa.
+        schema:
+          type: object
+          properties:
+            message:
+              type: string
+              example: "Token CSRF kedaluwarsa"
+            status:
+              type: string
+              example: "error"
+      500:
+        description: Terjadi kesalahan di server.
+        schema:
+          type: object
+          properties:
+            message:
+              type: string
+              example: "Terjadi kesalahan saat memproses permintaan"
+            status:
+              type: string
+              example: "error"
+    """
+
     try:
         # The above Python code snippet is checking for the presence and validity of a CSRF token and a
         # cookie in a web request. Here is a breakdown of the code:
@@ -3440,8 +5434,103 @@ def task_post_admin(path):
         return make_response(jsonify({"redirect": url_for("task", msg=e.args[0])}), 500)
 
 
+# task dari sisi user
 @app.route("/task/user/<path>", methods=["POST"])
+@api_key_required
 def task_post_user(path):
+    """
+    Manajement Progress Tugas
+    ---
+    tags:
+      - Magang / Karyawan
+    summary: Buat atau Perbarui Progress Tugas Pengguna
+    description: Endpoint ini digunakan untuk membuat atau memperbarui progress tugas pengguna. Memerlukan cookie autentikasi dan token CSRF yang valid untuk mengakses data.
+    parameters:
+      - name: path
+        in: path
+        required: true
+        enum: ['edit']
+        description: Operasi yang akan dilakukan (misalnya, "edit").
+        type: string
+
+      - name: body
+        in: body
+        required: true
+        description: wajib diisi sesuai keperluan di model.
+        schema:
+          type: object
+          properties:
+            parenTrId_receive:
+              type: string
+              description: id task yang ingin diupdate progressnya (edit)
+              example: "input-id-task"
+            newValue_receive:
+              type: string
+              description: value baru update task (edit)
+              example: 'input-value-user'
+
+      - name: X-CSRF-Token
+        in: header
+        required: true
+        type: string
+        description: masukkan csrf mu
+        example: 'your-csrf-form'
+
+      - name: Content-Type
+        in: header
+        required: true
+        type: string
+        enum: ['application/json']
+        description: your content type
+        example: 'application/json'
+
+    responses:
+      200:
+        description: Tugas berhasil dibuat atau diperbarui.
+        schema:
+          type: object
+          properties:
+            message:
+              type: string
+              example: "Tugas berhasil diperbarui"
+            status:
+              type: string
+              example: "sukses"
+      400:
+        description: Permintaan tidak valid atau parameter yang diperlukan hilang.
+        schema:
+          type: object
+          properties:
+            message:
+              type: string
+              example: "Permintaan tidak valid"
+            status:
+              type: string
+              example: "error"
+      401:
+        description: Token CSRF atau cookie tidak valid atau telah kedaluwarsa.
+        schema:
+          type: object
+          properties:
+            message:
+              type: string
+              example: "Token CSRF kedaluwarsa"
+            status:
+              type: string
+              example: "error"
+      500:
+        description: Terjadi kesalahan di server.
+        schema:
+          type: object
+          properties:
+            message:
+              type: string
+              example: "Terjadi kesalahan saat memproses permintaan"
+            status:
+              type: string
+              example: "error"
+    """
+
     try:
         # The above Python code snippet is checking for the presence and validity of a CSRF token and a
         # cookie in a web request. Here is a breakdown of the code:
@@ -3544,6 +5633,8 @@ def task_post_user(path):
                 ),
                 200,
             )
+        else:
+            raise Exception("Path not found! Change this!")
 
     # The above code is handling exceptions related to JWT (JSON Web Token) in a Python application.
     # Specifically, it is catching `jwt.ExpiredSignatureError` and `jwt.DecodeError` exceptions. If
@@ -3576,34 +5667,70 @@ def task_post_user(path):
 
 
 # melakukan error handler csrf
+@app.route("/400", methods=["POST"])
 @app.errorhandler(400)
-def handle_csrf_error(e):
-    """This function is used to handle 400 Bad Request error which is usually caused by CSRF token validation failure.
-
-    Args:
-        e (Exception): The exception object that contains the error message.
-
-    Returns:
-        Response: A JSON response containing the error message.
+def handle_csrf_error(e=None):
     """
-    return jsonify({"error": e}), 400
+    Handle CSRF error
+    ---
+    tags:
+      - Error
+    summary: Tangani Kesalahan Token CSRF
+    description: Endpoint ini menangani kesalahan akibat token CSRF tidak valid atau permintaan tidak valid.
+    responses:
+      "400":
+        description: Token CSRF tidak valid.
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                message:
+                  type: string
+                  example: Token CSRF tidak valid atau kedaluwarsa
+                status:
+                  type: string
+    """
+    # Ambil pesan error sebagai string (atau fallback jika None)
+    error_message = str(e) if e else "Permintaan tidak valid"
+    return jsonify({"error": error_message}), 400
 
 
-@app.route("/404")
+@app.route("/404", methods=["GET"])
 @app.errorhandler(404)
 def notFound(error=None):
     """
-    This function is used to handle 404 Not Found error. It is usually caused by a request to a URL that does not exist on the server.
-
-    Args:
-        error (Exception): The exception object that contains the error message.
-
-    Returns:
-        Response: A rendered HTML template with a 404 error message.
+    Halaman Tidak Ditemukan
+    ---
+    tags:
+      - Error
+    summary: Halaman Tidak Ditemukan
+    description: Menampilkan halaman kesalahan ketika pengguna mengakses URL yang tidak ada.
+    parameters:
+      - name: error
+        in: query
+        required: false
+        type: string
+        description: Parameter opsional untuk pesan error.
+    responses:
+      "200":
+        description: Halaman ditemukan.
+        content:
+          application/json:
+            example:
+              message: Halaman ditemukan.
+              status: ok
+      "404":
+        description: Halaman tidak ditemukan.
+        content:
+          application/json:
+            example:
+              message: Halaman yang Anda cari tidak ditemukan.
+              status: error
     """
     print("error", error)
     data = {"next": "/", "previous": "javascript:history.back()"}
-    return render_template("notFound.html", data=data), 404
+    return render_template("notFound.html", data=data), 200
 
 
 # stating app
