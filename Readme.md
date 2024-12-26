@@ -8,6 +8,7 @@
 ![JavaScript](https://img.shields.io/badge/JavaScript-F7DF1E?style=flat&logo=javascript&logoColor=black)
 ![jQuery](https://img.shields.io/badge/jQuery_3.7.1-0769AD?style=flat&logo=jquery&logoColor=white)
 ![Bootstrap](https://img.shields.io/badge/Bootstrap_5.3.3-563D7C?style=flat&logo=bootstrap&logoColor=white)
+
 # AbsensiKu Project`s
 
 &nbsp;&nbsp;&nbsp;Merupakan sebuah proyek website absensi yang berguna untuk otomatisasi kehadiran dalam meningkatkan efisiensi, transparansi dan akurasi pengelolaan waktu dan kehadiran karyawan serta memungkinkan pengelolaan sumber daya manusia yang lebih optimal. Fitur yang ditawarkan berbagai macam mulai dari rekap kehadiran sampai progress tugas yang diberikan serta website ini dikembangkan dengan menggunakan framework **Flask**.
@@ -78,8 +79,8 @@ Dalam menjalankan project ini, kamu perlu menggantikan `.env_copy` menjadi `.env
 - **Python**, melakukan instalasi terlebih dahulu versi [3.12.5](https://www.python.org/downloads/release/python-3125/). untuk cara downloadnya bisa [klik disini](https://dqlab.id/cara-download-python-lengkap-dengan-panduan-setupnya)
 - **Visual Studio Code**, versi berapapun. untuk cara downloadnya bisa [klik disini](https://www.elztech.com/cara-download-dan-installasi-visual-studio-code/)
 - **Browser**
-- **MongoDb Account**, melakukan pembuatan akun MongoDb terlebih dahulu. untuk cara downloadnya bisa [klik disini](https://youtu.be/2_98lTrB5NI?si=0aH2uL3DCRozgC9n)
-- **ImgBB**, melakukan pembuatan akun imgbb terlebih dahulu. [klik disini](https://imgbb.com/)
+- **MongoDb Account**, melakukan pembuatan akun MongoDb terlebih dahulu. untuk cara downloadnya bisa [klik disini](https://youtu.be/2_98lTrB5NI?si=0aH2uL3DCRozgC9n) dan melakukan copy url [disini langkahnya](https://youtu.be/daMxiBS0odk?si=RddUBy8T0spblCnO)
+- **ImgBB**, melakukan pembuatan akun imgbb terlebih dahulu. [klik disini](https://imgbb.com/) kemudian copy keynya [disini](https://imgbb.com/account/settings/api) untuk cara downloadnya bisa [klik disini](https://youtu.be/xYOUJHXHj1s?si=9bKGEdrVDSFxQsvE)
 ## Run Locally
 
 Clone the project
