@@ -2,9 +2,7 @@
 ![Logo](https://i.ibb.co.com/Nr4prRB/absensiku-logo.png)
 
 
-[![GitHub Watchers](https://img.shields.io/github/watchers/RedwolfC4/project_winnicode_absensi?style=flat&logo=github)](https://github.com/RedwolfC4/project_winnicode_absensi/watchers) [![GitHub Stars](https://img.shields.io/github/stars/RedwolfC4/project_winnicode_absensi?style=flat&logo=github)](https://github.com/RedwolfC4/project_winnicode_absensi/stargazers) [![GitHub Forks](https://img.shields.io/github/forks/RedwolfC4/project_winnicode_absensi?style=flat&logo=github)](https://github.com/RedwolfC4/project_winnicode_absensi/network/members)
-
-![Python](https://img.shields.io/badge/Python_3.12.5-3776AB?style=flat&logo=python&logoColor=white)
+[![GitHub Watchers](https://img.shields.io/github/watchers/RedwolfC4/project_winnicode_absensi?style=flat&logo=github)](https://github.com/RedwolfC4/project_winnicode_absensi/watchers) [![GitHub Stars](https://img.shields.io/github/stars/RedwolfC4/project_winnicode_absensi?style=flat&logo=github)](https://github.com/RedwolfC4/project_winnicode_absensi/stargazers) [![GitHub Forks](https://img.shields.io/github/forks/RedwolfC4/project_winnicode_absensi?style=flat&logo=github)](https://github.com/RedwolfC4/project_winnicode_absensi/network/members)![Python](https://img.shields.io/badge/Python_3.12.5-3776AB?style=flat&logo=python&logoColor=white)
 ![HTML5](https://img.shields.io/badge/HTML5-E34F26?style=flat&logo=html5&logoColor=white)
 ![CSS3](https://img.shields.io/badge/CSS3-1572B6?style=flat&logo=css3&logoColor=white)
 ![JavaScript](https://img.shields.io/badge/JavaScript-F7DF1E?style=flat&logo=javascript&logoColor=black)
