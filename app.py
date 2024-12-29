@@ -3069,6 +3069,8 @@ def riwayat_kehadiran():
                     i["_id"] = string_to_uuid_like(
                         cipher.encrypt(str(i["_id"]).encode()).decode()
                     )
+                    print(type(i["_id"]))
+            print(riwayat_absent)
 
         # render template riwayat_kehadiran.html
         return (
@@ -3190,6 +3192,7 @@ def riwayat_kehadiran_post(path1=None, path2=None):
                     absen_magang_id = cipher.decrypt(
                         uuid_like_to_string(id_riwayat_absent).encode()
                     ).decode()
+                    print(absen_magang_id, type(absen_magang_id))
 
                     # do change it absen_magang
                     update_absen_magang = db.absen_magang.find_one_and_update(
