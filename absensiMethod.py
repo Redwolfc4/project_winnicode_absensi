@@ -8,6 +8,7 @@ import datetime
 import re
 import certifi
 from werkzeug.datastructures import FileStorage
+from generate_otp import AbsensiNotify
 
 # Generate a key for encryption (this should be securely stored)
 key = Fernet.generate_key()
@@ -115,6 +116,78 @@ def is_valid_datetime_format(value):
     return bool(re.match(pattern, value))
 
 
+def countdown_time(a: datetime.datetime, b: datetime.datetime, email: str):
+    from app import db
+
+    """
+    Countdown Timer
+    =
+    API untuk menghitung waktu yang tersisa hingga waktu tertentu.
+
+    Parameter:
+        a (datetime.datetime): Waktu sekarang.
+        b (datetime.datetime): Waktu target.
+        email (str): email target
+    """
+    # inisiasi angka deltanya
+    angka_deltas = [30, 5, 0, -5, -10, -15, -20]
+    angka_delta_pilih = None
+    result = None
+
+    # lakukan synkron terhadap data yang didapat
+    now = a
+    target = b
+    diff = target - now
+
+    # cek apakah angka delta sesuai dengan inisiasi jika ada masuk angka delta pilih
+    for angka_delta in angka_deltas:
+        if angka_delta == 0:
+            if (
+                diff <= datetime.timedelta(seconds=angka_delta)
+                or diff >= datetime.timedelta(seconds=angka_delta)
+                and not diff <= datetime.timedelta(minutes=-5)
+            ):
+                angka_delta_pilih = angka_delta
+        else:
+            if diff <= datetime.timedelta(minutes=angka_delta):
+                angka_delta_pilih = angka_delta
+
+    # cek jika angka_delta pilih diluar kondisi
+    if angka_delta_pilih is None:
+        return False
+
+    # Cari dokumen berdasarkan email
+    existing_doc = db.angka_notif.find_one({"email": email})
+
+    # Jika dokumen ada, cek angka_delta
+    if existing_doc:
+        # Jika angka_delta sama, lewati update
+        if existing_doc.get("angka_delta") == angka_delta_pilih:
+            print("Angka delta sama, tidak ada perubahan.")
+            result = False
+        else:
+            # Update angka_delta jika berbeda
+            result = db.angka_notif.find_one_and_update(
+                {"email": email},
+                {"$set": {"angka_delta": angka_delta_pilih}},
+                return_document=True,
+            )
+            print("Dokumen diperbarui:", result)
+    else:
+        # Jika dokumen tidak ditemukan, tambahkan dokumen baru
+        result = db.angka_notif.insert_one(
+            {"email": email, "angka_delta": angka_delta_pilih}
+        )
+        print("Dokumen baru ditambahkan.")
+
+    # cek berhasil dilakukan atau tidak
+    if not result:
+        return False
+
+    # kirimkan angka delta pilih terbaru untuk dieksekusi ke gmail
+    return angka_delta_pilih
+
+
 # tidak hadir untuk magang / karyawan
 def unhadir_absensi():
     """
@@ -149,8 +222,10 @@ def unhadir_absensi():
     # cek table users
     if users:
         for user in users:
+            email_user = user["email"]
             mulai_kerja = user["mulai_kerja"]
             akhir_kerja = user["akhir_kerja"]
+            waktu_awal_kerja = user["waktu_awal_kerja"]
             waktu_akhir_kerja = user["waktu_akhir_kerja"]
             user_id = user["_id"]
 
@@ -161,13 +236,27 @@ def unhadir_absensi():
                     riwayat_absen = db.absen_magang.find_one(
                         {"user_id": user_id}, sort={"_id": -1}
                     )  # cek riwayat absen
+
+                    # cek countdown waktu sekarang kurang dari waktu awa kerja
+                    angka_delta_pilih = countdown_time(
+                        a=now,
+                        b=datetime.datetime.strptime(waktu_awal_kerja, "%H.%M"),
+                        email=email_user,
+                    )
+
+                    # jika angka delta piluh tidak false
+                    if angka_delta_pilih:
+                        # kirim ke class absensi notify
+                        AbsensiNotify(email_user, angka_delta_pilih)
+
                     # cek table riwayat absen pernah di insert atau tidak sama sekali sesuai dengan
                     if riwayat_absen:
                         last_absen = datetime.datetime.strptime(
                             riwayat_absen["tanggal_hadir"], "%d %B %Y"
                         )
-                        # apakah tanggal riwayat sama dengan sekarang
+                        # apakah tanggal riwayat kurang dari sekarang
                         if last_absen.date() < now.date():
+
                             # apakah jam riwayat lebih dari waktu akhir kerja
                             if (
                                 time_now
@@ -200,6 +289,17 @@ def unhadir_absensi():
                                 )
                     # non riwayat absen
                     else:
+                        # cek countdown waktu sekarang kurang dari waktu awa kerja
+                        angka_delta_pilih = countdown_time(
+                            a=now,
+                            b=datetime.datetime.strptime(waktu_awal_kerja, "%H.%M"),
+                        )
+
+                        # jika angka delta piluh tidak false
+                        if angka_delta_pilih:
+                            # kirim ke class absensi notify
+                            AbsensiNotify(email_user, angka_delta_pilih)
+
                         # apakah jam riwayat lebih dari waktu akhir kerja
                         if (
                             time_now

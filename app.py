@@ -5691,7 +5691,7 @@ if __name__ == "__main__":
     # # Menjadwalkan pengecekan absensi setiap menit
     delete_absen = BackgroundScheduler()
     delete_absen.add_job(
-        func=unhadir_absensi, trigger="interval", minutes=1
+        func=unhadir_absensi, trigger="interval", seconds=5
     )  # interval hours/minute/second. date run_date .cron day_of_week,hours,minutes
     delete_absen.start()
     app.run(port=8080, debug=True)  # ssl_context =  adhoc adalah sertifikat self signed
