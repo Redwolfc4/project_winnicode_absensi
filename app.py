@@ -1761,7 +1761,7 @@ def signUp():
                         title="SignUp!",
                     )
                 ),
-                200,
+                402,
             )
         else:
             return redirect(url_for("signUp", msg="Sign Up Failed")), 402
@@ -3071,12 +3071,15 @@ def riwayat_kehadiran():
                     )
 
         # render template riwayat_kehadiran.html
-        return render_template(
-            "riwayat_kehadiran.html",
-            riwayat_absent=riwayat_absent,
-            data=data,
-            msg=msg,
-            result=result,
+        return (
+            render_template(
+                "riwayat_kehadiran.html",
+                riwayat_absent=riwayat_absent,
+                data=data,
+                msg=msg,
+                result=result,
+            ),
+            200,
         )
 
     # The above code is a Python snippet that includes multiple `except` blocks to handle different
@@ -3086,7 +3089,7 @@ def riwayat_kehadiran():
     except jwt.DecodeError:
         return redirect(url_for("signIn", msg="Anda telah logout")), 401
     except Exception:
-        return redirect(url_for("signIn", msg="something went wrong!"))
+        return redirect(url_for("signIn", msg="something went wrong!")), 402
 
 
 # riwayat kehadiran post
@@ -3383,14 +3386,14 @@ def riwayat_kehadiran_post(path1=None, path2=None):
                 url_for(
                     "riwayat_kehadiran",
                     msg="Token update invalid please refresh your page",
-                )
+                ),
             ),
-            402,
+            403,
         )
     except Exception as e:
         if not e.args:
             e.args = ("terjadi kesalahan data",)
-        return (redirect(url_for("riwayat_kehadiran", msg=e.args[0])),)
+        return redirect(url_for("riwayat_kehadiran", msg=e.args[0])), 500
 
 
 # riwayat bantuan
