@@ -1716,21 +1716,21 @@ def signUp():
     if request.method == "POST":
         csrf_token, nama, departement, email, password, jobs = request.form.values()
         if nama == "":
-            return redirect(url_for("signUp", msg="Nama cannot empty")), 402
+            return redirect(url_for("signUp", msg="Nama cannot empty"))
         elif departement == "None":
-            return redirect(url_for("signUp", msg="Departement cannot empty")), 402
+            return redirect(url_for("signUp", msg="Departement cannot empty"))
         elif jobs == "None":
-            return redirect(url_for("signUp", msg="Jobs cannot empty")), 402
+            return redirect(url_for("signUp", msg="Jobs cannot empty"))
         elif email == "":
-            return redirect(url_for("signUp", msg="Email cannot empty")), 402
+            return redirect(url_for("signUp", msg="Email cannot empty"))
         elif password == "":
-            return redirect(url_for("signUp", msg="Password cannot empty")), 402
+            return redirect(url_for("signUp", msg="Password cannot empty"))
         elif csrf_token == "":
-            return redirect(url_for("signUp", msg="csrf token cannot empty")), 402
+            return redirect(url_for("signUp", msg="csrf token cannot empty"))
 
         cek_data = db.users.find_one({"email": email.lower()})
         if cek_data:
-            return redirect(url_for("signUp", msg="Account Already Exist")), 402
+            return redirect(url_for("signUp", msg="Account Already Exist"))
         result = db.users.insert_one(
             {
                 "nama": nama,
@@ -1764,7 +1764,7 @@ def signUp():
                 402,
             )
         else:
-            return redirect(url_for("signUp", msg="Sign Up Failed")), 402
+            return redirect(url_for("signUp", msg="Sign Up Failed"))
     else:
         return render_template("signUp.html", msg=request.args.get("msg")), 200
 
@@ -3089,7 +3089,7 @@ def riwayat_kehadiran():
     except jwt.DecodeError:
         return redirect(url_for("signIn", msg="Anda telah logout")), 401
     except Exception:
-        return redirect(url_for("signIn", msg="something went wrong!")), 402
+        return redirect(url_for("signIn", msg="something went wrong!"))
 
 
 # riwayat kehadiran post
@@ -3381,19 +3381,16 @@ def riwayat_kehadiran_post(path1=None, path2=None):
     except jwt.DecodeError:
         return redirect(url_for("signIn", msg="Anda telah logout")), 401
     except Fernet.InvalidToken:
-        return (
-            redirect(
-                url_for(
-                    "riwayat_kehadiran",
-                    msg="Token update invalid please refresh your page",
-                ),
+        return redirect(
+            url_for(
+                "riwayat_kehadiran",
+                msg="Token update invalid please refresh your page",
             ),
-            403,
         )
     except Exception as e:
         if not e.args:
             e.args = ("terjadi kesalahan data",)
-        return redirect(url_for("riwayat_kehadiran", msg=e.args[0])), 500
+        return redirect(url_for("riwayat_kehadiran", msg=e.args[0]))
 
 
 # riwayat bantuan
@@ -4087,7 +4084,7 @@ def kelola_admin_export(path1):
             )
         )
         if result == None or result == "" or not result:
-            return redirect(url_for("kelola_admin", msg="Data user not found")), 402
+            return redirect(url_for("kelola_admin", msg="Data user not found"))
         # save excel data
         file_path = os.path.join(app.root_path, "static", "doc")
         wb = load_workbook(file_path + "/excel/template_kelola_admin.xlsx")
@@ -4144,7 +4141,7 @@ def kelola_admin_export(path1):
 
         # jika tidak ada
         else:
-            return redirect(url_for("notFound")), 402
+            return redirect(url_for("notFound"))
 
     # handle error
     except jwt.ExpiredSignatureError:
@@ -4334,9 +4331,9 @@ def dashboardAdminCreateAccount():
     except jwt.DecodeError:
         return redirect(url_for("signIn", msg="Anda telah logout")), 401
     except ValueError as e:
-        return redirect(url_for("kelola_admin", msg=e.args[0])), 402
+        return redirect(url_for("kelola_admin", msg=e.args[0]))
     except Exception as e:
-        return redirect(url_for("dashboard", msg=e.args[0])), 402
+        return redirect(url_for("dashboard", msg=e.args[0]))
 
 
 # mengedit data karyawan melalui admin
@@ -4567,9 +4564,9 @@ def dashboardAdminEdit():
     except jwt.DecodeError:
         return redirect(url_for("signIn", msg="Anda telah logout")), 401
     except ValueError as e:
-        return redirect(url_for("signIn", msg=e.args[0])), 402
+        return redirect(url_for("signIn", msg=e.args[0]))
     except Exception as e:
-        return redirect(url_for("kelola_admin", msg=e.args[0])), 402
+        return redirect(url_for("kelola_admin", msg=e.args[0]))
 
 
 # delete user karyawan / magang melalui admin
@@ -4716,7 +4713,7 @@ def adminDelete(id):
     except jwt.ExpiredSignatureError:
         return redirect(url_for("signIn", msg="Session Expired")), 401
     except ValueError as e:
-        return redirect(url_for("signIn", msg=e.args[0])), 402
+        return redirect(url_for("signIn", msg=e.args[0]))
 
 
 @app.route("/dashboard/admin/<path>", methods=["GET"])
@@ -4847,7 +4844,7 @@ def export(path):
     except jwt.DecodeError:
         return redirect(url_for("signIn", msg="Anda telah logout")), 401
     except Exception as e:
-        return redirect(url_for("dashboard", msg=e.args[0])), 402
+        return redirect(url_for("dashboard", msg=e.args[0]))
 
 
 # task page
