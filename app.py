@@ -5688,8 +5688,8 @@ def handler():
     try:
         response = unhadir_absensi()
         return make_response(jsonify({"message": "success", "data": response}), 200)
-    except Exception as e:
-        # return make_response(jsonify({"message": str(e)}), 500)
+    # except Exception as e:
+    #     return make_response(jsonify({"message": str(e)}), 500)
 
 
 # stating app
