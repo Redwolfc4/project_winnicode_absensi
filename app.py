@@ -1752,16 +1752,13 @@ def signUp():
             }
         )
         if result:
-            return (
-                redirect(
-                    url_for(
-                        "signIn",
-                        msg="Sign Up Success",
-                        status="success",
-                        title="SignUp!",
-                    )
-                ),
-                402,
+            return redirect(
+                url_for(
+                    "signIn",
+                    msg="Sign Up Success",
+                    status="success",
+                    title="SignUp!",
+                )
             )
         else:
             return redirect(url_for("signUp", msg="Sign Up Failed"))
