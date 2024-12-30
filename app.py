@@ -5684,36 +5684,36 @@ def notFound(error=None):
     return render_template("notFound.html", data=data), 200
 
 
-@app.route("/api/cron_task", methods=["GET"])
-def handler():
-    """
-    API untuk menghandle cron job pengecekan absensi
-    ---
-    tags:
-      - Cron Job
-    summary: API untuk menghandle cron job pengecekan absensi
-    description: API ini digunakan untuk menghandle cron job pengecekan absensi setiap menit.
-    responses:
-      "200":
-        description: Berhasil menghandle cron job pengecekan absensi.
-        content:
-          application/json:
-            example:
-              message: success
-              data: []
-      "500":
-        description: Terjadi kesalahan saat menghandle cron job pengecekan absensi.
-        content:
-          application/json:
-            example:
-              message: Terjadi kesalahan saat menghandle cron job pengecekan absensi.
-    """
-    try:
-        response = unhadir_absensi()
-        return make_response(jsonify({"message": "success", "data": response}), 200)
+# @app.route("/api/cron_task", methods=["GET"])
+# def handler():
+#     """
+#     API untuk menghandle cron job pengecekan absensi
+#     ---
+#     tags:
+#       - Cron Job
+#     summary: API untuk menghandle cron job pengecekan absensi
+#     description: API ini digunakan untuk menghandle cron job pengecekan absensi setiap menit.
+#     responses:
+#       "200":
+#         description: Berhasil menghandle cron job pengecekan absensi.
+#         content:
+#           application/json:
+#             example:
+#               message: success
+#               data: []
+#       "500":
+#         description: Terjadi kesalahan saat menghandle cron job pengecekan absensi.
+#         content:
+#           application/json:
+#             example:
+#               message: Terjadi kesalahan saat menghandle cron job pengecekan absensi.
+#     """
+#     try:
+#         response = unhadir_absensi()
+#         return make_response(jsonify({"message": "success", "data": response}), 200)
 
-    except Exception as e:
-        return make_response(jsonify({"message": str(e)}), 500)
+#     except Exception as e:
+#         return make_response(jsonify({"message": str(e)}), 500)
 
 
 # stating app
