@@ -235,6 +235,9 @@
                     </tr>
                   </thead>
                   <tbody>
+                    
+                    {% if data_karyawan_magang|length > 0 %} 
+
                     {% for i in range(0,(data_karyawan_magang|length)) %}
                     <tr id="{{ data_karyawan_magang[i]._id }}" data-aos='slide-right' data-aos-delay='{{ 500+((i+1)%26*100) }}' data-aos-duration='800'>
                       <td class="poppins-regular">{{ (data.first_table - 1) * data.table_length + (i+1) }}</td>
@@ -556,6 +559,14 @@
                     <!-- end delete modal -->
 
                     {% endfor %}
+
+                    {% else %}
+
+                    <tr>
+                      <td colspan="20" class="poppins-regular py-3 text-center">No Data Available</td>
+                    </tr>
+
+                    {% endif %}
                   </tbody>
                 </table>
               </div>

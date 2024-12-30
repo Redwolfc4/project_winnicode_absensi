@@ -1666,8 +1666,8 @@ def signIn():
     title = request.args.get("title")
 
     # ambil dat aadmin keseluruhan
-    admin_user_cek = db.users.find(
-        {"jobs": "Admin", "departemen": "Superuser", "role": 1}
+    admin_user_cek = list(
+        db.users.find({"jobs": "Admin", "departement": "Superuser", "role": 1})
     )
     # cek apakah memiliki user admin / tidak?
     # jika tidak buat default awalan untuk superuser
@@ -1676,11 +1676,11 @@ def signIn():
             {
                 "nama": "admin",
                 "email": "admin@gmail.com".lower(),
-                "password": hashlib.sha256("123".strip().encode()).hexdigest(),
+                "password": hashlib.sha256("admin123".strip().encode()).hexdigest(),
                 "departement": "Superuser".strip(),
                 "jobs": "Admin".strip(),
                 "role": 1,
-                "photo_profile": "img/default/user.png",
+                "photo_profile": "https://i.ibb.co.com/5Yd94zx/user.png",
             }
         )
         # jika error ditengah tengah
@@ -5691,7 +5691,7 @@ if __name__ == "__main__":
     # # Menjadwalkan pengecekan absensi setiap menit
     delete_absen = BackgroundScheduler()
     delete_absen.add_job(
-        func=unhadir_absensi, trigger="interval", seconds=5
+        func=unhadir_absensi, trigger="interval", minutes=1
     )  # interval hours/minute/second. date run_date .cron day_of_week,hours,minutes
     delete_absen.start()
     app.run(port=8080, debug=True)  # ssl_context =  adhoc adalah sertifikat self signed
