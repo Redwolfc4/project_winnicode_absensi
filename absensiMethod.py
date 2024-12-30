@@ -294,6 +294,7 @@ def unhadir_absensi():
                         angka_delta_pilih = countdown_time(
                             a=now,
                             b=datetime.datetime.strptime(waktu_awal_kerja, "%H.%M"),
+                            email=email_user,
                         )
 
                         # jika angka delta piluh tidak false
