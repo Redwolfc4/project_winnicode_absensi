@@ -213,7 +213,7 @@ def unhadir_absensi():
 
     from app import db
 
-    users = db.users.find({"role": 3})  # nanti diubah bisa role 2 dan 3
+    users = list(db.users.find({"role": 3}))  # nanti diubah bisa role 2 dan 3
     now = get_time_zone_now()
     time_now = now.time()
     print("Server sedang berjalan dilatar belakang")
@@ -222,6 +222,7 @@ def unhadir_absensi():
     # cek table users
     if users:
         for user in users:
+            print("jalans")
             email_user = user["email"]
             mulai_kerja = user["mulai_kerja"]
             akhir_kerja = user["akhir_kerja"]
