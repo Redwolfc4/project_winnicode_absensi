@@ -4029,7 +4029,6 @@ def kelola_admin_export(path1):
               type: string
               example: "error"
     """
-
     if path1 not in ["excel", "pdf"]:
         return redirect(url_for("notFound"))
     try:
@@ -4726,7 +4725,7 @@ def export(path):
     summary: Ekspor Data Admin
     description: Endpoint ini digunakan untuk mengekspor data karyawan / magang dalam berbagai format. Memerlukan cookie autentikasi dan token CSRF yang valid untuk mengakses data.
     parameters:
-      - name: path1
+      - name: path
         in: path
         enum:
           - pdf
