@@ -2,7 +2,7 @@
     "version": 2,
     "builds": [
         {
-            "src": "./app.py",
+            "src": "app.py",
             "use": "@vercel/python"
         }
     ],
@@ -11,5 +11,11 @@
             "src": "/(.*)",
             "dest": "app.py"
         }
-    ]
+    ],
+    "functions": {
+        "api/cron_task.py": {
+            "runtime": "python3.9",
+            "schedule": "* * * * *"
+        }
+    }
 }
