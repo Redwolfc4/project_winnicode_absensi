@@ -5685,7 +5685,7 @@ def notFound(error=None):
 
 @app.route("/api/cron_task", methods=["GET"])
 def handler():
-    try:
+    # try:
         response = unhadir_absensi()
         return make_response(jsonify({"message": "success", "data": response}), 200)
     # except Exception as e:
