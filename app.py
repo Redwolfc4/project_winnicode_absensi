@@ -28,10 +28,12 @@ from pymongo.mongo_client import MongoClient
 from dotenv import load_dotenv
 import os, hashlib, jwt, datetime
 from bson import ObjectId
-from apscheduler.schedulers.background import BackgroundScheduler
+
+# from apscheduler.schedulers.background import BackgroundScheduler
 from io import BytesIO
 from openpyxl import load_workbook
-from werkzeug.utils import secure_filename
+
+# from werkzeug.utils import secure_filename
 from werkzeug.datastructures import FileStorage
 from generate_otp import (
     FaqGmailSender,
