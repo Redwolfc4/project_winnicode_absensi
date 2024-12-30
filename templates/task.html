@@ -115,7 +115,7 @@
         <!-- Button to trigger modal -->
         <div class="text-end mb-3">
             <button
-                class="btn btn-primary"
+                class="btn btn-primary {{ 'disabled' if data_user_all|length == 0 else '' }}"
                 data-bs-toggle="modal"
                 data-bs-target="#taskModal">
                 <i class="fas fa-plus"></i> Add Task
