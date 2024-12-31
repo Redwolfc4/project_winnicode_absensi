@@ -47,10 +47,6 @@ def upload_to_imgbb(file: FileStorage, imgbb_api_key: str):
     if not file:
         return {"status": "failed", "message": "No file provided"}
 
-    # # Read the image file and encode it to base64
-    # image_data = base64.b64encode(file.read()).decode("utf-8")
-    # print(image_data)
-
     # cek url
     url = "https://api.imgbb.com/1/upload"
     # buat payload
@@ -60,7 +56,6 @@ def upload_to_imgbb(file: FileStorage, imgbb_api_key: str):
     response = requests.post(f"{url}?key={imgbb_api_key}", files=files)
     if response.status_code == 200:
         data = response.json()
-        print(data["status"])
         if data["status"] == 200:
             return {
                 "status": "success",
@@ -222,7 +217,6 @@ def unhadir_absensi():
     # cek table users
     if users:
         for user in users:
-            print("jalans")
             email_user = user["email"]
             mulai_kerja = user["mulai_kerja"]
             akhir_kerja = user["akhir_kerja"]
