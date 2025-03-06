@@ -3166,7 +3166,7 @@ def riwayat_kehadiran_post(path1=None, path2=None):
 
                     # inisiasi form
                     id_riwayat_absent = request.form["__id_riwayat_absent"]
-                    nik = int(request.form["nik"])
+                    nik = request.form["nik"]
                     email = request.form["email"]
                     status_hadir = request.form["status_hadir"]
 
@@ -3178,7 +3178,9 @@ def riwayat_kehadiran_post(path1=None, path2=None):
 
                     # lakukan validasi nik dimikii
                     if nik == None or nik == "":
-                        raise Exception("Anda harus mengisi profile terlebih dahulu")
+                        raise Exception("Anda harus mengisi nik profile terlebih dahulu")
+                    
+                    nik = int(nik)
 
                     # lakukan validasi email dan id_riwayat_absent
                     if "" in (email, id_riwayat_absent) or None in (
@@ -3186,12 +3188,13 @@ def riwayat_kehadiran_post(path1=None, path2=None):
                         id_riwayat_absent,
                     ):
                         raise Exception("This data is undefined please try again")
+                    
 
                     # decript id riwayat absen
                     absen_magang_id = cipher.decrypt(
                         uuid_like_to_string(id_riwayat_absent).encode()
                     ).decode()
-                    print(absen_magang_id, type(absen_magang_id))
+                    # print(absen_magang_id, type(absen_magang_id))
 
                     # do change it absen_magang
                     update_absen_magang = db.absen_magang.find_one_and_update(
