@@ -295,6 +295,7 @@ def convert_to_excel(ws, result, currentPage=None, start=None, stop=None):
             ):
                 # inisiasi
                 img_path = None
+                print(cell_value)
 
                 # Unduh gambar dari URL
                 response = requests.get(cell_value, stream=True)

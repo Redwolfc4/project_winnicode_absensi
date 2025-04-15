@@ -92,11 +92,12 @@ def get_time_zone_now(location: str = "asia/jakarta"):
     
     import subprocess
     import json
-    location = "Asia/Jakarta"
     command = f'curl -s "https://www.timeapi.io/api/Time/current/zone?timeZone={location}"'
     output = subprocess.check_output(command, shell=True)
-    data = json.loads(output)
-    print("Waktu:", data["dateTime"])
+    data = json.loads(output)['dateTime']
+    print("Waktu:", data)
+    waktu_sekarang = datetime.datetime.fromisoformat(data)
+    return waktu_sekarang
 
 
 def is_valid_datetime_format(value):
@@ -220,6 +221,7 @@ def unhadir_absensi():
 
     users = list(db.users.find({"role": 3}))  # nanti diubah bisa role 2 dan 3
     now = get_time_zone_now()
+    print(now)
     time_now = now.time()
     print("Server sedang berjalan dilatar belakang")
     # db.absen_magang.delete_many({'tanggal_hadir':now.strftime('%d %B %Y').lower()})
@@ -233,7 +235,6 @@ def unhadir_absensi():
             waktu_awal_kerja = user["waktu_awal_kerja"]
             waktu_akhir_kerja = user["waktu_akhir_kerja"]
             user_id = user["_id"]
-
             # cek mulai kerja dan akhir kerja user
             if mulai_kerja != "" and akhir_kerja != "":
                 # cek tanggal sekarang dengan rentang kerja
@@ -336,6 +337,8 @@ def unhadir_absensi():
                                     }
                                 },
                             )
+        print('jalan')
+
     return "berhasil ya!"
 
 
