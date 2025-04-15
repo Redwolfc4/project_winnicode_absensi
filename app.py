@@ -1636,6 +1636,8 @@ def signIn():
                     ),
                     200,
                 )
+                
+                print(get_time_zone_now())
 
                 # set cookie
                 resp.set_cookie(
