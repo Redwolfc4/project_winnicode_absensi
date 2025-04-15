@@ -3192,7 +3192,7 @@ def riwayat_kehadiran_post(path1=None, path2=None):
 
                     # decript id riwayat absen
                     absen_magang_id = cipher.decrypt(
-                        uuid_like_to_string(id_riwayat_absent).encode()
+                        uuid_like_to_string(id_riwayat_absent).encode(), ttl=None
                     ).decode()
                     # print(absen_magang_id, type(absen_magang_id))
 
@@ -3314,7 +3314,7 @@ def riwayat_kehadiran_post(path1=None, path2=None):
 
                     # decript id riwayat absen
                     absen_magang_id = cipher.decrypt(
-                        uuid_like_to_string(path2).encode()
+                        uuid_like_to_string(path2).encode(), ttl=None
                     ).decode()
 
                     # lakukan validasi email dan id_riwayat_absent
@@ -3792,7 +3792,7 @@ def kelola_admin(path1=None, path2=None):
 
                 # decript id riwayat absen
                 user_admin_id = cipher.decrypt(
-                    uuid_like_to_string(id_data_user_admin).encode()
+                    uuid_like_to_string(id_data_user_admin).encode(), ttl=None
                 ).decode()
 
                 # cek ada / tidak
@@ -3854,7 +3854,7 @@ def kelola_admin(path1=None, path2=None):
 
                 # decript id user admin id
                 user_admin_id_delete = cipher.decrypt(
-                    uuid_like_to_string(path2).encode()
+                    uuid_like_to_string(path2).encode(), ttl=None
                 ).decode()
 
                 # cek ada / tidak
