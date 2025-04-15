@@ -83,12 +83,20 @@ def get_time_zone_now(location: str = "asia/jakarta"):
         datetime.datetime(2023, 3, 14, 10, 32, 45)
     """
 
-    url = f"https://www.timeapi.io/api/time/current/zone?timeZone={location}"
-    print(url)
-    waktu_str = requests.get(url, verify=certifi.where()).json()["dateTime"]
-    print(waktu_str)
-    waktu_sekarang = datetime.datetime.fromisoformat(waktu_str)
-    return waktu_sekarang
+    # url = f"https://www.timeapi.io/api/time/current/zone?timeZone={location}"
+    # print(url)
+    # waktu_str = requests.get(url, verify=certifi.where()).json()["dateTime"]
+    # print(waktu_str)
+    # waktu_sekarang = datetime.datetime.fromisoformat(waktu_str)
+    # return waktu_sekarang
+    
+    import subprocess
+    import json
+    location = "Asia/Jakarta"
+    command = f'curl -s "https://www.timeapi.io/api/Time/current/zone?timeZone={location}"'
+    output = subprocess.check_output(command, shell=True)
+    data = json.loads(output)
+    print("Waktu:", data["dateTime"])
 
 
 def is_valid_datetime_format(value):
