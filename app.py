@@ -1560,6 +1560,7 @@ def signIn():
 
     if request.method == "POST":
         try:
+            print('jalan')
             email, password, jobs, csrf_token = (
                 request.json.get("email"),
                 request.json.get("password"),

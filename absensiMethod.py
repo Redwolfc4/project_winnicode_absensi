@@ -6,7 +6,7 @@ from cryptography.fernet import Fernet
 import requests
 import datetime
 import re
-import certifi
+# import certifi
 from werkzeug.datastructures import FileStorage
 from generate_otp import AbsensiNotify
 
@@ -90,14 +90,31 @@ def get_time_zone_now(location: str = "asia/jakarta"):
     # waktu_sekarang = datetime.datetime.fromisoformat(waktu_str)
     # return waktu_sekarang
     
-    import subprocess
-    import json
-    command = f'curl -s "https://www.timeapi.io/api/Time/current/zone?timeZone={location}"'
-    output = subprocess.check_output(command, shell=True)
-    data = json.loads(output)['dateTime']
-    print("Waktu:", data)
-    waktu_sekarang = datetime.datetime.fromisoformat(data)
+    # import subprocess
+    # import json
+    # command = f'curl -s "https://www.timeapi.io/api/Time/current/zone?timeZone={location}"'
+    # output = subprocess.check_output(command, shell=True)
+    # data = json.loads(output)['dateTime']
+    # print("Waktu:", data)
+    # waktu_sekarang = datetime.datetime.fromisoformat(data)
+    # print(waktu_sekarang)
+    # return waktu_sekarang
+
+    # Zona waktu Indonesia Barat (WIB)
+    import pytz
+    tz = pytz.timezone('Asia/Jakarta')
+
+    # Ambil waktu sekarang dengan timezone Asia/Jakarta
+    waktu_sekarang = datetime.datetime.now(tz)
+    
+    iso_str = waktu_sekarang.isoformat(timespec='microseconds').replace("+07:00", "")
+    print("ISO format:", iso_str)  # Hasil: 2025-04-15T23:08:37.862270
+    
+    waktu_sekarang = datetime.datetime.fromisoformat(iso_str)
+
+    print("Waktu sekarang (WIB):", waktu_sekarang)
     return waktu_sekarang
+    
 
 
 def is_valid_datetime_format(value):
