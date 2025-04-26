@@ -6,13 +6,12 @@ from absensiMethod import (
     string_to_uuid_like,
     unhadir_absensi,
     uuid_like_to_string,
-    cipher,
     get_time_zone_now,
     is_valid_datetime_format,
     upload_to_imgbb,
 )
 from convert import convert_to_excel, PDF
-import cryptography.fernet as Fernet
+
 from flask import (
     Flask,
     redirect,
@@ -1694,81 +1693,121 @@ def signIn():
     return render_template("signIn.html", msg=msg, status=status, title=title)
 
 
-# lakukan sign-up
-@app.route("/sign-up", methods=["GET", "POST"])
-@app.route("/sign-up/", methods=["GET", "POST"])
-def signUp():
+# lakukan Add Karyawan dan Magang
+@app.route("/dashboard/admin/add", methods=["POST"])
+@app.route("/dashboard/admin/add/", methods=["POST"])
+def karyawanMagangAdd():
     """
-    Sign Up
-    -
-    This endpoint is used to sign up new users.
+    fungsi ini digunakan untuk mendaftarkan Karyawan / Magang.
 
-    tags:
-        - Autentikasi
+    parameters :
+        - csrf_token : token csrf
+        - nama : nama Karyawan / Magang
+        - departement : departemen Karyawan / Magang
+        - email : email Karyawan / Magang
+        - password : password Karyawan / Magang
+        - jobs : posisi Karyawan / Magang
 
-    Parameters:
-        - csrf_token (string): CSRF token
-        - nama (string): Name of the user
-        - departement (string): Department of the user
-        - email (string): Email of the user
-        - password (string): Password of the user
-        - jobs (string): Jobs of the user
-
-    Returns:
-        - Redirect to dashboard if success
-        - Redirect to sign up page with error message if failed
+    responses :
+        - 200 : berhasil mendaftarkan Karyawan / Magang
+        - 400 : inputan tidak valid
+        - 401 : csrf token tidak valid
+        - 500 : terjadi kesalahan di server
     """
-    if request.method == "POST":
-        csrf_token, nama, departement, email, password, jobs = request.form.values()
-        if nama == "":
-            return redirect(url_for("signUp", msg="Nama cannot empty"))
-        elif departement == "None":
-            return redirect(url_for("signUp", msg="Departement cannot empty"))
-        elif jobs == "None":
-            return redirect(url_for("signUp", msg="Jobs cannot empty"))
-        elif email == "":
-            return redirect(url_for("signUp", msg="Email cannot empty"))
-        elif password == "":
-            return redirect(url_for("signUp", msg="Password cannot empty"))
-        elif csrf_token == "":
-            return redirect(url_for("signUp", msg="csrf token cannot empty"))
+    try:
+        if request.method == "POST":
+            # cek cookie token
+            cookies = request.cookies.get("token_key")
+            
+            # decode uuid
+            cookies = uuid_like_to_string(cookies)
 
-        cek_data = db.users.find_one({"email": email.lower()})
-        if cek_data:
-            return redirect(url_for("signUp", msg="Account Already Exist"))
-        result = db.users.insert_one(
-            {
-                "nama": nama,
-                "departement": departement,
-                "jobs": jobs,
-                "email": email.lower(),
-                "password": hashlib.sha256(password.encode()).hexdigest(),
-                "role": 3,
-                "nik": "",
-                "photo_profile": "https://i.ibb.co.com/5Yd94zx/user.png",
-                "tempat_lahir": "",
-                "tanggal_lahir": "",
-                "mulai_kerja": "",
-                "akhir_kerja": "",
-                "waktu_awal_kerja": "",
-                "waktu_akhir_kerja": "",
-                "work_hours": 0,
-                "absen": {"hadir": 0, "telat": 0, "tidak_hadir": 0, "libur": 0},
-            }
-        )
-        if result:
-            return redirect(
-                url_for(
-                    "signIn",
-                    msg="Sign Up Success",
-                    status="success",
-                    title="SignUp!",
-                )
+            # cek berhasul / tidak
+            if not cookies:
+                raise ValueError("CSRF decode error")
+            # decode jwt
+            payloads = jwt.decode(cookies, secretKey, algorithms=["HS256"])
+            
+            data_user = db.users.find_one(
+                {"_id": ObjectId(payloads["_id"])},
+                {"_id": 0, "departement": 1, "jobs": 1, "role": 1},
             )
-        else:
-            return redirect(url_for("signUp", msg="Sign Up Failed"))
-    else:
-        return render_template("signUp.html", msg=request.args.get("msg")), 200
+
+            if not data_user:
+                raise Exception("Data user akses tidak ditemukan")
+            
+            # cek hak akses selama cookie
+            if (
+                payloads["role"] != 1
+                and payloads["jobs"] not in ("Admin",'Sub Admin')
+                and data_user["departement"] not in ("Superuser")
+            ):
+                raise Exception("Anda tidak memiliki akses")
+
+            csrf_token, nama, nik, email, departement, jobs, password, password2  = request.form.values()
+            nik = int(nik)
+            if nama == "":
+                return redirect(url_for("dashboard", msg="Nama cannot empty"))
+            if nik == "":
+                return redirect(url_for("dashboard", msg="Nama cannot empty"))
+            elif departement == "None":
+                return redirect(url_for("dashboard", msg="Departement cannot empty"))
+            elif jobs == "None":
+                return redirect(url_for("dashboard", msg="Jobs cannot empty"))
+            elif email == "":
+                return redirect(url_for("dashboard", msg="Email cannot empty"))
+            elif password == "":
+                return redirect(url_for("dashboard", msg="Password cannot empty"))
+            elif csrf_token == "":
+                return redirect(url_for("dashboard", msg="csrf token cannot empty"))
+
+            if not (password == password2):
+                return redirect(url_for("dashboard", msg="Password not match"))
+            if not type(nik) == int:
+                return redirect(url_for("dashboard", msg="NIK must be number"))
+        
+            cek_data = db.users.find_one({"email": email.lower()})
+            if cek_data:
+                return redirect(url_for("dashboard", msg="Account Already Exist"))
+            result = db.users.insert_one(
+                {
+                    "nama": nama,
+                    "departement": departement,
+                    "jobs": jobs,
+                    "email": email.lower(),
+                    "password": hashlib.sha256(password.encode()).hexdigest(),
+                    "role": 3,
+                    "nik": int(nik),
+                    "photo_profile": "https://i.ibb.co.com/5Yd94zx/user.png",
+                    "tempat_lahir": "",
+                    "tanggal_lahir": "",
+                    "mulai_kerja": "",
+                    "akhir_kerja": "",
+                    "waktu_awal_kerja": "",
+                    "waktu_akhir_kerja": "",
+                    "work_hours": 0,
+                    "absen": {"hadir": 0, "telat": 0, "tidak_hadir": 0, "libur": 0},
+                }
+            )
+            if result:
+                return redirect(
+                    url_for(
+                        "dashboard",
+                        msg="Success Add",
+                        result="success",
+                    )
+                )
+            else:
+                return Exception('Data {} gagal ditambah'.format(nama))
+    # handle error
+    except jwt.ExpiredSignatureError:
+        return redirect(url_for("signIn", msg="Session Expired"))
+    except jwt.DecodeError:
+        return redirect(url_for("signIn", msg="Anda telah logout"))
+    except ValueError as e:
+        return redirect(url_for("signIn", msg=e.args[0]))
+    except Exception as e:
+         return redirect(url_for("dashboard", msg=e.args[0]))
 
 
 # logout
@@ -2270,9 +2309,9 @@ def myProfiles():
         # block to catch specific exceptions and then redirecting the user to the "signIn" route with
         # a specific message based on the type of exception caught.
         except jwt.ExpiredSignatureError:
-            return redirect(url_for("signIn", msg="Session Expired")), 401
+            return redirect(url_for("signIn", msg="Session Expired"))
         except jwt.DecodeError:
-            return redirect(url_for("signIn", msg="Anda telah logout")), 401
+            return redirect(url_for("signIn", msg="Anda telah logout"))
         except ValueError as e:
             return redirect(url_for("signIn", msg=e.args[0]))
         except Exception as e:
@@ -2317,9 +2356,9 @@ def myProfiles():
 
     # The above code is handling different exceptions that may occur in a Python application.
     except jwt.ExpiredSignatureError:
-        return redirect(url_for("signIn", msg="Session Expired")), 401
+        return redirect(url_for("signIn", msg="Session Expired"))
     except jwt.DecodeError:
-        return redirect(url_for("signIn", msg="Anda telah logout")), 401
+        return redirect(url_for("signIn", msg="Anda telah logout"))
     except ValueError as ve:
         return redirect(url_for("signIn", msg=ve.args[0]))
     except Exception as e:
@@ -2471,7 +2510,7 @@ def dashboard():
                 data["heading-card"] = (
                     data["absen"]["hadir"] + data["absen"]["tidak_hadir"] + 1
                 )
-
+            print(data)
             # ini buat lihat hadir dan tidak hadir
             data2 = [
                 {
@@ -2601,9 +2640,9 @@ def dashboard():
             raise Exception("Anda bukan bagian dari perusahaan")
     # handle error
     except jwt.ExpiredSignatureError:
-        return redirect(url_for("signIn", msg="Session Expired")), 401
+        return redirect(url_for("signIn", msg="Session Expired"))
     except jwt.DecodeError:
-        return redirect(url_for("signIn", msg="Anda telah logout")), 401
+        return redirect(url_for("signIn", msg="Anda telah logout"))
     except Exception as e:
         return redirect(url_for("signIn", msg=e.args[0]))
 
@@ -2924,9 +2963,9 @@ def change_password():
             200,
         )
     except jwt.ExpiredSignatureError:
-        return redirect(url_for("signIn", msg="Session Expired")), 401
+        return redirect(url_for("signIn", msg="Session Expired"))
     except jwt.DecodeError:
-        return redirect(url_for("signIn", msg="Anda telah logout")), 401
+        return redirect(url_for("signIn", msg="Anda telah logout"))
 
 
 # riwayat kehadiran
@@ -3069,10 +3108,8 @@ def riwayat_kehadiran():
                 for i in riwayat_absent:
                     # decrypt id riwayat absen
                     i["_id"] = string_to_uuid_like(
-                        cipher.encrypt(str(i["_id"]).encode()).decode()
+                        str(i["_id"]).encode()
                     )
-                    print(type(i["_id"]))
-            print(riwayat_absent)
 
         # render template riwayat_kehadiran.html
         return (
@@ -3089,9 +3126,9 @@ def riwayat_kehadiran():
     # The above code is a Python snippet that includes multiple `except` blocks to handle different
     # types of exceptions.
     except jwt.ExpiredSignatureError:
-        return redirect(url_for("signIn", msg="Session Expired")), 401
+        return redirect(url_for("signIn", msg="Session Expired"))
     except jwt.DecodeError:
-        return redirect(url_for("signIn", msg="Anda telah logout")), 401
+        return redirect(url_for("signIn", msg="Anda telah logout"))
     except Exception:
         return redirect(url_for("signIn", msg="something went wrong!"))
 
@@ -3194,9 +3231,7 @@ def riwayat_kehadiran_post(path1=None, path2=None):
                     
 
                     # decript id riwayat absen
-                    absen_magang_id = cipher.decrypt(
-                        uuid_like_to_string(id_riwayat_absent).encode(), ttl=None
-                    ).decode()
+                    absen_magang_id = uuid_like_to_string(id_riwayat_absent)
                     # print(absen_magang_id, type(absen_magang_id))
 
                     # do change it absen_magang
@@ -3316,9 +3351,7 @@ def riwayat_kehadiran_post(path1=None, path2=None):
                         raise Exception("This data is undefined please try again")
 
                     # decript id riwayat absen
-                    absen_magang_id = cipher.decrypt(
-                        uuid_like_to_string(path2).encode(), ttl=None
-                    ).decode()
+                    absen_magang_id = uuid_like_to_string(path2).encode()
 
                     # lakukan validasi email dan id_riwayat_absent
                     if not absen_magang_id or absen_magang_id == "":
@@ -3385,16 +3418,9 @@ def riwayat_kehadiran_post(path1=None, path2=None):
 
     # handle error
     except jwt.ExpiredSignatureError:
-        return redirect(url_for("signIn", msg="Session Expired")), 401
+        return redirect(url_for("signIn", msg="Session Expired"))
     except jwt.DecodeError:
-        return redirect(url_for("signIn", msg="Anda telah logout")), 401
-    except Fernet.InvalidToken:
-        return redirect(
-            url_for(
-                "riwayat_kehadiran",
-                msg="Token update invalid please refresh your page",
-            ),
-        )
+        return redirect(url_for("signIn", msg="Anda telah logout"))
     except Exception as e:
         if not e.args:
             e.args = ("terjadi kesalahan data",)
@@ -3473,7 +3499,7 @@ def riwayat_bantuan():
         if data_faq_all:
             for i in data_faq_all:
                 i["_id"] = string_to_uuid_like(
-                    cipher.encrypt(str(i["_id"]).encode()).decode()
+                    str(i["_id"]).encode()
                 )
                 if not i["_id"]:
                     raise Exception("Terjadi Kesalahan Data dalam encrypt")
@@ -3503,12 +3529,6 @@ def riwayat_bantuan():
         return redirect(url_for("signIn", msg="Session Expired"))
     except jwt.DecodeError:
         return redirect(url_for("signIn", msg="Anda telah logout"))
-    except Fernet.InvalidToken:
-        return redirect(
-            url_for(
-                "riwayat_bantuan", msg="Token update invalid please refresh your page"
-            )
-        )
     except IndexError as e:
         return redirect(url_for("riwayat_bantuan", msg=e.args[0]))
     except Exception as e:
@@ -3583,7 +3603,7 @@ def riwayat_bantuan_post():
             )
 
         # decript id riwayat absen
-        status_id = cipher.decrypt(uuid_like_to_string(id_status).encode()).decode()
+        status_id = uuid_like_to_string(id_status).encode()
 
         # pemgambilan data message_id dari db faq
         message_id = db.faq.find_one(
@@ -3667,18 +3687,6 @@ def riwayat_bantuan_post():
         return jsonify({"redirect": url_for("signIn", msg="Session Expired")}), 500
     except jwt.DecodeError:
         return jsonify({"redirect": url_for("signIn", msg="Anda telah logout")}), 500
-    except Fernet.InvalidToken:
-        return (
-            jsonify(
-                {
-                    "redirect": url_for(
-                        "riwayat_bantuan",
-                        msg="Token update invalid please refresh your page",
-                    )
-                }
-            ),
-            500,
-        )
     except Exception as e:
         return jsonify({"redirect": url_for("riwayat_bantuan", msg=e.args[0])}), 500
     except IndexError as e:
@@ -3794,9 +3802,7 @@ def kelola_admin(path1=None, path2=None):
                     raise Exception("Anda tidak memiliki hak akses")
 
                 # decript id riwayat absen
-                user_admin_id = cipher.decrypt(
-                    uuid_like_to_string(id_data_user_admin).encode(), ttl=None
-                ).decode()
+                user_admin_id = uuid_like_to_string(id_data_user_admin).encode()
 
                 # cek ada / tidak
                 if not user_admin_id:
@@ -3856,9 +3862,7 @@ def kelola_admin(path1=None, path2=None):
                     return redirect(url_for("signIn", msg="Your request not in page"))
 
                 # decript id user admin id
-                user_admin_id_delete = cipher.decrypt(
-                    uuid_like_to_string(path2).encode(), ttl=None
-                ).decode()
+                user_admin_id_delete = uuid_like_to_string(path2).encode()
 
                 # cek ada / tidak
                 if not user_admin_id_delete:
@@ -3931,7 +3935,7 @@ def kelola_admin(path1=None, path2=None):
         if data_admin_all:
             for i in data_admin_all:
                 i["_id"] = string_to_uuid_like(
-                    cipher.encrypt(str(i["_id"]).encode()).decode()
+                    str(i["_id"]).encode()
                 )
                 if not i["_id"]:
                     raise Exception("Terjadi Kesalahan Data dalam encrypt")
@@ -3950,10 +3954,6 @@ def kelola_admin(path1=None, path2=None):
         return redirect(url_for("signIn", msg="Session Expired"))
     except jwt.DecodeError:
         return redirect(url_for("signIn", msg="Anda telah logout"))
-    except Fernet.InvalidToken:
-        return redirect(
-            url_for("kelola_admin", msg="Token update invalid please refresh your page")
-        )
     except ValueError as e:
         return redirect(
             url_for("kelola_admin", msg=e.args[0] if e.args else "value error occurred")
@@ -4044,15 +4044,15 @@ def kelola_admin_export(path1):
         cookie = request.cookies.get("token_key")
         csrf_token = request.cookies.get("csrf_token")
         if csrf_token == None:
-            return redirect(url_for("signIn", msg="csrf token expired")), 401
+            return redirect(url_for("signIn", msg="csrf token expired"))
         if cookie == None or cookie == "":
-            return redirect(url_for("signIn", msg="Anda Telah logout")), 401
+            return redirect(url_for("signIn", msg="Anda Telah logout"))
         cookie = uuid_like_to_string(cookie)
         if not cookie:
-            return redirect(url_for("signIn", msg="Cookie Expired")), 401
+            return redirect(url_for("signIn", msg="Cookie Expired"))
         csrf_token = uuid_like_to_string(csrf_token)
         if not csrf_token:
-            return redirect(url_for("signIn", msg="CSRF Token Expired")), 401
+            return redirect(url_for("signIn", msg="CSRF Token Expired"))
         # decode payload
         payloads = jwt.decode(cookie, secretKey, algorithms=["HS256"])
 
@@ -4152,9 +4152,9 @@ def kelola_admin_export(path1):
 
     # handle error
     except jwt.ExpiredSignatureError:
-        return redirect(url_for("signIn", msg="Session Expired")), 401
+        return redirect(url_for("signIn", msg="Session Expired"))
     except jwt.DecodeError:
-        return redirect(url_for("signIn", msg="Anda telah logout")), 401
+        return redirect(url_for("signIn", msg="Anda telah logout"))
     except Exception as e:
         return redirect(url_for("dashboard", msg=e.args[0]))
 
@@ -4334,9 +4334,9 @@ def dashboardAdminCreateAccount():
         )
     # handling error
     except jwt.ExpiredSignatureError:
-        return redirect(url_for("signIn", msg="Session Expired")), 401
+        return redirect(url_for("signIn", msg="Session Expired"))
     except jwt.DecodeError:
-        return redirect(url_for("signIn", msg="Anda telah logout")), 401
+        return redirect(url_for("signIn", msg="Anda telah logout"))
     except ValueError as e:
         return redirect(url_for("kelola_admin", msg=e.args[0]))
     except Exception as e:
@@ -4476,6 +4476,7 @@ def dashboardAdminEdit():
     # ambil data
     nama = request.form.get("nama")
     email = request.form.get("email")
+    nik = request.form.get('nik')
     departement = request.form.get("departement")
     jobs = request.form.get("jobs")
     start_date = request.form.get("start_date")
@@ -4491,6 +4492,7 @@ def dashboardAdminEdit():
         if (
             nama == ""
             or email == ""
+            or nik == ""
             or departement == "None"
             or jobs == "None"
             or start_date == ""
@@ -4503,7 +4505,11 @@ def dashboardAdminEdit():
             )
         # decode uuid
         cookies = uuid_like_to_string(cookies)
-
+        
+        nik = int(nik)
+        if type(nik) != int:
+            return redirect(url_for("dashboard", msg="NIK harus angka"))
+        
         # cek berhasul / tidak
         if not cookies:
             raise ValueError("CSRF decode error")
@@ -4521,7 +4527,7 @@ def dashboardAdminEdit():
         # cek hak akses selama cookie
         if (
             payloads["role"] != 1
-            and payloads["jobs"] not in ("Admin")
+            and payloads["jobs"] not in ("Admin","Sub Admin")
             and data_user["departement"] not in ("Superuser")
         ):
             raise Exception("Anda tidak memiliki akses")
@@ -4531,6 +4537,7 @@ def dashboardAdminEdit():
             {"email": email, "nama": nama},
             {
                 "$set": {
+                    "nik": nik,
                     "departement": departement,
                     "mulai_kerja": datetime.datetime.strptime(start_date, "%Y-%m-%d")
                     .strftime("%d %B %Y")
@@ -4567,13 +4574,13 @@ def dashboardAdminEdit():
         )
     # handle error
     except jwt.ExpiredSignatureError:
-        return redirect(url_for("signIn", msg="Session Expired")), 401
+        return redirect(url_for("signIn", msg="Session Expired"))
     except jwt.DecodeError:
-        return redirect(url_for("signIn", msg="Anda telah logout")), 401
+        return redirect(url_for("signIn", msg="Anda telah logout"))
     except ValueError as e:
         return redirect(url_for("signIn", msg=e.args[0]))
     except Exception as e:
-        return redirect(url_for("kelola_admin", msg=e.args[0]))
+        return redirect(url_for("dashboard", msg=e.args[0]))
 
 
 # delete user karyawan / magang melalui admin
@@ -4716,11 +4723,13 @@ def adminDelete(id):
         )
     # The above code is handling different exceptions that may occur in a Python application.
     except jwt.DecodeError:
-        return redirect(url_for("signIn", msg="Anda telah logout")), 401
+        return redirect(url_for("signIn", msg="Anda telah logout"))
     except jwt.ExpiredSignatureError:
-        return redirect(url_for("signIn", msg="Session Expired")), 401
+        return redirect(url_for("signIn", msg="Session Expired"))
     except ValueError as e:
         return redirect(url_for("signIn", msg=e.args[0]))
+    except Exception as e:
+        return redirect(url_for("dashboard", msg=e.args[0]))
 
 
 @app.route("/dashboard/admin/<path>", methods=["GET"])
@@ -4847,9 +4856,9 @@ def export(path):
     # The above code is handling exceptions related to JWT (JSON Web Token) authentication. It catches
     # different types of exceptions that can occur during JWT verification:
     except jwt.ExpiredSignatureError:
-        return redirect(url_for("signIn", msg="Session Expired")), 401
+        return redirect(url_for("signIn", msg="Session Expired"))
     except jwt.DecodeError:
-        return redirect(url_for("signIn", msg="Anda telah logout")), 401
+        return redirect(url_for("signIn", msg="Anda telah logout"))
     except Exception as e:
         return redirect(url_for("dashboard", msg=e.args[0]))
 
@@ -5048,9 +5057,9 @@ def task():
     # exception caught). This is likely part of a mechanism to handle expired or invalid JWT tokens
     # during user authentication or authorization processes.
     except jwt.ExpiredSignatureError:
-        return redirect(url_for("signIn", msg="Session Expired")), 401
+        return redirect(url_for("signIn", msg="Session Expired"))
     except jwt.DecodeError:
-        return redirect(url_for("signIn", msg="Anda telah logout")), 401
+        return redirect(url_for("signIn", msg="Anda telah logout"))
     except Exception as e:
         return (
             redirect(

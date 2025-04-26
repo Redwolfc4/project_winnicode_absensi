@@ -2,6 +2,7 @@
 $("#dashboard1 #triggerEditModal").on("click", function () {
   button_id = $(this).attr("data-bs-target");
   // imput lama
+  nik_lama = $(`#dashboard1 ${button_id} #nik`).val();
   departement_lama = $(`#dashboard1 ${button_id} #departement`).val();
   tempat_lahir_lama = $(`#dashboard1 ${button_id} #tempat_lahir`).val();
   tanggal_lahir_lama = $(`#dashboard1 ${button_id} #tanggal_lahir`).val();
@@ -11,6 +12,7 @@ $("#dashboard1 #triggerEditModal").on("click", function () {
   start_time_lama = $(`#dashboard1 ${button_id} #start_time`).val();
   end_time_lama = $(`#dashboard1 ${button_id} #end_time`).val();
   // Event listener untuk semua input
+  $(`#dashboard1 ${button_id} #nik`).on("input", checkChanges);
   $(`#dashboard1 ${button_id} #departement`).on("input", checkChanges);
   $(`#dashboard1 ${button_id} #jobs`).on("input", checkChanges);
   $(`#dashboard1 ${button_id} #start_date`).on("input", checkChanges);
@@ -23,6 +25,7 @@ $("#dashboard1 #triggerEditModal").on("click", function () {
   // Fungsi untuk mengecek apakah ada perubahan
   function checkChanges() {
     // imput baru
+    nik_baru = $(`#dashboard1 ${button_id} #nik`).val();
     departement_baru = $(`#dashboard1 ${button_id} #departement`).val();
     tempat_lahir_baru = $(`#dashboard1 ${button_id} #tempat_lahir`).val();
     tanggal_lahir_baru = $(`#dashboard1 ${button_id} #tanggal_lahir`).val();
@@ -33,7 +36,7 @@ $("#dashboard1 #triggerEditModal").on("click", function () {
     end_time_baru = $(`#dashboard1 ${button_id} #end_time`).val();
     // Jika salah satu input berubah, tombol akan diaktifkan
     if (
-      departement_baru !== departement_lama ||
+      nik_baru !== nik_lama ||
       jobs_baru !== jobs_lama ||
       start_date_baru !== start_date_lama ||
       end_date_baru !== end_date_lama ||

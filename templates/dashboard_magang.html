@@ -5,16 +5,18 @@
 <!-- navbar -->
 {% block value_body %}
 <section id="menu">
-  <nav class="navbar bg-body-tertiary shadow sticky-top" data-aos='fade-down' data-aos-delay='600' data-aos-duration='800'>
+  <nav class="navbar bg-body-tertiary shadow sticky-top" data-aos='fade-down' data-aos-delay='600'
+    data-aos-duration='800'>
     <div class="container-fluid gap-4">
-      <a class="navbar-brand d-flex justify-content-center align-items-center m-0 p-0" role="button" data-bs-toggle="offcanvas" href="#navbarSupportedContent" aria-controls="navbarSupportedContent">
+      <a class="navbar-brand d-flex justify-content-center align-items-center m-0 p-0" role="button"
+        data-bs-toggle="offcanvas" href="#navbarSupportedContent" aria-controls="navbarSupportedContent">
         <img id="winnicode-navbar-logo" src="{{url_for('static',filename='img/absensiku-logo-new.svg')}}" alt="Logo"
           class="d-inline-block align-text-top" />
       </a>
       <div class="offcanvas offcanvas-start bg-dark" data-bs-scroll="true" tabindex="-1" id="navbarSupportedContent">
         <div class="offcanvas-header">
           <h5 class="offcanvas-title text-pink" id="offcanvasDarkNavbarLabel">Menu Page</h5>
-          <button type="button" class="btn-close" data-bs-dismiss="offcanvas" aria-label="Close" ></button>
+          <button type="button" class="btn-close" data-bs-dismiss="offcanvas" aria-label="Close"></button>
         </div>
         <hr class='text-pink' style="opacity:1">
         <div class="offcanvas-body">
@@ -22,11 +24,9 @@
 
           <ul class="navbar-nav me-auto mb-2 mb-lg-0">
             <li class="nav-item">
-              <a
-                class="nav-link poppins-regular text-pink d-flex align-items-center gap-2 active"
-                href="/dashboard"
-                ><i class="fas fa-house-chimney fa-2xl text-primary w-100" style="font-size: 1em; max-width:20px"></i>Dashboard</a
-              >
+              <a class="nav-link poppins-regular text-pink d-flex align-items-center gap-2 active" href="/dashboard"><i
+                  class="fas fa-house-chimney fa-2xl text-primary w-100"
+                  style="font-size: 1em; max-width:20px"></i>Dashboard</a>
             </li>
             <li class="nav-item">
               <a class="nav-link poppins-regular text-pink d-flex align-items-center gap-2" href="/change-password">
@@ -34,24 +34,28 @@
               </a>
             </li>
             <li class="nav-item">
-              <a class="nav-link poppins-regular text-pink d-flex align-items-center gap-2" href="/riwayat-kehadiran"
-                ><i class="fas fa-calendar-check fa-2xl text-primary w-100" style="font-size: 1em; max-width:20px"></i>Riwayat Kehadiran Karyawan</a
-              >
+              <a class="nav-link poppins-regular text-pink d-flex align-items-center gap-2" href="/riwayat-kehadiran"><i
+                  class="fas fa-calendar-check fa-2xl text-primary w-100"
+                  style="font-size: 1em; max-width:20px"></i>Riwayat Kehadiran Karyawan</a>
             </li>
             {% if data.role==1 %}
             <li class="nav-item">
-              <a class="nav-link poppins-regular text-pink  d-flex align-items-center gap-2" href="/riwayat-bantuan"
-                ><i class="fas fa-circle-question fa-2xl text-primary w-100" style="font-size: 1em; max-width:20px"></i> Riwayat Bantuan</a
-              >
+              <a class="nav-link poppins-regular text-pink  d-flex align-items-center gap-2" href="/riwayat-bantuan"><i
+                  class="fas fa-circle-question fa-2xl text-primary w-100" style="font-size: 1em; max-width:20px"></i>
+                Riwayat Bantuan</a>
             </li>
             {% if data.departement == 'Superuser' %}
             <li class="nav-item">
-              <a class="nav-link poppins-regular text-pink d-flex align-items-center gap-2" href="/kelola-admin"><i class="fas fa-user-tie fa-2xl text-primary w-100" style="font-size: 1em; max-width:20px"></i>Kelola Admin</a>
+              <a class="nav-link poppins-regular text-pink d-flex align-items-center gap-2" href="/kelola-admin"><i
+                  class="fas fa-user-tie fa-2xl text-primary w-100" style="font-size: 1em; max-width:20px"></i>Kelola
+                Admin</a>
             </li>
             {% endif %}
             {% endif %}
             <li class="nav-item">
-              <a class="nav-link poppins-regular text-pink d-flex align-items-center gap-2" href="/task"><i class="fa-regular fa-pen-to-square fa-2xl text-primary w-100" style="font-size: 1em; max-width:20px"></i>Task</a>
+              <a class="nav-link poppins-regular text-pink d-flex align-items-center gap-2" href="/task"><i
+                  class="fa-regular fa-pen-to-square fa-2xl text-primary w-100"
+                  style="font-size: 1em; max-width:20px"></i>Task</a>
             </li>
           </ul>
           {% endblock navbar%}
@@ -59,7 +63,8 @@
         <div class='offcanvas-footer mb-3'>
           <a role="button" href="/myProfiles" id="page-user"
             class="d-flex justify-content-center align-items-center gap-2 text-decoration-none">
-            <img src="{{data.photo_profile.split(' ')[0]}}" alt="{{data.photo_profile.split(' ')[1]}}" class="img-fluid rounded rounded-circle" style='aspect-ratio:1/1' />
+            <img src="{{data.photo_profile.split(' ')[0]}}" alt="{{data.photo_profile.split(' ')[1]}}"
+              class="img-fluid rounded rounded-circle" style='aspect-ratio:1/1' />
             <div class="vr"></div>
             <h5 class="poppins-regular text-pink text-truncate" style="max-width: 100%">
               {{data.nama}}
@@ -76,14 +81,18 @@
   <div id="riwayat_kehadiran{{ data.role }}" class="container-fluid" style='margin-top: 1.5rem'>
     <!-- Page Heading -->
     <div class="d-sm-flex align-items-center justify-content-between mb-4">
-      <h1 class="h3 poppins-regular mb-md-0 mb-sm-2 text-gray-800" data-aos='zoom-in-right' data-aos-delay='600' data-aos-duration='800'>Riwayat Absen Saya</h1>
-      <h1 id="clock" class="h6 border border-1 rounded border-secondary-subtle p-1 px-2 poppins-regular mb-0 text-gray-800" data-aos='zoom-in-leftt' data-aos-delay='600' data-aos-duration='800'></h1>
+      <h1 class="h3 poppins-regular mb-md-0 mb-sm-2 text-gray-800" data-aos='zoom-in-right' data-aos-delay='600'
+        data-aos-duration='800'>Riwayat Absen Saya</h1>
+      <h1 id="clock"
+        class="h6 border border-1 rounded border-secondary-subtle p-1 px-2 poppins-regular mb-0 text-gray-800"
+        data-aos='zoom-in-leftt' data-aos-delay='600' data-aos-duration='800'></h1>
     </div>
     <!-- card riwayat -->
     {% block content_body_3 %}
     <div class="row justify-content-center align-items-center">
       {% for i in range(0,data2|length) %}
-      <div id="{{data2[i]['titleCard']|lower}}" class="col-lg-3 col-md-6 mb-4" data-aos='zoom-in' data-aos-delay='{{ i*400 }}' data-aos-duration='800'>
+      <div id="{{data2[i]['titleCard']|lower}}" class="col-lg-3 col-md-6 mb-4" data-aos='zoom-in'
+        data-aos-delay='{{ i*400 }}' data-aos-duration='800'>
         <div class="card {{ data2[i].borderLeft }} shadow h-100 py-2">
           <div class="card-body">
             <div class="row no-gutters align-items-center">
@@ -108,7 +117,8 @@
     <div class="row justify-content-center align-items-center my-5 px-3">
       <div class="card border border-0 col-md-6 col" data-aos='zoom-in-up' data-aos-delay='600' data-aos-duration='800'>
         <!-- card header -->
-        <div class="card-header border border-success d-flex justify-content-center align-items-center w-100 bg-success">
+        <div
+          class="card-header border border-success d-flex justify-content-center align-items-center w-100 bg-success">
           <h5 class="card-title h5 m-0 text-white poppins-medium align-middle" id="absen">Absensi Hari Ke- {{
             data['heading-card'] }}</h5>
         </div>
@@ -148,8 +158,11 @@
   <div id="dashboard{{data.role}}" class="container-fluid" style="margin-top: 1.5rem">
     <!-- Page Heading -->
     <div class="d-sm-flex align-items-center justify-content-between mb-4">
-      <h1 class="h3 poppins-regular mb-md-0 mb-sm-2 text-gray-800" data-aos='zoom-in-right' data-aos-delay='600' data-aos-duration='800'>{{ data['heading_title_body'] }}</h1>
-      <h1 id="clock" class="h6 border border-1 rounded border-secondary-subtle p-1 px-2 poppins-regular mb-0 text-gray-800" data-aos='zoom-in-left' data-aos-delay='600' data-aos-duration='800'></h1>
+      <h1 class="h3 poppins-regular mb-md-0 mb-sm-2 text-gray-800" data-aos='zoom-in-right' data-aos-delay='600'
+        data-aos-duration='800'>{{ data['heading_title_body'] }}</h1>
+      <h1 id="clock"
+        class="h6 border border-1 rounded border-secondary-subtle p-1 px-2 poppins-regular mb-0 text-gray-800"
+        data-aos='zoom-in-left' data-aos-delay='600' data-aos-duration='800'></h1>
     </div>
 
     {% block content_body_1 %}
@@ -162,10 +175,14 @@
         <!-- trigger add acoount -->
         <div id="generate-report" class="col-sm-6 col-12">
           <div class="dropdown btn-group w-100 float-end" style="max-width: 15rem;">
-            <button type="button" class="text-truncate btn w-100 btn-info dropdown-toggle text-white" data-bs-toggle="dropdown"><i class="fa-solid fa-download fa-lg me-2"></i><span>Generate Report</span></button>
+            <button type="button" class="text-truncate btn w-100 btn-info dropdown-toggle text-white"
+              data-bs-toggle="dropdown"><i class="fa-solid fa-download fa-lg me-2"></i><span>Generate
+                Report</span></button>
             <ul class="dropdown-menu">
               <li><a class="dropdown-item text-truncate" href="/dashboard/admin/excel" id='triggerExcel'>Excel</a></li>
-              <li><hr class="dropdown-divider"></li>
+              <li>
+                <hr class="dropdown-divider">
+              </li>
               <li><a class="dropdown-item text-truncate" href="/dashboard/admin/pdf" id="triggerPdf">PDF</a></li>
             </ul>
           </div>
@@ -235,18 +252,19 @@
                     </tr>
                   </thead>
                   <tbody>
-                    
-                    {% if data_karyawan_magang|length > 0 %} 
+
+                    {% if data_karyawan_magang|length > 0 %}
 
                     {% for i in range(0,(data_karyawan_magang|length)) %}
-                    <tr id="{{ data_karyawan_magang[i]._id }}" data-aos='slide-right' data-aos-delay='{{ 500+((i+1)%26*100) }}' data-aos-duration='800'>
+                    <tr id="{{ data_karyawan_magang[i]._id }}" data-aos='slide-right'
+                      data-aos-delay='{{ 500+((i+1)%26*100) }}' data-aos-duration='800'>
                       <td class="poppins-regular">{{ (data.first_table - 1) * data.table_length + (i+1) }}</td>
                       <td class="poppins-regular">{{ data_karyawan_magang[i].nik }}</td>
                       <td class="poppins-regular">{{ data_karyawan_magang[i].nama}}</td>
                       <td class="poppins-regular">{{ data_karyawan_magang[i].email }}</td>
-                      <td class="poppins-regular"><img
-                          src="{{ data_karyawan_magang[i].photo_profile.split(' ')[0] }}" width="50em"
-                          height="50em" alt="{{ data_karyawan_magang[i].photo_profile.split(' ')[1] }}"></td>
+                      <td class="poppins-regular"><img src="{{ data_karyawan_magang[i].photo_profile.split(' ')[0] }}"
+                          width="50em" height="50em" alt="{{ data_karyawan_magang[i].photo_profile.split(' ')[1] }}">
+                      </td>
                       <td class="poppins-regular">{{ data_karyawan_magang[i].departement }}</td>
                       <td class="poppins-regular">{{ data_karyawan_magang[i].tempat_lahir }}</td>
                       <td class="poppins-regular">{{ data_karyawan_magang[i].tanggal_lahir }}</td>
@@ -264,12 +282,13 @@
                           data-bs-target="#viewModal{{ data_karyawan_magang[i]._id }}" class="btn btn-primary"
                           data-bs-toggle="modal"><i class="fa-solid fa-xs text-white fa-user"></i></a></td>
                       <!-- trigger modal edit -->
-                      <td class="poppins-regular"><a href="#" type="button" class="btn btn-success" data-bs-toggle="modal"
-                          id="triggerEditModal" data-bs-target="#editModal{{ data_karyawan_magang[i]._id }}"><i
+                      <td class="poppins-regular"><a href="#" type="button" class="btn btn-success"
+                          data-bs-toggle="modal" id="triggerEditModal"
+                          data-bs-target="#editModal{{ data_karyawan_magang[i]._id }}"><i
                             class="fa-solid fa-xs text-white fa-user-pen"></i></a></td>
                       <!-- trigger delete edit -->
-                      <td class="poppins-regular"><a href="#" type="button" class="btn btn-danger" data-bs-toggle="modal"
-                          data-bs-target="#deleteModal{{ data_karyawan_magang[i]._id }}"><i
+                      <td class="poppins-regular"><a href="#" type="button" class="btn btn-danger"
+                          data-bs-toggle="modal" data-bs-target="#deleteModal{{ data_karyawan_magang[i]._id }}"><i
                             class="fa-solid fa-xs text-white fa-user-minus"></i></a></td>
                     </tr>
 
@@ -344,7 +363,8 @@
                                   <div class="col-1"><span class="fs-5 poppins-medium m-0 w-100">:</span></div>
                                   <div class="col-7">
                                     <p class="text-sm-end text-start fs-5 poppins-medium m-0 w-100">{{
-                                      data_karyawan_magang[i].tempat_lahir}}, {{ data_karyawan_magang[i].tanggal_lahir }}
+                                      data_karyawan_magang[i].tempat_lahir}}, {{ data_karyawan_magang[i].tanggal_lahir
+                                      }}
                                     </p>
                                   </div>
                                 </div>
@@ -394,7 +414,8 @@
                             <div class="modal-header">
                               <h1 class="modal-title fs-5 poppins-medium">Edit Karyawan / Magang {{ i+1
                                 }}</h1>
-                              <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                              <button type="button" class="btn-close" data-bs-dismiss="modal"
+                                aria-label="Close"></button>
                             </div>
                             <!-- body modal -->
                             <div class="modal-body">
@@ -402,12 +423,13 @@
                                 <!-- Input Hidden for Method Override -->
                                 <input type="hidden" name="_method" value="PUT">
                                 <!-- csrf token -->
-                                <input type="hidden" id="csrf_token{{ i+1 }}" name="csrf_token" value="{{ csrf_token() }}" />
+                                <input type="hidden" id="csrf_token{{ i+1 }}" name="csrf_token"
+                                  value="{{ csrf_token() }}" />
 
                                 <!-- nik -->
                                 <div class="form-floating mb-3">
-                                  <input type="number" class="form-control" id="nik" name="nik"
-                                    value="{{ data_karyawan_magang[i].nik }}" readonly>
+                                  <input type="number" class="form-control" id="nik" name="nik" inputmode='numeric'
+                                    value="{{ data_karyawan_magang[i].nik }}">
                                   <label class="poppins-regular" for="nik">Nomor Induk
                                     Kependudukan</label>
                                 </div>
@@ -430,7 +452,8 @@
                                 <div class="form-floating mb-3">
                                   <select class="form-select" id="departement" name="departement"
                                     aria-label="Floating label select example">
-                                    <option value=None {{'selected' if data_karyawan_magang[i].departement=='' else '' }}>
+                                    <option value=None {{'selected' if data_karyawan_magang[i].departement=='' else ''
+                                      }}>
                                       --Pilih
                                       Departement--</option>
                                     <option value="Fullstack Developer" {{'selected' if
@@ -456,7 +479,8 @@
                                 <!-- birthday -->
                                 <div class="form-floating mb-3">
                                   <input type="date" class="form-control" name="tanggal_lahir" id="tanggal_lahir"
-                                    value="{{ data_karyawan_magang[i].tanggal_lahir|format_date if data_karyawan_magang[i].tanggal_lahir else '' }}" readonly>
+                                    value="{{ data_karyawan_magang[i].tanggal_lahir|format_date if data_karyawan_magang[i].tanggal_lahir else '' }}"
+                                    readonly>
                                   <label class="poppins-regular" for="tanggal_lahir">Birthday</label>
                                 </div>
 
@@ -468,8 +492,8 @@
                                       Jobs--</option>
                                     <option value="Karyawan" {{'selected' if data_karyawan_magang[i].jobs=='Karyawan'
                                       else '' }}>Karyawan</option>
-                                    <option value="Magang" {{'selected' if data_karyawan_magang[i].jobs=='Magang' else ''
-                                      }}>Magang</option>
+                                    <option value="Magang" {{'selected' if data_karyawan_magang[i].jobs=='Magang'
+                                      else '' }}>Magang</option>
                                   </select>
                                   <label class="poppins-regular" for="jobs">Status Perusahan</label>
                                 </div>
@@ -533,14 +557,15 @@
                     <!-- end modal -->
 
                     <!-- delete modal -->
-                    <div class="modal fade" id="deleteModal{{ data_karyawan_magang[i]._id }}" tabindex="-1" role="dialog"
-                      aria-labelledby="deleteModalLabel" aria-hidden="true">
+                    <div class="modal fade" id="deleteModal{{ data_karyawan_magang[i]._id }}" tabindex="-1"
+                      role="dialog" aria-labelledby="deleteModalLabel" aria-hidden="true">
                       <div class="modal-dialog" role="document">
                         <div class="modal-content">
                           <form action="/dashboard/admin/delete/{{data_karyawan_magang[i]._id}}" method="post">
                             <div class="modal-header">
                               <h5 class="modal-title poppins-regular" id="deleteModalLabel">Delete Confirmation</h5>
-                              <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                              <button type="button" class="btn-close" data-bs-dismiss="modal"
+                                aria-label="Close"></button>
                             </div>
                             <div class="modal-body">
                               Are you sure want to delete this person data?
@@ -596,9 +621,10 @@
                     </li>
                     {% endif %}
                     {% for i in range(1,data.total_page+1) %}
-                    <li class="paginate_button page-item poppins-light {{ 'active' if i==data['first_table'] else '' }}">
-                      <a href="/dashboard?page_awal={{ i }}&length={{data['table_length']}}"
-                        aria-controls="dataTable" data-dt-idx="1" tabindex="0" class="page-link">
+                    <li
+                      class="paginate_button page-item poppins-light {{ 'active' if i==data['first_table'] else '' }}">
+                      <a href="/dashboard?page_awal={{ i }}&length={{data['table_length']}}" aria-controls="dataTable"
+                        data-dt-idx="1" tabindex="0" class="page-link">
                         {{ i }}
                       </a>
                     </li>
@@ -629,13 +655,113 @@
     </div>
     {% endblock %}
   </div>
+
+  <!-- Add account karyawan -->
+  <div id="addAccountKaryawan" class="position-fixed bottom-0 end-0 translate-middle">
+    <button class="btn btn-pink p-2 rounded" data-bs-toggle="modal" data-bs-title="Create Account Karyawan / Magang"
+      id="triggerAddModal" data-bs-target="#addModal"><i class="fa-solid fa-user-plus fa-lg"></i></button>
+  </div>
+  <!-- Modal add -->
+  <div class="modal fade" id="addModal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog">
+      <div class="modal-content">
+        <form action="/dashboard/admin/add" method="post">
+          <!-- modal header -->
+          <div class="modal-header">
+            <h1 class="modal-title fs-5 poppins-medium text-pink">Add Karyawan / Magang</h1>
+            <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+          </div>
+          <!-- body modal -->
+          <div class="modal-body">
+            <div class="form-floating">
+              <!-- csrf token -->
+              <input type="hidden" id="csrf_token_add" name="csrf_token" value="{{ csrf_token() }}" />
+
+              <!-- nama -->
+              <div class="form-floating mb-3">
+                <input type="text" class="form-control" name="nama" id="nama"
+                  placeholder="Masukkan Nama Lengkap Karyawan / Magang">
+                <label class="poppins-regular" for="nama">Nama Lengkap Karyawan / Magang</label>
+              </div>
+
+              <!-- nik -->
+              <div class="form-floating mb-3">
+                <input type="number" class="form-control" name="nik" id="nik" inputmode="numeric" maxlength="16"
+                  pattern="[0-9]{16}"
+                  placeholder="Masukkan Nik Karyawan / Magang">
+                <label class="poppins-regular" for="nik">NIK Karyawan / Magang</label>
+              </div>
+
+              <!-- email -->
+              <div class="form-floating mb-3">
+                <input type="email" class="form-control" name="email" id="email"
+                  placeholder="Masukkan Email Karyawan / Magang">
+                <label class="poppins-regular" for="email">Email address</label>
+              </div>
+
+              <!-- departement -->
+              <div class="form-floating mb-3">
+                <select class="form-select" id="departement" name="departement"
+                  aria-label="Floating label select example">
+                  <option value=None>
+                    --Pilih
+                    Departement--</option>
+                  <option value="Fullstack Developer">Fullstack Developer</option>
+                  <option value="Web Developer Laravel">
+                    Web Developer Laravel
+                  </option>
+                  <option value="Copywriting">Copywriting</option>
+                </select>
+                <label class="poppins-regular" for="departement">Pilih
+                  Departement</label>
+              </div>
+
+              <!-- Status Perusahaan -->
+              <div class="form-floating mb-3">
+                <select id="jobs" name="jobs" class="form-select">
+                  <option value=None>
+                    --Select
+                    Jobs--</option>
+                  <option value="Karyawan">Karyawan</option>
+                  <option value="Magang">Magang</option>
+                </select>
+                <label class="poppins-regular" for="jobs">Daftar Sebagai? </label>
+              </div>
+
+              <!-- password -->
+              <div class="form-floating mb-3">
+                <input type="password" class="form-control" name="password" id="password"
+                  placeholder="Masukkan Password karyawan / magang">
+                <label class="poppins-regular" for="password">Password</label>
+              </div>
+
+              <!-- confirm password -->
+              <div class="form-floating mb-3">
+                <input type="password" class="form-control" name="password2" id="password2"
+                  placeholder="Masukkan Konfirmasi Password karyawan / magang">
+                <label class="poppins-regular" for="password2">Konfirmasi
+                  Password</label>
+              </div>
+            </div>
+          </div>
+          <div class="modal-footer">
+            <button type="button" type="reset" id="reset" class="btn btn-danger poppins-regular"
+              data-bs-dismiss="modal">Close</button>
+            <input role="button" type="submit" type="submit" id="submit" class="btn btn-primary poppins-regular"
+              value="Add Data"></input>
+          </div>
+        </form>
+      </div>
+    </div>
+  </div>
+  <!-- end modal -->
   {% endif %}
   {% endblock content %}
 </section>
 {% if not (status or msg) %}
 <!-- loading -->
 {% include 'utility/loading.html' %}
-{% endif %}  
+{% endif %}
 {% endblock value_body%}
 
 {% block js_custom %}

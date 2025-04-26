@@ -4,6 +4,7 @@ import os
 from fpdf import FPDF
 import math
 import requests
+from absensiMethod import get_time_zone_now
 
 # convert to pdf
 
@@ -204,8 +205,15 @@ class PDF(FPDF):
                         "C",
                     )
             self.ln(10)
-
+        self.footer()
         return self
+    
+    def footer(self):
+        self.set_y(-10)
+        self.set_font("Times", "I", 6)
+        self.set_text_color(100, 100, 100)
+        export_time = get_time_zone_now()
+        self.cell(0, 5, f"Exported: {export_time}", 0, 0, "R")
 
 
 # convert ke excel

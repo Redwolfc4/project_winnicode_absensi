@@ -2,17 +2,12 @@ import base64
 import datetime
 import jwt
 from bson import ObjectId
-from cryptography.fernet import Fernet
 import requests
 import datetime
 import re
 # import certifi
 from werkzeug.datastructures import FileStorage
 from generate_otp import AbsensiNotify
-
-# Generate a key for encryption (this should be securely stored)
-key = Fernet.generate_key()
-cipher = Fernet(key)
 
 
 # upload img with imgbb
@@ -241,8 +236,10 @@ def unhadir_absensi():
     print(now)
     time_now = now.time()
     print("Server sedang berjalan dilatar belakang")
-    # db.absen_magang.delete_many({'tanggal_hadir':now.strftime('%d %B %Y').lower()})
-
+    
+    # cek nik sudah terissi / belum
+    if users['nik'] == "" and users['nik'] == None and type(users['nik'])==int:
+        return 'Data nik belum terisi';
     # cek table users
     if users:
         for user in users:
