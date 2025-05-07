@@ -1,5 +1,5 @@
 {% extends "index.html" %} {% block title %}
-<title>AbsensiKu | Dashboard Karyawan / Magang</title>
+<title>AbsensiKu | Halaman Utama Karyawan / Magang</title>
 {% endblock %}
 
 <!-- navbar -->
@@ -15,7 +15,7 @@
       </a>
       <div class="offcanvas offcanvas-start bg-dark" data-bs-scroll="true" tabindex="-1" id="navbarSupportedContent">
         <div class="offcanvas-header">
-          <h5 class="offcanvas-title text-pink" id="offcanvasDarkNavbarLabel">Menu Page</h5>
+          <h5 class="offcanvas-title text-pink" id="offcanvasDarkNavbarLabel">Halaman Menu</h5>
           <button type="button" class="btn-close" data-bs-dismiss="offcanvas" aria-label="Close"></button>
         </div>
         <hr class='text-pink' style="opacity:1">
@@ -26,7 +26,7 @@
             <li class="nav-item">
               <a class="nav-link poppins-regular text-pink d-flex align-items-center gap-2 active" href="/dashboard"><i
                   class="fas fa-house-chimney fa-2xl text-primary w-100"
-                  style="font-size: 1em; max-width:20px"></i>Dashboard</a>
+                  style="font-size: 1em; max-width:20px"></i>Halaman Utama</a>
             </li>
             <li class="nav-item">
               <a class="nav-link poppins-regular text-pink d-flex align-items-center gap-2" href="/change-password">
@@ -55,7 +55,7 @@
             <li class="nav-item">
               <a class="nav-link poppins-regular text-pink d-flex align-items-center gap-2" href="/task"><i
                   class="fa-regular fa-pen-to-square fa-2xl text-primary w-100"
-                  style="font-size: 1em; max-width:20px"></i>Task</a>
+                  style="font-size: 1em; max-width:20px"></i>Tugas</a>
             </li>
           </ul>
           {% endblock navbar%}
@@ -130,7 +130,7 @@
               }}</p>
             <p class="card-text" id="departement"><strong>Departement</strong> :
               {{ data.departement }}</p>
-            <p class="card-text" id="jobs"><strong>jobs</strong> : {{ data.jobs
+            <p class="card-text" id="jobs"><strong>Pekerjaan</strong> : {{ data.jobs
               }}</p>
             <p class="card-text" id="date"><strong>Tanggal</strong> : {{
               data.tanggal_sekarang }}</p>
@@ -176,8 +176,8 @@
         <div id="generate-report" class="col-sm-6 col-12">
           <div class="dropdown btn-group w-100 float-end" style="max-width: 15rem;">
             <button type="button" class="text-truncate btn w-100 btn-info dropdown-toggle text-white"
-              data-bs-toggle="dropdown"><i class="fa-solid fa-download fa-lg me-2"></i><span>Generate
-                Report</span></button>
+              data-bs-toggle="dropdown"><i class="fa-solid fa-download fa-lg me-2"></i><span>Buat Laporan
+                </span></button>
             <ul class="dropdown-menu">
               <li><a class="dropdown-item text-truncate" href="/dashboard/admin/excel" id='triggerExcel'>Excel</a></li>
               <li>
@@ -195,7 +195,7 @@
               <!-- length -->
               <div class="col-12 col-md-6">
                 <div class="row" id="dataTable_length">
-                  <label class="col-12 gap-4 align-items-center poppins-regular">Show
+                  <label class="col-12 gap-4 align-items-center poppins-regular">Tampilkan
                     <select name="dataTable_length" id="dataTable_length" aria-controls="dataTable"
                       class="d-inline-block poppins-regular custom-select custom-select-sm form-control form-control-sm"
                       style="color: #212122;">
@@ -204,7 +204,7 @@
                       <option value="25" {{ 'selected' if data.table_length==25 else '' }}>25</option>
                       <option value="50" {{ 'selected' if data.table_length==50 else '' }}>50</option>
                       <option value="100" {{ 'selected' if data.table_length==100 else '' }}>100</option>
-                    </select> entries
+                    </select> entri
                   </label>
                 </div>
               </div>
@@ -212,7 +212,7 @@
               <!-- search -->
               <div class="col-12 col-md-6 d-flex justify-content-start justify-content-md-end align-items-center">
                 <div class="search">
-                  <input type="text" id="search" class="search-input" placeholder="Search..." name="search">
+                  <input type="text" id="search" class="search-input" placeholder="Pencarian..." name="search">
                   <a onclick="search_karyawan()" class="search-icon"> <i class="fa fa-search"></i> </a>
                 </div>
               </div>
@@ -228,27 +228,27 @@
                       <th class="poppins-semibold" rowspan="2">NIK</th>
                       <th class="poppins-semibold" rowspan="2">Nama</th>
                       <th class="poppins-semibold" rowspan="2">Email</th>
-                      <th class="poppins-semibold" rowspan="2">Photo Profile</th>
-                      <th class="poppins-semibold" rowspan="2">Departement</th>
-                      <th class="poppins-semibold" rowspan="2">Born</th>
-                      <th class="poppins-semibold" rowspan="2">Birthday</th>
+                      <th class="poppins-semibold" rowspan="2">Foto Akun</th>
+                      <th class="poppins-semibold" rowspan="2">Departemen</th>
+                      <th class="poppins-semibold" rowspan="2">Tempat Lahir</th>
+                      <th class="poppins-semibold" rowspan="2">Tanggal Lahir</th>
                       <th class="poppins-semibold" rowspan="2">Status</th>
-                      <th class="poppins-semibold" colspan="4">Works</th>
-                      <th class="poppins-semibold" colspan="4">Absen</th>
-                      <th class="poppins-semibold" colspan="3">Action</thcol>
+                      <th class="poppins-semibold" colspan="4">Waktu Kerja</th>
+                      <th class="poppins-semibold" colspan="4">Daftar Absent</th>
+                      <th class="poppins-semibold" colspan="3">Aksi</thcol>
                     </tr>
                     <tr class="table-warning align-middle" style='--bs-table-bg:#efd500'>
-                      <th>Start Date</th>
-                      <th>End Date</th>
-                      <th>Start Time</th>
-                      <th>End Time</th>
-                      <th style="--bs-table-bg:#71ea71">Present</th>
-                      <th style="--bs-table-bg:#71ea71">Late</th>
-                      <th style="--bs-table-bg:#71ea71">Unpresent</th>
-                      <th style="--bs-table-bg:#71ea71">Holiday</th>
-                      <th style="--bs-table-bg:#38e9f2">View</th>
+                      <th>Tanggal Mulai</th>
+                      <th>Tanggal Akhir</th>
+                      <th>Waktu Mulai</th>
+                      <th>Waktu Akhir</th>
+                      <th style="--bs-table-bg:#71ea71">Hadir</th>
+                      <th style="--bs-table-bg:#71ea71">Telat</th>
+                      <th style="--bs-table-bg:#71ea71">Tidak Hadir</th>
+                      <th style="--bs-table-bg:#71ea71">Liburan/izin</th>
+                      <th style="--bs-table-bg:#38e9f2">Lihat</th>
                       <th style="--bs-table-bg:#38e9f2">Edit</th>
-                      <th style="--bs-table-bg:#38e9f2">Delete</th>
+                      <th style="--bs-table-bg:#38e9f2">Hapus</th>
                     </tr>
                   </thead>
                   <tbody>
@@ -298,7 +298,7 @@
                       <div class="modal-dialog modal-lg" role="document">
                         <div class="modal-content">
                           <div class="modal-header">
-                            <h5 class="modal-title fs-2 poppins-regular" id="viewModalLabel">Profil {{
+                            <h5 class="modal-title fs-2 poppins-regular" id="viewModalLabel">Akun {{
                               data_karyawan_magang[i].nama }}</h5>
                             <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
                           </div>
@@ -347,7 +347,7 @@
                                 <!-- divisi -->
                                 <div class="row">
                                   <div class="col-4">
-                                    <h5 class="fs-5 poppins-bold m-0 w-100">Departement</h5>
+                                    <h5 class="fs-5 poppins-bold m-0 w-100">Departemen</h5>
                                   </div>
                                   <div class="col-1"><span class="fs-5 poppins-medium m-0 w-100">:</span></div>
                                   <div class="col-7">
@@ -445,7 +445,7 @@
                                 <div class="form-floating mb-3">
                                   <input type="email" class="form-control" name="email" id="email"
                                     value="{{ data_karyawan_magang[i].email }}" readonly>
-                                  <label class="poppins-regular" for="email">Email address</label>
+                                  <label class="poppins-regular" for="email">Alamat Email</label>
                                 </div>
 
                                 <!-- departement -->
@@ -455,7 +455,7 @@
                                     <option value=None {{'selected' if data_karyawan_magang[i].departement=='' else ''
                                       }}>
                                       --Pilih
-                                      Departement--</option>
+                                      Departemen--</option>
                                     <option value="Fullstack Developer" {{'selected' if
                                       data_karyawan_magang[i].departement=='Fullstack Developer' else '' }}>Fullstack
                                       Developer</option>
@@ -473,7 +473,7 @@
                                 <div class="form-floating mb-3">
                                   <input type="text" class="form-control" name="tempat_lahir" id="tempat_lahir"
                                     value="{{ data_karyawan_magang[i].tempat_lahir }}" readonly>
-                                  <label class="poppins-regular" for="tempat_lahir">Born</label>
+                                  <label class="poppins-regular" for="tempat_lahir">Tempat Lahir</label>
                                 </div>
 
                                 <!-- birthday -->
@@ -481,15 +481,14 @@
                                   <input type="date" class="form-control" name="tanggal_lahir" id="tanggal_lahir"
                                     value="{{ data_karyawan_magang[i].tanggal_lahir|format_date if data_karyawan_magang[i].tanggal_lahir else '' }}"
                                     readonly>
-                                  <label class="poppins-regular" for="tanggal_lahir">Birthday</label>
+                                  <label class="poppins-regular" for="tanggal_lahir">Tanggal Lahir</label>
                                 </div>
 
                                 <!-- Status Perusahaan -->
                                 <div class="form-floating mb-3">
                                   <select id="jobs" name="jobs" class="form-select">
                                     <option value=None {{'selected' if data_karyawan_magang[i].jobs=='' else '' }}>
-                                      --Select
-                                      Jobs--</option>
+                                      --Pilih Pekerjaan--</option>
                                     <option value="Karyawan" {{'selected' if data_karyawan_magang[i].jobs=='Karyawan'
                                       else '' }}>Karyawan</option>
                                     <option value="Magang" {{'selected' if data_karyawan_magang[i].jobs=='Magang'
@@ -506,8 +505,7 @@
                                     <div class="form-floating">
                                       <input type="date" class="form-control" name="start_date" id="start_date"
                                         value="{{ data_karyawan_magang[i].mulai_kerja|format_date if data_karyawan_magang[i].mulai_kerja else '' }}">
-                                      <label class="poppins-regular" for="start_date">Start Date
-                                        Works</label>
+                                      <label class="poppins-regular" for="start_date">Mulai tanggal Kerja</label>
                                     </div>
                                   </div>
 
@@ -516,7 +514,7 @@
                                     <div class="form-floating">
                                       <input type="date" class="form-control" name="end_date" id="end_date"
                                         value="{{ data_karyawan_magang[i].akhir_kerja|format_date if data_karyawan_magang[i].akhir_kerja else '' }}">
-                                      <label class="poppins-regular" for="end_date">End Date Works</label>
+                                      <label class="poppins-regular" for="end_date">Akhir tanggal Kerja</label>
                                     </div>
                                   </div>
                                 </div>
@@ -528,8 +526,7 @@
                                     <div class="form-floating">
                                       <input type="time" class="form-control" name="start_time" id="start_time"
                                         value="{{ data_karyawan_magang[i].waktu_awal_kerja|format_time if data_karyawan_magang[i].waktu_awal_kerja else '' }}">
-                                      <label class="poppins-regular" for="start_time">Start Time
-                                        Works</label>
+                                      <label class="poppins-regular" for="start_time">Waktu mulai kerja</label>
                                     </div>
                                   </div>
 
@@ -538,7 +535,7 @@
                                     <div class="form-floating">
                                       <input type="time" class="form-control" name="end_time" id="end_time"
                                         value="{{ data_karyawan_magang[i].waktu_akhir_kerja|format_time if data_karyawan_magang[i].waktu_akhir_kerja else '' }}">
-                                      <label class="poppins-regular" for="end_time">End Time Works</label>
+                                      <label class="poppins-regular" for="end_time">Waktu akhir kerja</label>
                                     </div>
                                   </div>
                                 </div>
@@ -546,9 +543,9 @@
                             </div>
                             <div class="modal-footer">
                               <button type="button" type="reset" id="reset" class="btn btn-danger poppins-regular"
-                                data-bs-dismiss="modal">Close</button>
+                                data-bs-dismiss="modal">Tutup</button>
                               <input role="button" type="submit" type="submit" id="submit"
-                                class="btn btn-primary poppins-regular"" disabled=" true" value="Save Changes"></input>
+                                class="btn btn-primary poppins-regular"" disabled=" true" value="Simpan Perubahan"></input>
                             </div>
                           </form>
                         </div>
@@ -563,19 +560,19 @@
                         <div class="modal-content">
                           <form action="/dashboard/admin/delete/{{data_karyawan_magang[i]._id}}" method="post">
                             <div class="modal-header">
-                              <h5 class="modal-title poppins-regular" id="deleteModalLabel">Delete Confirmation</h5>
+                              <h5 class="modal-title poppins-regular" id="deleteModalLabel">Konfirmasi Hapus</h5>
                               <button type="button" class="btn-close" data-bs-dismiss="modal"
                                 aria-label="Close"></button>
                             </div>
                             <div class="modal-body">
-                              Are you sure want to delete this person data?
+                              Apakah kamu yakin akan menghapus akun ini?
                               <input type="hidden" name="_method" value="DELETE">
                               <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
                             </div>
                             <div class="modal-footer">
                               <button type="button" class="btn btn-secondary poppins-regular"
-                                data-bs-dismiss="modal">Close</button>
-                              <input type="submit" role="button" class="btn btn-danger poppins-regular" value="Delete">
+                                data-bs-dismiss="modal">Tutup</button>
+                              <input type="submit" role="button" class="btn btn-danger poppins-regular" value="Hapus">
                             </div>
                           </form>
                         </div>
@@ -668,7 +665,7 @@
         <form action="/dashboard/admin/add" method="post">
           <!-- modal header -->
           <div class="modal-header">
-            <h1 class="modal-title fs-5 poppins-medium text-pink">Add Karyawan / Magang</h1>
+            <h1 class="modal-title fs-5 poppins-medium text-pink">Tambah Karyawan / Magang</h1>
             <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
           </div>
           <!-- body modal -->
@@ -696,7 +693,7 @@
               <div class="form-floating mb-3">
                 <input type="email" class="form-control" name="email" id="email"
                   placeholder="Masukkan Email Karyawan / Magang">
-                <label class="poppins-regular" for="email">Email address</label>
+                <label class="poppins-regular" for="email">Alamat Email</label>
               </div>
 
               <!-- departement -->
@@ -705,7 +702,7 @@
                   aria-label="Floating label select example">
                   <option value=None>
                     --Pilih
-                    Departement--</option>
+                    Departemen--</option>
                   <option value="Fullstack Developer">Fullstack Developer</option>
                   <option value="Web Developer Laravel">
                     Web Developer Laravel
@@ -720,8 +717,7 @@
               <div class="form-floating mb-3">
                 <select id="jobs" name="jobs" class="form-select">
                   <option value=None>
-                    --Select
-                    Jobs--</option>
+                    --Pilih Pekerjaan--</option>
                   <option value="Karyawan">Karyawan</option>
                   <option value="Magang">Magang</option>
                 </select>
@@ -746,9 +742,9 @@
           </div>
           <div class="modal-footer">
             <button type="button" type="reset" id="reset" class="btn btn-danger poppins-regular"
-              data-bs-dismiss="modal">Close</button>
+              data-bs-dismiss="modal">Tutup</button>
             <input role="button" type="submit" type="submit" id="submit" class="btn btn-primary poppins-regular"
-              value="Add Data"></input>
+              value="Tambah Data"></input>
           </div>
         </form>
       </div>

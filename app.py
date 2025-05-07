@@ -3108,7 +3108,7 @@ def riwayat_kehadiran():
                 for i in riwayat_absent:
                     # decrypt id riwayat absen
                     i["_id"] = string_to_uuid_like(
-                        str(i["_id"]).encode()
+                        str(i["_id"])  
                     )
 
         # render template riwayat_kehadiran.html
@@ -3351,7 +3351,7 @@ def riwayat_kehadiran_post(path1=None, path2=None):
                         raise Exception("This data is undefined please try again")
 
                     # decript id riwayat absen
-                    absen_magang_id = uuid_like_to_string(path2).encode()
+                    absen_magang_id = uuid_like_to_string(path2)  
 
                     # lakukan validasi email dan id_riwayat_absent
                     if not absen_magang_id or absen_magang_id == "":
@@ -3499,7 +3499,7 @@ def riwayat_bantuan():
         if data_faq_all:
             for i in data_faq_all:
                 i["_id"] = string_to_uuid_like(
-                    str(i["_id"]).encode()
+                    str(i["_id"])  
                 )
                 if not i["_id"]:
                     raise Exception("Terjadi Kesalahan Data dalam encrypt")
@@ -3603,7 +3603,7 @@ def riwayat_bantuan_post():
             )
 
         # decript id riwayat absen
-        status_id = uuid_like_to_string(id_status).encode()
+        status_id = uuid_like_to_string(id_status)  
 
         # pemgambilan data message_id dari db faq
         message_id = db.faq.find_one(
@@ -3802,7 +3802,7 @@ def kelola_admin(path1=None, path2=None):
                     raise Exception("Anda tidak memiliki hak akses")
 
                 # decript id riwayat absen
-                user_admin_id = uuid_like_to_string(id_data_user_admin).encode()
+                user_admin_id = uuid_like_to_string(id_data_user_admin)  
 
                 # cek ada / tidak
                 if not user_admin_id:
@@ -3862,7 +3862,7 @@ def kelola_admin(path1=None, path2=None):
                     return redirect(url_for("signIn", msg="Your request not in page"))
 
                 # decript id user admin id
-                user_admin_id_delete = uuid_like_to_string(path2).encode()
+                user_admin_id_delete = uuid_like_to_string(path2)
 
                 # cek ada / tidak
                 if not user_admin_id_delete:
@@ -3935,7 +3935,7 @@ def kelola_admin(path1=None, path2=None):
         if data_admin_all:
             for i in data_admin_all:
                 i["_id"] = string_to_uuid_like(
-                    str(i["_id"]).encode()
+                    str(i["_id"])
                 )
                 if not i["_id"]:
                     raise Exception("Terjadi Kesalahan Data dalam encrypt")

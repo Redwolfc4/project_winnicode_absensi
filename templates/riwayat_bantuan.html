@@ -53,7 +53,7 @@
       class="nav-link poppins-regular text-pink d-flex align-items-center gap-2"
       href="/task"><i
         class="fa-regular fa-pen-to-square fa-2xl text-primary w-100"
-        style="font-size: 1em; max-width:20px"></i>Task</a>
+        style="font-size: 1em; max-width:20px"></i>Tugas</a>
   </li>
 </ul>
 {% endblock %} {% block content %}
@@ -90,8 +90,8 @@
         <th class="poppins-semibold">No Ticket</th>
         <th class="poppins-semibold">Nama</th>
         <th class="poppins-semibold">Email</th>
-        <th class="poppins-semibold">Jobs</th>
-        <th class="poppins-semibold">Departement</th>
+        <th class="poppins-semibold">Pekerjaan</th>
+        <th class="poppins-semibold">Departemen</th>
         <th class="poppins-semibold">Kendala</th>
         <th class="poppins-semibold">Status</th>
       </tr>
@@ -128,7 +128,7 @@
             style="-webkit-appearance: none; -moz-appearance: none; appearance: none; background-image: none;">
             <option class='text-warning' value="Pending" {% if
               riwayat_bantuan[i-1].status == 'Pending' %}selected{% endif
-              %}>Pending</option>
+              %}>Menunggu</option>
             <option class='text-info' value="Diproses" {% if
               riwayat_bantuan[i-1].status == 'Diproses' %}selected{% endif
               %}>Diproses</option>
@@ -162,6 +162,9 @@
     try {
       $("#table-bantuan").DataTable({
         dom: '<"d-flex flex-column flex-md-row gap-3 justify-content-center justify-content-md-between"<l><f>>tip',
+          language: {
+        url: "{{ url_for('static',filename='/data/id.json') }}"
+      },
         scrollX: true, // Enable horizontal scrolling
         keys: true,
         scrollCollapse: true, // Allow the table to reduce in height if there are fewer rows

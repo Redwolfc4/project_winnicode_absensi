@@ -848,13 +848,6 @@ a:link {
   text-align: center;
 }
 
-#riwayat .dt-length::before{
-  content: 'Select';
-  display: inline-block;
-  vertical-align: middle;
-  margin-right: .5rem;
-}
-
 /* end */
 
 /* kelola admin */
@@ -882,13 +875,6 @@ a:link {
 }
 #kelolaAdmin table.dataTable :is(td,td.dt-type-numeric) {
   text-align: center;
-}
-
-#kelolaAdmin .dt-length::before{
-  content: 'Select';
-  display: inline-block;
-  vertical-align: middle;
-  margin-right: .5rem;
 }
 
 /* end */
@@ -976,13 +962,6 @@ section#faqForm form::-webkit-scrollbar-thumb {
 }
 #riwayat_bantuan table.dataTable :is(td,td.dt-type-numeric) {
   text-align: center;
-}
-
-#riwayat_bantuan .dt-length::before{
-  content: 'Select';
-  display: inline-block;
-  vertical-align: middle;
-  margin-right: .5rem;
 }
 
 #riwayat_bantuan select#status:focus-visible{

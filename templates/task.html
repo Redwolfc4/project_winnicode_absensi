@@ -1,5 +1,5 @@
 {% extends "dashboard_magang.html" %} {% block title %}
-<title>AbsensiKu | Task</title>
+<title>AbsensiKu | Tugas</title>
 {% endblock %} {% block cdn_custom_css %}
 <!-- datatables css link -->
 <link
@@ -87,7 +87,7 @@
             class="nav-link poppins-regular text-pink d-flex align-items-center gap-2 active"
             href="/task"><i
                 class="fa-regular fa-pen-to-square fa-2xl text-primary w-100"
-                style="font-size: 1em; max-width:20px"></i>Task</a>
+                style="font-size: 1em; max-width:20px"></i>Tugas</a>
     </li>
 </ul>
 {% endblock %} {% block content %}
@@ -99,7 +99,7 @@
             data-aos="zoom-in-right"
             data-aos-delay="200"
             data-aos-duration="800">
-            Task Departement
+            Tugas Departemen
         </h1>
         <h1
             id="clock"
@@ -118,7 +118,7 @@
                 class="btn btn-primary {{ 'disabled' if data_user_all|length == 0 else '' }}"
                 data-bs-toggle="modal"
                 data-bs-target="#taskModal">
-                <i class="fas fa-plus"></i> Add Task
+                <i class="fas fa-plus"></i> Tambahkan Tugas
             </button>
         </div>
 
@@ -133,7 +133,13 @@
                     <tr>
                         <th>No</th>
                         {% for th in table_heading %}
-                        <th>{{ th }}</th>
+                        
+                        {% if th == 'jobs' %}
+                            <th>Pekerjaan</th>
+                        {% else %}
+                            <th>{{ th }}</th>
+                        {% endif %}
+                            
                         {% endfor %}
                         {% if path1 not in ('Karyawan', 'Magang') and path1 %}
                         <th>Action</th>
@@ -147,7 +153,7 @@
 
                     <tr class="align-middle"
                         id="{{ tr['_id'] }}"><!--  inisiasi id  -->
-                        <td class="poppins-regular">{{ index+1 }}</td>
+                        <td class="poppins-regular" style='cursor:default'>{{ index+1 }}</td>
 
                         {% if not path1 %}
                         <td class="poppins-regular"><a
@@ -255,9 +261,7 @@
                     <form id="taskForm">
                         <div class="modal-header bg-primary">
                             <h5 class="modal-title poppins-semibold text-white"
-                                id="taskModalLabel">Add
-                                New
-                                Task</h5>
+                                id="taskModalLabel">Tambahkan Tugas Baru</h5>
                             <button
                                 type="button"
                                 class="btn-close"
@@ -273,30 +277,29 @@
                             <!--  nama task -->
                             <div class="mb-3">
                                 <label for="taskName"
-                                    class="form-label">Task
-                                    Name<span
+                                    class="form-label">Nama Tugas<span
                                         class="text-danger">*</span></label>
                                 <input
                                     type="text"
                                     class="form-control"
                                     id="taskName"
-                                    placeholder="Masukkan task name yang tersedia"
+                                    placeholder="Masukkan nama tugas yang tersedia"
                                     required
-                                    oninvalid="this.setCustomValidity('Task Name wajib diisi')"
+                                    oninvalid="this.setCustomValidity('nama tugas wajib diisi')"
                                     oninput="this.setCustomValidity('')" />
                             </div>
                             <!-- deskripsi task -->
                             <div class="mb-3">
                                 <label for="description_task"
-                                    class="form-label">Description Task<span
+                                    class="form-label">Deskripsi Tugas<span
                                         class="text-danger">*</span></label>
                                 <textarea id="description_task"
                                     class="form-control"
                                     cols="30"
                                     rows="2"
-                                    placeholder="Masukkan Deskripsi Task"
+                                    placeholder="Masukkan Deskripsi Tugas"
                                     required
-                                    oninvalid="this.setCustomValidity('Description Task wajib diisi')"
+                                    oninvalid="this.setCustomValidity('Deskripsi tugas wajib diisi')"
                                     oninput="this.setCustomValidity('')"></textarea>
                             </div>
                             <!-- link task -->
@@ -317,29 +320,28 @@
                             <!-- deadline -->
                             <div class="mb-3">
                                 <label for="deadline"
-                                    class="form-label">Deadline<span
+                                    class="form-label">Batas Waktu<span
                                         class="text-danger">*</span></label>
                                 <input
                                     type="datetime-local"
                                     class="form-control"
                                     id="deadline"
                                     required
-                                    oninvalid="this.setCustomValidity('Deadline wajib diisi')"
+                                    oninvalid="this.setCustomValidity('Batas Waktu wajib diisi')"
                                     oninput="this.setCustomValidity('')" />
                             </div>
                             <!-- send to -->
                             <div class="mb-3">
                                 <label for="send_to_user"
-                                    class="form-label">Send To<span
+                                    class="form-label">Kirim kepada<span
                                         class="text-danger">*</span></label>
                                 <select class="form-select"
                                     id="send_to_user"
-                                    aria-placeholder="Masukkan send to user"
+                                    aria-placeholder="Masukkan kirim kepada pekerja (bukan admin/subadmin)"
                                     required
                                     oninvalid="this.setCustomValidity('Wajib dipilih')"
                                     oninput="this.setCustomValidity('')">
-                                    <option value disabled selected>--select
-                                        send to user--</option>
+                                    <option value disabled selected>--Pilih user--</option>
                                     {% for user in data_user_for_add %}
                                     <option
                                         value="{{ user.email }}">{{
@@ -351,38 +353,36 @@
                             <!-- jobs -->
                             <div class="mb-3">
                                 <label for="jobs"
-                                    class="form-label">Jobs<span
+                                    class="form-label">Pekerjaan<span
                                         class="text-danger">*</span></label>
                                 <select class="form-select" id="jobs"
                                     disabled
-                                    aria-placeholder="Masukkan send to user"
+                                    aria-placeholder="Pilih pekerjaannya"
                                     required
                                     oninvalid="this.setCustomValidity('Wajib dipilih')"
                                     oninput="this.setCustomValidity('')">
-                                    <option value disabled selected>--select
-                                        send to user--</option>
+                                    <option value disabled selected>--pilih perkejaannya--</option>
                                 </select>
                             </div>
                             <!-- departement -->
                             <div class="mb-3">
                                 <label for="departement"
-                                    class="form-label">Departement<span
+                                    class="form-label">Departemen<span
                                         class="text-danger">*</span></label>
                                 <select class="form-select" id="departement"
                                     disabled
-                                    aria-placeholder="Masukkan send to user"
+                                    aria-placeholder="Masukkan pilih departemennya"
                                     required
                                     oninvalid="this.setCustomValidity('Wajib dipilih')"
                                     oninput="this.setCustomValidity('')">
-                                    <option value disabled selected>--select
-                                        send to user--</option>
+                                    <option value disabled selected>--pilih departemennya--</option>
                                 </select>
                             </div>
                         </div>
                         <div class="modal-footer">
                             <button type="reset" class="btn btn-danger"
                                 data-bs-dismiss="modal"
-                                aria-label="Close">Cancel</button>
+                                aria-label="Close">Tutup</button>
                             <button type="submit"
                                 class="btn btn-primary">Kirim</button>
                         </div>
@@ -403,13 +403,13 @@
                 <thead>
                     <tr>
                         <th
-                            class="bg-warning poppins-semibold text-white">Pending</th>
+                            class="bg-warning poppins-semibold text-white">Ditunggu</th>
                         <th
-                            class="poppins-semibold bg-secondary text-white">Progress</th>
+                            class="poppins-semibold bg-secondary text-white">Berjalan</th>
                         <th
-                            class="poppins-semibold bg-success text-white">Success</th>
+                            class="poppins-semibold bg-success text-white">Selesai</th>
                         <th
-                            class="poppins-semibold bg-primary text-white">Accepted</th>
+                            class="poppins-semibold bg-primary text-white">Penolakan</th>
                     </tr>
                 </thead>
                 <tbody>
@@ -506,11 +506,10 @@
 
                             {% if user.accepted == True %}
                             <button
-                                class="btn btn-success text-white poppins-regular">Accepted</button>
+                                class="btn btn-success text-white poppins-regular">Project Diterima</button>
                             {% else %}
                             <button
-                                class="btn btn-danger text-white poppins-regular">Not
-                                Accepted</button>
+                                class="btn btn-danger text-white poppins-regular">Project Ditolak</button>
                             {% endif %}
 
                         </td>
@@ -550,6 +549,9 @@
         //initalize datatables
         $('#taskTable').DataTable({
             dom: '<"d-flex flex-column flex-md-row gap-3 justify-content-center justify-content-md-between mb-3"<l><f>>t<"mt-3" <i><p>>',
+            language: {
+                url: "{{ url_for('static',filename='/data/id.json') }}"
+            },
             scrollX:true,
             keys: true,
             scrollCollapse: true, // Allow the table to reduce in height if there are fewer rows
@@ -590,11 +592,11 @@
             //jalankan swall fire dengan customize tadi
             swalWithBootstrapButtons.fire({
                 icon: "warning",
-                title: trId,
-                text: "Are you sure want to delete this task?",
+                title: `Tugas id : ${trId}`,
+                text: "Apakah kamu yakin ingin menghapus data ini?",
                 showCancelButton: true,
-                confirmButtonText: "Yes, delete it!",
-                cancelButtonText: "No, cancel!",
+                confirmButtonText: "Ya, Hapus!",
+                cancelButtonText: "Jangan, Tidak jadi!",
                 reverseButtons: true
             }).then((result)=>{
                 //jika dikonfirmasi
@@ -620,8 +622,8 @@
 
                                         if (xhr.status == 200 && response.redirect){
                                             swalWithBootstrapButtons.fire({
-                                                title: "Deleted!",
-                                                text: "Your task has been deleted.",
+                                                title: "Hapus!",
+                                                text: "Tugas mu telah dihapus",
                                                 icon: "success",
                                                 timer: 3000,
                                                 willClose: function(){
@@ -633,7 +635,7 @@
                                 },
                                 //error
                                 error: function(xhr, status, error) {
-                                    console.error(xhr,status,error);
+                                    console.error(xhr,',',status,',',error);
 
                                     $('section#loading').fadeOut(500,function(){
                                         if(xhr.responseJSON.redirect){
@@ -872,7 +874,7 @@
                     return
                 }
             }
-
+            
             cell.prop('disabled', true); // Disable input temporarily
             // Kirim data ke server
             $.ajax({
@@ -886,7 +888,7 @@
                 }),
                 headers:{
                     'Content-Type':'Application/json',
-                    'X-CSRF-Token   ':'{{ csrf_token() }}'
+                    'X-CSRF-Token':'{{ csrf_token() }}'
                 },
                 success: function (response,status,xhr) {
                     console.log(response,status,xhr)
@@ -899,7 +901,7 @@
                             html: `${msg}`,
                             timer: 3000,
                             willClose: () => {  
-                                console.log('Data updated successfully'),xhr.status;
+                                console.log('Update Data berhasil'),xhr.status;
                             },
                         });
                     }
@@ -907,10 +909,10 @@
                 },
                 error: function (xhr,status,error) {
                     console.log(xhr, status, error);
-                    const url = new URL(xhr.responseJSON.redirect,window.location.origin);
-                    console.log(url)
-                    const msg = url.searchParams.get('msg');
                     if (xhr.responseJSON){
+                        const url = new URL(xhr.responseJSON.redirect,window.location.origin);
+                        console.log(url)
+                        const msg = url.searchParams.get('msg');
                         if (xhr.responseJSON.redirect && xhr.status == 500 && url.pathname !== '/sign-in/'){
                             Swal.fire({
                                 icon: "error",
@@ -918,7 +920,7 @@
                                 html: `${msg}`,
                                 timer: 3000,
                                 willClose: () => {
-                                    console.log('Data updated Failedly'),500;
+                                    console.log('Update data gagal'),500;
                                 },
                             });
                         } else if (xhr.responseJSON.redirect && xhr.status == 500 && url.pathname === '/sign-in/'){
