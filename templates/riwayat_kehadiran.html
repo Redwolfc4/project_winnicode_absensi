@@ -13,7 +13,7 @@
       <a
         class="nav-link poppins-regular text-pink d-flex align-items-center gap-2"
         href="/dashboard"
-        ><i class="fas fa-house-chimney fa-2xl text-primary w-100" style="font-size: 1em; max-width:20px"></i>Dashboard</a
+        ><i class="fas fa-house-chimney fa-2xl text-primary w-100" style="font-size: 1em; max-width:20px"></i>Halaman Utama</a
       >
     </li>
     <li class="nav-item">
@@ -273,7 +273,6 @@
 {% block cdn_custom_js %}
 <!-- datatables cdn js -->
 <script src="https://cdnjs.cloudflare.com/ajax/libs/pdfmake/0.2.7/pdfmake.min.js"></script>
-<!-- <script src="https://cdnjs.cloudflare.com/ajax/libs/pdfmake/0.2.7/vfs_fonts.js"></script> -->
 <script src="{{ url_for('static',filename='js/vfs_font.js') }}"></script>
 <script src="https://cdn.datatables.net/v/bs5/jq-3.7.0/jszip-3.10.1/dt-2.1.8/af-2.7.0/b-3.1.2/b-colvis-3.1.2/b-html5-3.1.2/b-print-3.1.2/cr-2.0.4/date-1.5.4/fc-5.0.3/fh-4.0.1/kt-2.12.1/r-3.0.3/rg-1.5.0/rr-1.5.0/sc-2.4.3/sb-1.8.1/sp-2.3.3/sl-2.1.0/sr-1.4.1/datatables.min.js"></script>
 {% endblock %} {% block js_custom %}
@@ -281,7 +280,7 @@
 <script src="{{ url_for('static', filename='js/index.js') }}"></script>
 <script>
   $(document).ready(function () {
-    const options = parseInt('{{ data.role }}') == 1 ? [0, 1, 2, 3, 4, 5,6] : [0, 1, 2, 3];
+    const options = (parseInt('{{ data.role }}') == 1 && (('{{ data.departement }}'!=='Superuser') && ('{{ data.jobs }}'==='Sub Admin')))? [0, 1, 2, 3, 4, 5,6] : [0, 1, 2, 3];
     //membuat fonts default export
     pdfMake.fonts = {
       Times: {
@@ -306,7 +305,7 @@
       templateHeading =` 
         <header class='d-flex flex-column justify-content-center align-items-center'>
           <h3 class="text-pink poppins-medium">Laporan Winnicode Garuda Terknologi</h3>
-          <h3 class="text-pink poppins-medium">Table Kelola Admin</h3>
+          <h3 class="text-pink poppins-medium">Table Riwayat Kehadiran</h3>
         </header>`
         
       //membuat border dan mealukan penambahan judul
@@ -345,7 +344,7 @@
         alignment: 'center',
         text: [
           { text: 'Laporan Winnicode Garuda Teknologi\n', fontSize: 18, bold: true, color: 'pink' },
-          { text: 'Table Kelola Admin\n\n', fontSize: 15, bold: true, color: 'pink' }
+          { text: 'Table Riwayat Kehadiran Karyawan\n\n', fontSize: 15, bold: true, color: 'pink' }
         ]
       });
 
@@ -407,7 +406,7 @@
 
     // datatables export
     $("#table-riwayat").DataTable({
-      dom: "Blfrtip",
+      dom: (('{{ data.jobs }}'=='Admin') && ('{{ data.departement }}'=='Mentor')) ? "Blfrtip" : "lfrtip",
       language: {
         url: "{{ url_for('static',filename='/data/id.json') }}"
       },

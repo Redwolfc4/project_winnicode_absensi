@@ -172,6 +172,7 @@
       <div class="card-header g-sm-0 g-4 py-3 row align-items-center m-md-0">
         <h6 class="col-sm-6 col-12 m-0 font-weight-bold text-primary poppins-medium">Data Absensi Karyawan dan
           Magang</h6>
+        {% if data.jobs=='Admin' and data.departement=='Mentor' %}
         <!-- trigger add acoount -->
         <div id="generate-report" class="col-sm-6 col-12">
           <div class="dropdown btn-group w-100 float-end" style="max-width: 15rem;">
@@ -187,6 +188,7 @@
             </ul>
           </div>
         </div>
+        {% endif %}
       </div>
       <div class="card-body">
         <div>
