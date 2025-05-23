@@ -2710,30 +2710,30 @@ def dashboardAbsen():
         riwayat_absen = db.absen_magang.find_one(
             {"user_id": ObjectId(userId)}, sort={"_id": -1}
         )
-        print(list(db.absen_magang.find()),ObjectId(userId))
 
         # cek sudah klik button absen / belum sebelumnya
-        if (
-            now.date()
-            <= datetime.datetime.strptime(
-                riwayat_absen["tanggal_hadir"], "%d %B %Y"
-            ).date()
-            and time_now
-            >= datetime.datetime.strptime(riwayat_absen["waktu_hadir"], "%H.%M").time()
-        ):
-            return (
-                jsonify(
-                    {
-                        "result": "unsuccess",
-                        "redirect": url_for(
-                            "dashboard",
-                            msg="Anda sudah absen pada tanggal "
-                            + riwayat_absen["tanggal_hadir"],
-                        ),
-                    }
-                ),
-                200,
-            )
+        if riwayat_absen:
+            if (
+                now.date()
+                <= datetime.datetime.strptime(
+                    riwayat_absen["tanggal_hadir"], "%d %B %Y"
+                ).date()
+                and time_now
+                >= datetime.datetime.strptime(riwayat_absen["waktu_hadir"], "%H.%M").time()
+            ):
+                return (
+                    jsonify(
+                        {
+                            "result": "unsuccess",
+                            "redirect": url_for(
+                                "dashboard",
+                                msg="Anda sudah absen pada tanggal "
+                                + riwayat_absen["tanggal_hadir"],
+                            ),
+                        }
+                    ),
+                    200,
+                )
         # cek status hadir bukan 1 ubah jadi int
         if status_hadir != "1":
             status_hadir = int(status_hadir)
@@ -4704,9 +4704,13 @@ def adminDelete(id):
 
         # The above code is written in Python and it is performing two operations using MongoDB
         # database:
-        result1 = db.users.delete_one({"_id": ObjectId(id)})
+        result1 = db.users.find_one_and_delete({"_id": ObjectId(id)})
         result2 = db.absen_magang.delete_many({"user_id": ObjectId(id)})
         result3 = db.tasks.delete_many({"user_id": ObjectId(id)})
+        result4 = db.angka_notif.delete_many({result1['email']})
+        
+        if not result1:
+            raise Exception("Data user yang akan dihapus tidak ditemukan")
 
         # The above Python code is checking if the `deleted_count` attribute of `result1` is greater
         # than 0 and the `deleted_count` attribute of `result2` is greater than or equal to 0. If both
@@ -4716,6 +4720,7 @@ def adminDelete(id):
             result1.deleted_count > 0
             and result2.deleted_count >= 0
             and result3.deleted_count >= 0
+            and result4.deleted_count >= 0
         ):
             return redirect(
                 url_for(
