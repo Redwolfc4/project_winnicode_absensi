@@ -3494,6 +3494,8 @@ def riwayat_bantuan():
         )
         if not data:
             return redirect(url_for("dashboard", msg="Terjadi kesalahan data"))
+        if not (data['departement']=='Mentor' and data['jobs']=='Admin'):
+            return redirect(url_for("dashboard", msg="Anda tidak memiliki akses"))
         # take data all
         data_faq_all = list(db.faq.find({}))
         if data_faq_all:
