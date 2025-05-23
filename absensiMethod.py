@@ -233,13 +233,9 @@ def unhadir_absensi():
 
     users = list(db.users.find({"role": 3}))  # nanti diubah bisa role 2 dan 3
     now = get_time_zone_now()
-    print(now)
     time_now = now.time()
     print("Server sedang berjalan dilatar belakang")
     
-    # cek nik sudah terissi / belum
-    if users['nik'] == "" and users['nik'] == None and type(users['nik'])==int:
-        return 'Data nik belum terisi';
     # cek table users
     if users:
         for user in users:
@@ -249,6 +245,11 @@ def unhadir_absensi():
             waktu_awal_kerja = user["waktu_awal_kerja"]
             waktu_akhir_kerja = user["waktu_akhir_kerja"]
             user_id = user["_id"]
+            
+             # cek nik sudah terissi / belum
+            if user['nik'] == "" and user['nik'] == None and type(user['nik'])==int:
+                raise Exception('Data nik belum terisi');
+            
             # cek mulai kerja dan akhir kerja user
             if mulai_kerja != "" and akhir_kerja != "":
                 # cek tanggal sekarang dengan rentang kerja

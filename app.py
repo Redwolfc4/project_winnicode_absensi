@@ -2710,6 +2710,7 @@ def dashboardAbsen():
         riwayat_absen = db.absen_magang.find_one(
             {"user_id": ObjectId(userId)}, sort={"_id": -1}
         )
+        print(list(db.absen_magang.find()),ObjectId(userId))
 
         # cek sudah klik button absen / belum sebelumnya
         if (
@@ -2780,12 +2781,12 @@ def dashboardAbsen():
         return jsonify({"redirect": url_for("signIn", msg="Session Kadaluarsa")}), 500
     except jwt.DecodeError:
         return jsonify({"redirect": url_for("signIn", msg="Anda telah logout")}), 500
-    except Exception as e:
-        if not e.args:
-            e.args = [
-                "terjadi kesalahan data",
-            ]
-        return jsonify({"redirect": url_for("signIn", msg=f"{e.args[0]}")}), 500
+    # except Exception as e:
+    #     if not e.args:
+    #         e.args = [
+    #             "terjadi kesalahan data",
+    #         ]
+    #     return jsonify({"redirect": url_for("signIn", msg=f"{e.args[0]}")}), 500
 
 
 # change password
@@ -5734,11 +5735,11 @@ def cron_task():
             example:
               message: Terjadi kesalahan saat menghandle cron job pengecekan absensi.
     """
-    try:
-        response = unhadir_absensi()
-        return make_response(jsonify({"message": "success", "data": response}), 200)
-    except Exception as e:
-        return make_response(jsonify({"message": str(e)}), 500)
+    # try:
+    response = unhadir_absensi()
+    return make_response(jsonify({"message": "success", "data": response}), 200)
+    # except Exception as e:
+    #     return make_response(jsonify({"message": str(e)}), 500)
 
 
 # stating app
