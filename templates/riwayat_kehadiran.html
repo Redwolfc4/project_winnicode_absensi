@@ -9,6 +9,7 @@
 
 {% endblock %} {% block navbar %}
   <ul class="navbar-nav me-auto mb-2 mb-lg-0">
+    {% if not (data.departement == 'Mentor' and data.jobs == 'Sub Admin') and data.role == 1 %}
     <li class="nav-item">
       <a
         class="nav-link poppins-regular text-pink d-flex align-items-center gap-2"
@@ -16,6 +17,7 @@
         ><i class="fas fa-house-chimney fa-2xl text-primary w-100" style="font-size: 1em; max-width:20px"></i>Halaman Utama</a
       >
     </li>
+    {% endif %}
     <li class="nav-item">
       <a class="nav-link poppins-regular text-pink d-flex align-items-center gap-2" href="/change-password">
         <i class="fas fa-key fa-2xl text-primary w-100" style="font-size: 1em; max-width:20px"></i>Ubah Password
@@ -77,20 +79,20 @@
     {% if riwayat_absent %}
     <thead>
       <tr>
-        <th {{ 'rowspan=2' if data.role==1 else '' }} class="poppins-semibold">No</th>
+        <th {{ 'rowspan=2' if (data.role==1 and data.departement=='Mentor' and data.jobs=='Admin') else '' }} class="poppins-semibold">No</th>
         {% if data.role==1 and data.jobs in ('Admin','Sub Admin') %}
-        <th rowspan="2" class="poppins-semibold">Nik</th>
-        <th rowspan="2" class="poppins-semibold">Email</th>
-        <th rowspan="2" class="poppins-semibold">Nama Lengkap</th>
+        <th {{ 'rowspan=2' if(data.departement=='Mentor' and data.jobs=='Admin') else '' }} class="poppins-semibold">Nik</th>
+        <th {{ 'rowspan=2' if(data.departement=='Mentor' and data.jobs=='Admin') else '' }} class="poppins-semibold">Email</th>
+        <th {{ 'rowspan=2' if(data.departement=='Mentor' and data.jobs=='Admin') else '' }} class="poppins-semibold">Nama Lengkap</th>
         {% endif %}
-        <th {{ 'rowspan=2' if data.role==1 else '' }}  class="poppins-semibold">Tanggal Hadir</th>
-        <th {{ 'rowspan=2' if data.role==1 else '' }}  class="poppins-semibold">Waktu Hadir</th>
-        <th {{ 'rowspan=2' if data.role==1 else '' }}  class="poppins-semibold">Status Hadir</th>
-        {% if data.role==1 and data.jobs in ('Admin','Sub Admin') %}
+        <th {{ 'rowspan=2' if (data.role==1 and data.departement=='Mentor' and data.jobs=='Admin') else '' }}  class="poppins-semibold">Tanggal Hadir</th>
+        <th {{ 'rowspan=2' if (data.role==1 and data.departement=='Mentor' and data.jobs=='Admin') else '' }}  class="poppins-semibold">Waktu Hadir</th>
+        <th {{ 'rowspan=2' if (data.role==1 and data.departement=='Mentor' and data.jobs=='Admin') else '' }}  class="poppins-semibold">Status Hadir</th>
+        {% if data.role==1 and data.jobs in ('Admin') and data.departement=='Mentor' %}
         <th colspan="2">Aksi</th>
         {% endif %}
       </tr>
-      {% if data.role==1 and data.jobs in ('Admin','Sub Admin') %}
+      {% if data.role==1 and data.jobs in ('Admin') and data.departement=='Mentor' %}
       <tr>
         <th>Edit</th>
         <th>Hapus</th>
@@ -121,7 +123,7 @@
             {{ 'hadir' if riwayat_absent[i-1].status_hadir == '1' else 'Telat' if riwayat_absent[i-1].status_hadir == 2 else 'Tidak Hadir' if riwayat_absent[i-1].status_hadir == 0 else 'Cuti' }}
           </button>
         </td>
-        {% if data.role==1 and data.jobs in ('Admin','Sub Admin') %}
+        {% if data.role==1 and data.jobs =='Admin' and data.departement=='Mentor' %}
         <!-- trigger modal edit -->
         <td class="poppins-regular align-middle">
           <a

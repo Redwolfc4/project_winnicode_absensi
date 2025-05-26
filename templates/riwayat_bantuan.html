@@ -163,10 +163,37 @@
   $(document).ready(function () {
     try {
       $("#table-bantuan").DataTable({
-        dom: '<"d-flex flex-column flex-md-row gap-3 justify-content-center justify-content-md-between"<l><f>>tip',
-          language: {
-        url: "{{ url_for('static',filename='/data/id.json') }}"
-      },
+        dom: 'B<"d-flex flex-column flex-md-row gap-3 justify-content-center justify-content-md-between"<l><f>>tip',
+        language: {
+          url: "{{ url_for('static',filename='/data/id.json') }}"
+        },
+        buttons: [
+          {
+            extend: "copy",
+            text: '<i class="fas fa-copy"></i> Copy', // Tambahkan ikon FontAwesome
+            className: "btn btn-primary",
+          },
+          {
+            extend: "csv",
+            text: '<i class="fas fa-file-csv"></i> CSV',
+            className: "btn btn-warning",
+          },
+          {
+            extend: "excel",
+            text: '<i class="fas fa-file-excel"></i> Excel',
+            className: "btn btn-success",
+          },
+          {
+            extend: "pdf",
+            text: '<i class="fas fa-file-pdf"></i> PDF',
+            className: "btn btn-danger",
+          },
+          {
+            extend: "print",
+            text: '<i class="fas fa-print"></i> Print',
+            className: "btn btn-info",
+          },
+        ],
         scrollX: true, // Enable horizontal scrolling
         keys: true,
         scrollCollapse: true, // Allow the table to reduce in height if there are fewer rows

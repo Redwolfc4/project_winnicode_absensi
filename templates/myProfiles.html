@@ -14,7 +14,12 @@
         <nav aria-label="breadcrumb">
           <ol class="breadcrumb mb-0">
             <li class="breadcrumb-item poppins-medium">
+              {% if data.departement!='Mentor' and data.jobs!='Sub Admin' and
+              data.role==1 %}
               <a href="/dashboard">Dashboard</a>
+              {% else %}
+              <a href="/task">Task</a>
+              {% endif %}
             </li>
             <li class="breadcrumb-item poppins-medium active">Akun Saya</li>
           </ol>

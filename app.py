@@ -2555,6 +2555,8 @@ def dashboard():
         # bagian admin
         elif data["role"] == 1:
             if data["jobs"] == "Admin" or data["jobs"] == "Sub Admin":
+                if data['departement'] == 'Mentor' and data['jobs'] == 'Sub Admin' :
+                    return redirect(url_for('task'))
                 # panjang table awal
                 first_table = request.args.get("page_awal", 1, type=int)
                 # panjang table

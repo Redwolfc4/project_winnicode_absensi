@@ -23,11 +23,13 @@
           {% block navbar %}
 
           <ul class="navbar-nav me-auto mb-2 mb-lg-0">
+            {% if not (data.departement == 'Mentor' and data.jobs == 'Sub Admin') and data.role == 1 %}
             <li class="nav-item">
               <a class="nav-link poppins-regular text-pink d-flex align-items-center gap-2 active" href="/dashboard"><i
                   class="fas fa-house-chimney fa-2xl text-primary w-100"
                   style="font-size: 1em; max-width:20px"></i>Halaman Utama</a>
             </li>
+            {% endif %}
             <li class="nav-item">
               <a class="nav-link poppins-regular text-pink d-flex align-items-center gap-2" href="/change-password">
                 <i class="fas fa-key fa-2xl text-primary w-100" style="font-size: 1em; max-width:20px"></i>Ubah Password
@@ -239,7 +241,8 @@
                       <th class="poppins-semibold" rowspan="2">Status</th>
                       <th class="poppins-semibold" colspan="4">Waktu Kerja</th>
                       <th class="poppins-semibold" colspan="4">Daftar Absent</th>
-                      <th class="poppins-semibold" colspan="3">Aksi</thcol>
+                      <th class="poppins-semibold" colspan={{ "3" if(data.departement=='Mentor' and data.jobs=='Admin' and data.role==1) else "" }}>Aksi</thcol>
+                        
                     </tr>
                     <tr class="table-warning align-middle" style='--bs-table-bg:#efd500'>
                       <th>Tanggal Mulai</th>
@@ -251,8 +254,10 @@
                       <th style="--bs-table-bg:#71ea71">Tidak Hadir</th>
                       <th style="--bs-table-bg:#71ea71">Liburan/izin</th>
                       <th style="--bs-table-bg:#38e9f2">Lihat</th>
+                      {% if data.departement=='Mentor' and data.jobs=='Admin' and data.role==1 %}
                       <th style="--bs-table-bg:#38e9f2">Edit</th>
                       <th style="--bs-table-bg:#38e9f2">Hapus</th>
+                      {% endif %}
                     </tr>
                   </thead>
                   <tbody>
@@ -285,6 +290,7 @@
                       <td class="poppins-regular"><a type="button" id="triggerviewModal"
                           data-bs-target="#viewModal{{ data_karyawan_magang[i]._id }}" class="btn btn-primary"
                           data-bs-toggle="modal"><i class="fa-solid fa-xs text-white fa-user"></i></a></td>
+                      {% if data.departement=='Mentor' and data.jobs=='Sub Admin' and data.role==1 %}
                       <!-- trigger modal edit -->
                       <td class="poppins-regular"><a href="#" type="button" class="btn btn-success"
                           data-bs-toggle="modal" id="triggerEditModal"
@@ -294,6 +300,7 @@
                       <td class="poppins-regular"><a href="#" type="button" class="btn btn-danger"
                           data-bs-toggle="modal" data-bs-target="#deleteModal{{ data_karyawan_magang[i]._id }}"><i
                             class="fa-solid fa-xs text-white fa-user-minus"></i></a></td>
+                      {% endif %}
                     </tr>
 
                     <!-- modal view -->
