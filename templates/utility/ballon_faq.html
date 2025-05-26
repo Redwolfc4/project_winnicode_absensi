@@ -65,7 +65,7 @@
     </div>
     <!-- Select Jobs -->
     <div class="mb-3">
-      <label for="jobs" class="form-label poppins-medium">Jobs</label>
+      <label for="jobs" class="form-label poppins-medium">Pekerjaan</label>
       <select id="jobs" class="form-select" required>
         <option class="poppins-light" value="" disabled selected>
           Pilih pekerjaan
@@ -179,12 +179,14 @@
         headers: {
           "X-CSRF-TOKEN": csrf_token,
         },
-        contentType:'application/json',
+        contentType: "application/json",
         success: function (response) {
           window.location.replace(response.redirect);
         },
         error: function (err) {
-          window.location.replace(`/signin?msg=Terjadi kesalahan, silahkan coba lagi`);
+          window.location.replace(
+            `/signin?msg=Terjadi kesalahan, silahkan coba lagi`
+          );
         },
       });
     });

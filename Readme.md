@@ -2,14 +2,13 @@
 ![Logo](https://i.ibb.co.com/Nr4prRB/absensiku-logo.png)
 
 
-[![GitHub Watchers](https://img.shields.io/github/watchers/RedwolfC4/project_winnicode_absensi?style=flat&logo=github)](https://github.com/RedwolfC4/project_winnicode_absensi/watchers) [![GitHub Stars](https://img.shields.io/github/stars/RedwolfC4/project_winnicode_absensi?style=flat&logo=github)](https://github.com/RedwolfC4/project_winnicode_absensi/stargazers) [![GitHub Forks](https://img.shields.io/github/forks/RedwolfC4/project_winnicode_absensi?style=flat&logo=github)](https://github.com/RedwolfC4/project_winnicode_absensi/network/members)
-
-![Python](https://img.shields.io/badge/Python_3.12.5-3776AB?style=flat&logo=python&logoColor=white)
+[![GitHub Watchers](https://img.shields.io/github/watchers/RedwolfC4/project_winnicode_absensi?style=flat&logo=github)](https://github.com/RedwolfC4/project_winnicode_absensi/watchers) [![GitHub Stars](https://img.shields.io/github/stars/RedwolfC4/project_winnicode_absensi?style=flat&logo=github)](https://github.com/RedwolfC4/project_winnicode_absensi/stargazers) [![GitHub Forks](https://img.shields.io/github/forks/RedwolfC4/project_winnicode_absensi?style=flat&logo=github)](https://github.com/RedwolfC4/project_winnicode_absensi/network/members)![Python](https://img.shields.io/badge/Python_3.12.5-3776AB?style=flat&logo=python&logoColor=white)
 ![HTML5](https://img.shields.io/badge/HTML5-E34F26?style=flat&logo=html5&logoColor=white)
 ![CSS3](https://img.shields.io/badge/CSS3-1572B6?style=flat&logo=css3&logoColor=white)
 ![JavaScript](https://img.shields.io/badge/JavaScript-F7DF1E?style=flat&logo=javascript&logoColor=black)
 ![jQuery](https://img.shields.io/badge/jQuery_3.7.1-0769AD?style=flat&logo=jquery&logoColor=white)
 ![Bootstrap](https://img.shields.io/badge/Bootstrap_5.3.3-563D7C?style=flat&logo=bootstrap&logoColor=white)
+
 # AbsensiKu Project`s
 
 &nbsp;&nbsp;&nbsp;Merupakan sebuah proyek website absensi yang berguna untuk otomatisasi kehadiran dalam meningkatkan efisiensi, transparansi dan akurasi pengelolaan waktu dan kehadiran karyawan serta memungkinkan pengelolaan sumber daya manusia yang lebih optimal. Fitur yang ditawarkan berbagai macam mulai dari rekap kehadiran sampai progress tugas yang diberikan serta website ini dikembangkan dengan menggunakan framework **Flask**.
@@ -80,8 +79,8 @@ Dalam menjalankan project ini, kamu perlu menggantikan `.env_copy` menjadi `.env
 - **Python**, melakukan instalasi terlebih dahulu versi [3.12.5](https://www.python.org/downloads/release/python-3125/). untuk cara downloadnya bisa [klik disini](https://dqlab.id/cara-download-python-lengkap-dengan-panduan-setupnya)
 - **Visual Studio Code**, versi berapapun. untuk cara downloadnya bisa [klik disini](https://www.elztech.com/cara-download-dan-installasi-visual-studio-code/)
 - **Browser**
-- **MongoDb Account**, melakukan pembuatan akun MongoDb terlebih dahulu. untuk cara downloadnya bisa [klik disini](https://youtu.be/2_98lTrB5NI?si=0aH2uL3DCRozgC9n)
-- **ImgBB**, melakukan pembuatan akun imgbb terlebih dahulu. [klik disini](https://imgbb.com/)
+- **MongoDb Account**, melakukan pembuatan akun MongoDb terlebih dahulu. untuk cara downloadnya bisa [klik disini](https://youtu.be/2_98lTrB5NI?si=0aH2uL3DCRozgC9n) dan melakukan copy url [disini langkahnya](https://youtu.be/daMxiBS0odk?si=RddUBy8T0spblCnO)
+- **ImgBB**, melakukan pembuatan akun imgbb terlebih dahulu. [klik disini](https://imgbb.com/) kemudian copy keynya [disini](https://imgbb.com/account/settings/api) untuk cara downloadnya bisa [klik disini](https://youtu.be/xYOUJHXHj1s?si=9bKGEdrVDSFxQsvE)
 ## Run Locally
 
 Clone the project
@@ -129,28 +128,8 @@ pip install -r requirements.txt
 ```
 
 Konfigurasi Environtment Variabel
-```bash
-#pastikan .env_copy sudah diubah dan diisi 
-#seperti ini (sementara untuk penilaian saja)
-
-MONGODB_URL = "mongodb+srv://kholik:kholik123@cluster0.p6hau.mongodb.net/?retryWrites=true&w=majority&appName=Cluster0"
-SECRET_KEY = 'absensi'
-GMAIL_SCOPE = 'https://www.googleapis.com/auth/gmail.modify'
-GMAIL_SENDER="Winnicode Admin <salahudinkoliq21@gmail.com>"
-
-# ini bagian dari credentials.json
-GOOGLE_CLIENT_ID='965317114444-e49ajleqs55v0irb706d6fhfo2jfct0s.apps.googleusercontent.com'
-GOOGLE_PROJECT_ID='iron-axon-408902'
-GOOGLE_AUTH_URI='https://accounts.google.com/o/oauth2/auth'
-GOOGLE_TOKEN_URI='https://oauth2.googleapis.com/token'
-GOOGLE_AUTH_PROVIDER_CERT_URL='https://www.googleapis.com/oauth2/v1/certs'
-GOOGLE_CLIENT_SECRET='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'
-GOOGLE_REDIRECT_URIS='http://localhost:8080'
-IMGBB_API_KEY = '0891e07dbfdd61c7d0d0f4982ef68fdc'
-
-# api key swagger dari Koliq12052003
-API_KEY_SWAGGER = '13e36257991ff5ded890f214c6bf4d9ec067521cf5bf7d00450e3d76b015ba06' 
-```
+&nbsp;&nbsp;&nbsp;silahkan melakukan perubahan .env_local menjadi .env file lalu konfigurasi. untuk melakukan
+konfigurasi anda dapat menghubungi saya melalui [whatsapp](wa.me/62895359530117?text=saya%20ingin%20meminta%20credential%20anda?) atau [email saya](mailto:salahudinkoliq10@gmail.com) dikarenakan bersifat kredensial dan tidak bisa diunggah ke github.
 
 
 Start the server

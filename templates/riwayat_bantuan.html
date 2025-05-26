@@ -13,7 +13,7 @@
       class="nav-link poppins-regular text-pink d-flex align-items-center gap-2"
       href="/dashboard"><i
         class="fas fa-house-chimney fa-2xl text-primary w-100"
-        style="font-size: 1em; max-width:20px"></i>Dashboard</a>
+        style="font-size: 1em; max-width:20px"></i>Halaman Utama</a>
   </li>
   <li class="nav-item">
     <a
@@ -32,6 +32,7 @@
       Karyawan</a>
   </li>
   {% if data.role==1 %}
+  {% if data.departement=='Mentor' and data.jobs=='Admin' %}
   <li class="nav-item">
     <a
       class="nav-link poppins-regular text-pink  d-flex align-items-center gap-2 active"
@@ -39,6 +40,7 @@
         class="fas fa-circle-question fa-2xl text-primary w-100"
         style="font-size: 1em; max-width:20px"></i> Riwayat Bantuan</a>
   </li>
+  {% endif %}
   {% if data.departement == 'Superuser' %}
   <li class="nav-item">
     <a
@@ -53,7 +55,7 @@
       class="nav-link poppins-regular text-pink d-flex align-items-center gap-2"
       href="/task"><i
         class="fa-regular fa-pen-to-square fa-2xl text-primary w-100"
-        style="font-size: 1em; max-width:20px"></i>Task</a>
+        style="font-size: 1em; max-width:20px"></i>Tugas</a>
   </li>
 </ul>
 {% endblock %} {% block content %}
@@ -90,8 +92,8 @@
         <th class="poppins-semibold">No Ticket</th>
         <th class="poppins-semibold">Nama</th>
         <th class="poppins-semibold">Email</th>
-        <th class="poppins-semibold">Jobs</th>
-        <th class="poppins-semibold">Departement</th>
+        <th class="poppins-semibold">Pekerjaan</th>
+        <th class="poppins-semibold">Departemen</th>
         <th class="poppins-semibold">Kendala</th>
         <th class="poppins-semibold">Status</th>
       </tr>
@@ -128,7 +130,7 @@
             style="-webkit-appearance: none; -moz-appearance: none; appearance: none; background-image: none;">
             <option class='text-warning' value="Pending" {% if
               riwayat_bantuan[i-1].status == 'Pending' %}selected{% endif
-              %}>Pending</option>
+              %}>Menunggu</option>
             <option class='text-info' value="Diproses" {% if
               riwayat_bantuan[i-1].status == 'Diproses' %}selected{% endif
               %}>Diproses</option>
@@ -161,7 +163,37 @@
   $(document).ready(function () {
     try {
       $("#table-bantuan").DataTable({
-        dom: '<"d-flex flex-column flex-md-row gap-3 justify-content-center justify-content-md-between"<l><f>>tip',
+        dom: 'B<"d-flex flex-column flex-md-row gap-3 justify-content-center justify-content-md-between"<l><f>>tip',
+        language: {
+          url: "{{ url_for('static',filename='/data/id.json') }}"
+        },
+        buttons: [
+          {
+            extend: "copy",
+            text: '<i class="fas fa-copy"></i> Copy', // Tambahkan ikon FontAwesome
+            className: "btn btn-primary",
+          },
+          {
+            extend: "csv",
+            text: '<i class="fas fa-file-csv"></i> CSV',
+            className: "btn btn-warning",
+          },
+          {
+            extend: "excel",
+            text: '<i class="fas fa-file-excel"></i> Excel',
+            className: "btn btn-success",
+          },
+          {
+            extend: "pdf",
+            text: '<i class="fas fa-file-pdf"></i> PDF',
+            className: "btn btn-danger",
+          },
+          {
+            extend: "print",
+            text: '<i class="fas fa-print"></i> Print',
+            className: "btn btn-info",
+          },
+        ],
         scrollX: true, // Enable horizontal scrolling
         keys: true,
         scrollCollapse: true, // Allow the table to reduce in height if there are fewer rows

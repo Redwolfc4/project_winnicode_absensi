@@ -27,11 +27,14 @@
     >
   </li>
   {% if data.role==1 %}
+  
+  {% if data.departement=='Mentor' and data.jobs=='Admin' %}
   <li class="nav-item">
     <a class="nav-link poppins-regular text-pink  d-flex align-items-center gap-2" href="/riwayat-bantuan"
-      ><i class="fas fa-circle-question fa-2xl text-primary w-100" style="font-size: 1em; max-width:20px"></i> Riwayat Bantuan</a
+    ><i class="fas fa-circle-question fa-2xl text-primary w-100" style="font-size: 1em; max-width:20px"></i> Riwayat Bantuan</a
     >
   </li>
+  {% endif %}
   {% if data.departement == 'Superuser' %}
   <li class="nav-item">
     <a class="nav-link poppins-regular text-pink d-flex align-items-center gap-2 active" href="/kelola-admin"><i class="fas fa-user-tie fa-2xl text-primary w-100" style="font-size: 1em; max-width:20px"></i>Kelola Admin</a>
@@ -68,7 +71,7 @@
   <div class="row mb-3">
     <div id="generate-report" class="col-12">
       <div class="dropdown btn-group w-100 float-end" style="max-width: 15rem;">
-        <button type="button" class="text-truncate btn w-100 btn-info dropdown-toggle text-white" data-bs-toggle="dropdown"><i class="fa-solid fa-download fa-lg me-2"></i><span>Generate Report</span></button>
+        <button type="button" class="text-truncate btn w-100 btn-info dropdown-toggle text-white" data-bs-toggle="dropdown"><i class="fa-solid fa-download fa-lg me-2"></i><span>Buat Laporan</span></button>
         <ul class="dropdown-menu w-100">
           <li><a class="dropdown-item text-truncate" href="/kelola-admin/excel">Excel</a></li>
           <li><hr class="dropdown-divider"></li>
@@ -92,10 +95,10 @@
         <th rowspan=2 class="poppins-semibold">No</th>
         <th rowspan=2 class="poppins-semibold">Nama</th>
         <th rowspan=2 class="poppins-semibold">Email</th>
-        <th rowspan=2 class="poppins-semibold">Departement</th>
-        <th rowspan=2 class="poppins-semibold">Jobs</th>
+        <th rowspan=2 class="poppins-semibold">Departemen</th>
+        <th rowspan=2 class="poppins-semibold">Pekerjaan</th>
         <th rowspan=2 class="poppins-semibold">Foto Profile</th>
-        <th colspan=2 class="poppins-semibold">Action</th>
+        <th colspan=2 class="poppins-semibold">Aksi</th>
       </tr>
       <tr>
         <th>Edit</th>
@@ -117,7 +120,7 @@
         <td class="poppins-regular align-middle">{{ data_user_admin[i-1].jobs }}</td>
         <td class="poppins-regular align-middle"><img src="{{ data_user_admin[i-1].photo_profile.split(' ')[0] }}" alt="{{ data_user_admin[i-1].photo_profile.split(' ')[1] }}" width="50em"
           height="50em"></td>
-        {% if data.role==1 and data.jobs=='Admin' and data.departement=='Superuser' %}
+        {% if data.role==1 and data.jobs in ('Admin','Sub Admin') and data.departement=='Superuser' %}
         <!-- trigger modal edit -->
         <td class="poppins-regular align-middle">
           <a
@@ -198,8 +201,7 @@
                   <div class="form-floating mb-3">
                     <select id="jobs" name="jobs" class="form-select">
                       <option value='' {{ 'selected' if data_user_admin[i-1].jobs=='' else '' }}>
-                        --Select
-                        Jobs--</option>
+                        --Pilih Pekerjaan--</option>
                       <option value="Admin" {{ 'selected' if data_user_admin[i-1].jobs=='Admin' else '' }}>Admin</option>
                       <option value="Sub Admin" {{ 'selected' if data_user_admin[i-1].jobs=='Sub Admin' else '' }}>Sub Admin</option>
                     </select>
@@ -209,9 +211,9 @@
               </div>
               <div class="modal-footer">
                 <button type="button" type="reset" id="reset" class="btn btn-danger poppins-regular"
-                  data-bs-dismiss="modal">Close</button>
+                  data-bs-dismiss="modal">tutup</button>
                   <input role="button" type="submit" type="submit" id="submit"
-                  class="btn btn-primary poppins-regular"" disabled="true" value="Save Changes"></input>
+                  class="btn btn-primary poppins-regular"" disabled="true" value="Simpan Perubahan"></input>
               </div>
             </form>
           </div>
@@ -236,7 +238,7 @@
             >
               <div class="modal-header">
                 <h5 class="modal-title poppins-regular" id="deleteModalLabel">
-                  Delete Confirmation
+                  Konfirmasi Hapus
                 </h5>
                 <button
                   type="button"
@@ -246,7 +248,7 @@
                 ></button>
               </div>
               <div class="modal-body">
-                Are you sure want to delete this riwayat absent?
+                Apakah kamu yakin akan menghapus user ini?
                 <input type="hidden" name="_method" value="DELETE" />
                 <input
                   type="hidden"
@@ -260,13 +262,13 @@
                   class="btn btn-secondary poppins-regular"
                   data-bs-dismiss="modal"
                 >
-                  Close
+                  Tutup
                 </button>
                 <input
                   type="submit"
                   role="button"
                   class="btn btn-danger poppins-regular"
-                  value="Delete"
+                  value="Hapus"
                 />
               </div>
             </form>
@@ -280,7 +282,7 @@
   </table>
 </div>
 <div id="addAccountAdmin">
-  <button class="btn btn-pink p-2 rounded" data-bs-toggle="modal" data-bs-title="Create Account Admin"
+  <button class="btn btn-pink p-2 rounded" data-bs-toggle="modal" data-bs-title="Buat Akun Admin"
   id="triggerAddModal" data-bs-target="#addModal"><i class="fa-solid fa-user-plus fa-lg"></i></button>
 </div>
 <!-- Modal add -->
@@ -332,8 +334,7 @@ aria-hidden="true">
             <div class="form-floating mb-3">
               <select id="jobs" name="jobs" class="form-select">
                 <option value=None>
-                  --Select
-                  Jobs--</option>
+                  --Pilih Pekerjaan--</option>
                 <option value="Admin">Admin</option>
                 <option value="Sub Admin">Sub Admin</option>
               </select>
@@ -358,9 +359,9 @@ aria-hidden="true">
         </div>
         <div class="modal-footer">
           <button type="button" type="reset" id="reset" class="btn btn-danger poppins-regular"
-            data-bs-dismiss="modal">Close</button>
+            data-bs-dismiss="modal">Tutup</button>
           <input role="button" type="submit" type="submit" id="submit"
-            class="btn btn-primary poppins-regular" disabled=" true" value="Save Changes"></input>
+            class="btn btn-primary poppins-regular" disabled=" true" value="Tambah"></input>
         </div>
       </form>
     </div>
@@ -384,6 +385,9 @@ aria-hidden="true">
 
     $("#table-admin").DataTable({
       dom: '<"d-flex flex-column flex-md-row gap-3 justify-content-center justify-content-md-between"<l><f>>tip',
+      language: {
+        url: "{{ url_for('static',filename='/data/id.json') }}"
+      },
       scrollX: true, // Enable horizontal scrolling
       keys: true,
       scrollCollapse: true, // Allow the table to reduce in height if there are fewer rows

@@ -2,16 +2,12 @@ import base64
 import datetime
 import jwt
 from bson import ObjectId
-from cryptography.fernet import Fernet
 import requests
 import datetime
 import re
-import certifi
+# import certifi
 from werkzeug.datastructures import FileStorage
-
-# Generate a key for encryption (this should be securely stored)
-key = Fernet.generate_key()
-cipher = Fernet(key)
+from generate_otp import AbsensiNotify
 
 
 # upload img with imgbb
@@ -46,10 +42,6 @@ def upload_to_imgbb(file: FileStorage, imgbb_api_key: str):
     if not file:
         return {"status": "failed", "message": "No file provided"}
 
-    # # Read the image file and encode it to base64
-    # image_data = base64.b64encode(file.read()).decode("utf-8")
-    # print(image_data)
-
     # cek url
     url = "https://api.imgbb.com/1/upload"
     # buat payload
@@ -59,7 +51,6 @@ def upload_to_imgbb(file: FileStorage, imgbb_api_key: str):
     response = requests.post(f"{url}?key={imgbb_api_key}", files=files)
     if response.status_code == 200:
         data = response.json()
-        print(data["status"])
         if data["status"] == 200:
             return {
                 "status": "success",
@@ -87,10 +78,38 @@ def get_time_zone_now(location: str = "asia/jakarta"):
         datetime.datetime(2023, 3, 14, 10, 32, 45)
     """
 
-    url = f"https://www.timeapi.io/api/time/current/zone?timeZone={location}"
-    waktu_str = requests.get(url, verify=certifi.where()).json()["dateTime"]
-    waktu_sekarang = datetime.datetime.fromisoformat(waktu_str)
+    # url = f"https://www.timeapi.io/api/time/current/zone?timeZone={location}"
+    # print(url)
+    # waktu_str = requests.get(url, verify=certifi.where()).json()["dateTime"]
+    # print(waktu_str)
+    # waktu_sekarang = datetime.datetime.fromisoformat(waktu_str)
+    # return waktu_sekarang
+    
+    # import subprocess
+    # import json
+    # command = f'curl -s "https://www.timeapi.io/api/Time/current/zone?timeZone={location}"'
+    # output = subprocess.check_output(command, shell=True)
+    # data = json.loads(output)['dateTime']
+    # print("Waktu:", data)
+    # waktu_sekarang = datetime.datetime.fromisoformat(data)
+    # print(waktu_sekarang)
+    # return waktu_sekarang
+
+    # Zona waktu Indonesia Barat (WIB)
+    import pytz
+    tz = pytz.timezone('Asia/Jakarta')
+
+    # Ambil waktu sekarang dengan timezone Asia/Jakarta
+    waktu_sekarang = datetime.datetime.now(tz)
+    
+    iso_str = waktu_sekarang.isoformat(timespec='microseconds').replace("+07:00", "")
+    print("ISO format:", iso_str)  # Hasil: 2025-04-15T23:08:37.862270
+    
+    waktu_sekarang = datetime.datetime.fromisoformat(iso_str)
+
+    print("Waktu sekarang (WIB):", waktu_sekarang)
     return waktu_sekarang
+    
 
 
 def is_valid_datetime_format(value):
@@ -113,6 +132,78 @@ def is_valid_datetime_format(value):
     # Pola regex untuk "YYYY-MM-DDTHH:MM"
     pattern = r"^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}$"
     return bool(re.match(pattern, value))
+
+
+def countdown_time(a: datetime.datetime, b: datetime.datetime, email: str):
+    from app import db
+
+    """
+    Countdown Timer
+    =
+    API untuk menghitung waktu yang tersisa hingga waktu tertentu.
+
+    Parameter:
+        a (datetime.datetime): Waktu sekarang.
+        b (datetime.datetime): Waktu target.
+        email (str): email target
+    """
+    # inisiasi angka deltanya
+    angka_deltas = [30, 5, 0, -5, -10, -15, -20]
+    angka_delta_pilih = None
+    result = None
+
+    # lakukan synkron terhadap data yang didapat
+    now = a
+    target = b
+    diff = target - now
+
+    # cek apakah angka delta sesuai dengan inisiasi jika ada masuk angka delta pilih
+    for angka_delta in angka_deltas:
+        if angka_delta == 0:
+            if (
+                diff <= datetime.timedelta(seconds=angka_delta)
+                or diff >= datetime.timedelta(seconds=angka_delta)
+                and not diff <= datetime.timedelta(minutes=-5)
+            ):
+                angka_delta_pilih = angka_delta
+        else:
+            if diff <= datetime.timedelta(minutes=angka_delta):
+                angka_delta_pilih = angka_delta
+
+    # cek jika angka_delta pilih diluar kondisi
+    if angka_delta_pilih is None:
+        return False
+
+    # Cari dokumen berdasarkan email
+    existing_doc = db.angka_notif.find_one({"email": email})
+
+    # Jika dokumen ada, cek angka_delta
+    if existing_doc:
+        # Jika angka_delta sama, lewati update
+        if existing_doc.get("angka_delta") == angka_delta_pilih:
+            print("Angka delta sama, tidak ada perubahan.")
+            result = False
+        else:
+            # Update angka_delta jika berbeda
+            result = db.angka_notif.find_one_and_update(
+                {"email": email},
+                {"$set": {"angka_delta": angka_delta_pilih}},
+                return_document=True,
+            )
+            print("Dokumen diperbarui:", result)
+    else:
+        # Jika dokumen tidak ditemukan, tambahkan dokumen baru
+        result = db.angka_notif.insert_one(
+            {"email": email, "angka_delta": angka_delta_pilih}
+        )
+        print("Dokumen baru ditambahkan.")
+
+    # cek berhasil dilakukan atau tidak
+    if not result:
+        return False
+
+    # kirimkan angka delta pilih terbaru untuk dieksekusi ke gmail
+    return angka_delta_pilih
 
 
 # tidak hadir untuk magang / karyawan
@@ -140,20 +231,25 @@ def unhadir_absensi():
 
     from app import db
 
-    users = db.users.find({"role": 3})  # nanti diubah bisa role 2 dan 3
+    users = list(db.users.find({"role": 3}))  # nanti diubah bisa role 2 dan 3
     now = get_time_zone_now()
     time_now = now.time()
     print("Server sedang berjalan dilatar belakang")
-    # db.absen_magang.delete_many({'tanggal_hadir':now.strftime('%d %B %Y').lower()})
-
+    
     # cek table users
     if users:
         for user in users:
+            email_user = user["email"]
             mulai_kerja = user["mulai_kerja"]
             akhir_kerja = user["akhir_kerja"]
+            waktu_awal_kerja = user["waktu_awal_kerja"]
             waktu_akhir_kerja = user["waktu_akhir_kerja"]
             user_id = user["_id"]
-
+            
+             # cek nik sudah terissi / belum
+            if user['nik'] == "" and user['nik'] == None and type(user['nik'])==int:
+                raise Exception('Data nik belum terisi');
+            
             # cek mulai kerja dan akhir kerja user
             if mulai_kerja != "" and akhir_kerja != "":
                 # cek tanggal sekarang dengan rentang kerja
@@ -161,13 +257,27 @@ def unhadir_absensi():
                     riwayat_absen = db.absen_magang.find_one(
                         {"user_id": user_id}, sort={"_id": -1}
                     )  # cek riwayat absen
+
+                    # cek countdown waktu sekarang kurang dari waktu awa kerja
+                    angka_delta_pilih = countdown_time(
+                        a=now,
+                        b=datetime.datetime.strptime(waktu_awal_kerja, "%H.%M"),
+                        email=email_user,
+                    )
+
+                    # jika angka delta piluh tidak false
+                    if angka_delta_pilih:
+                        # kirim ke class absensi notify
+                        AbsensiNotify(email_user, angka_delta_pilih)
+
                     # cek table riwayat absen pernah di insert atau tidak sama sekali sesuai dengan
                     if riwayat_absen:
                         last_absen = datetime.datetime.strptime(
                             riwayat_absen["tanggal_hadir"], "%d %B %Y"
                         )
-                        # apakah tanggal riwayat sama dengan sekarang
+                        # apakah tanggal riwayat kurang dari sekarang
                         if last_absen.date() < now.date():
+
                             # apakah jam riwayat lebih dari waktu akhir kerja
                             if (
                                 time_now
@@ -200,6 +310,18 @@ def unhadir_absensi():
                                 )
                     # non riwayat absen
                     else:
+                        # cek countdown waktu sekarang kurang dari waktu awa kerja
+                        angka_delta_pilih = countdown_time(
+                            a=now,
+                            b=datetime.datetime.strptime(waktu_awal_kerja, "%H.%M"),
+                            email=email_user,
+                        )
+
+                        # jika angka delta piluh tidak false
+                        if angka_delta_pilih:
+                            # kirim ke class absensi notify
+                            AbsensiNotify(email_user, angka_delta_pilih)
+
                         # apakah jam riwayat lebih dari waktu akhir kerja
                         if (
                             time_now
@@ -230,6 +352,9 @@ def unhadir_absensi():
                                     }
                                 },
                             )
+        print('jalan')
+
+    return "berhasil ya!"
 
 
 # lakukan sigin payload

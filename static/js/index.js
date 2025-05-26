@@ -302,7 +302,7 @@ notifAbsen = () => {
           });
           clearInterval(countdown);
         }
-        // Jika waktu tersisa 20 menit setelah absensi dibuka, kirim notifikasi browser
+        // Jika waktu tersisa 10 menit setelah absensi dibuka, kirim notifikasi browser
         else if (
           countdownTime >= -10 * 60 &&
           Notification.permission === "granted" &&
@@ -313,7 +313,7 @@ notifAbsen = () => {
             body: "Waktu absensi sudah memasuki 10 menitan, segera lakukan absensi!",
           });
         }
-        // Jika waktu tersisa 20 menit setelah absensi dibuka, kirim notifikasi browser
+        // Jika waktu tersisa 15 menit setelah absensi dibuka, kirim notifikasi browser
         else if (
           countdownTime >= -15 * 60 &&
           Notification.permission === "granted" &&

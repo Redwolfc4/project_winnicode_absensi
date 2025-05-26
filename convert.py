@@ -3,6 +3,8 @@ from openpyxl.drawing.image import Image
 import os
 from fpdf import FPDF
 import math
+import requests
+from absensiMethod import get_time_zone_now
 
 # convert to pdf
 
@@ -64,7 +66,7 @@ class PDF(FPDF):
             "C",
         )
         if currentPage == "Kelola Admin":
-            self.set_margins(self.__margin_x + 55, self.__margin_x, self.__margin_x)
+            self.set_margins(self.__margin_x + 71, self.__margin_x, self.__margin_x)
         else:
             self.set_margins(self.__margin_x, self.__margin_x, self.__margin_x)
         self.ln(10)
@@ -133,12 +135,34 @@ class PDF(FPDF):
                 # The above code is checking if the variable `data_cell_value` is a string and if it
                 # ends with either '.png', '.jpg', or '.jpeg'. If both conditions are true, the code
                 # block inside the if statement will be executed.
-                if isinstance(data_cell_value, str) and data_cell_value.endswith(
-                    (".png", ".jpg", ".jpeg")
-                ):
-                    img_path = os.path.join(app.root_path, "static/") + str(
-                        data_cell_value
+                if (
+                    isinstance(data_cell_value, str)
+                    and (
+                        data_cell_value.startswith("http://")
+                        or data_cell_value.startswith("https://")
                     )
+                    and data_cell_value.endswith((".png", ".jpg", ".jpeg"))
+                ):
+                    # inisiasi
+                    img_path = None
+
+                    # Unduh gambar dari URL
+                    response = requests.get(data_cell_value, stream=True)
+                    if response.status_code == 200:
+                        # Jika tidak bisa menulis ke folder static, simpan ke /tmp
+                        print(
+                            "Tidak dapat menulis ke folder static. Menyimpan ke /tmp..."
+                        )
+                        file_path = "/tmp"
+                        # buat dulu tmp
+                        os.makedirs(os.path.join(file_path, "img"), exist_ok=True)
+                        # akses
+                        temp_img_path = os.path.join(file_path, "temp_image.png")
+                        with open(temp_img_path, "wb") as img_file:
+                            img_file.write(response.content)
+
+                        # rubah terbaru ke tmp
+                        img_path = temp_img_path
                     cell_width = self.__column_widths[column] + 3.1
                     cell_height = 10  # Tinggi sel
                     x = self.get_x()
@@ -181,8 +205,15 @@ class PDF(FPDF):
                         "C",
                     )
             self.ln(10)
-
+        self.footer()
         return self
+    
+    def footer(self):
+        self.set_y(-10)
+        self.set_font("Times", "I", 6)
+        self.set_text_color(100, 100, 100)
+        export_time = get_time_zone_now()
+        self.cell(0, 5, f"Exported: {export_time}", 0, 0, "R")
 
 
 # convert ke excel
@@ -262,10 +293,33 @@ def convert_to_excel(ws, result, currentPage=None, start=None, stop=None):
                 str(cell.value).strip() if cell.value else ""
             )  # Nilai sel sebagai string
 
-            if isinstance(cell_value, str) and cell_value.endswith(
-                (".png", ".jpg", ".jpeg")
+            if (
+                isinstance(cell_value, str)
+                and (
+                    cell_value.startswith("http://")
+                    or cell_value.startswith("https://")
+                )
+                and cell_value.endswith((".png", ".jpg", ".jpeg"))
             ):
-                img_path = os.path.join(app.root_path, "static/") + str(cell_value)
+                # inisiasi
+                img_path = None
+                print(cell_value)
+
+                # Unduh gambar dari URL
+                response = requests.get(cell_value, stream=True)
+                if response.status_code == 200:
+                    # Jika tidak bisa menulis ke folder static, simpan ke /tmp
+                    print("Tidak dapat menulis ke folder static. Menyimpan ke /tmp...")
+                    file_path = "/tmp"
+                    # buat dulu tmp
+                    os.makedirs(os.path.join(file_path, "img"), exist_ok=True)
+                    # akses
+                    temp_img_path = os.path.join(file_path, "temp_image.png")
+                    with open(temp_img_path, "wb") as img_file:
+                        img_file.write(response.content)
+
+                    # rubah terbaru ke tmp
+                    img_path = temp_img_path
 
                 # Jika file gambar ditemukan
                 if os.path.exists(img_path.strip()):

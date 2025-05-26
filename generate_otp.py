@@ -9,7 +9,6 @@ import base64
 from dotenv import load_dotenv
 import os
 import json
-from absensiMethod import string_to_uuid_like
 from bson import ObjectId
 
 # If modifying these SCOPES, delete the file token.json
@@ -209,6 +208,7 @@ class FaqGmailSender(OtpPasswordGenerator):
         sender.send_faq_email()
         """
         from app import db
+        from absensiMethod import string_to_uuid_like
 
         self.__email_receiver = email_receiver
         self.__nickname_receiver = nickname_receiver
@@ -434,6 +434,7 @@ class replyGmailSender(OtpPasswordGenerator):
 
 
 class TaskGmailNotif(OtpPasswordGenerator):
+
     message_id = None
 
     def __init__(self, task_id_new: ObjectId, path: str, **kwargs):
@@ -476,6 +477,7 @@ class TaskGmailNotif(OtpPasswordGenerator):
         """
 
         from app import db, url_for  # import db
+        from absensiMethod import string_to_uuid_like
 
         self.__task_id_new = task_id_new
         self.path = path
@@ -612,6 +614,95 @@ class TaskGmailNotif(OtpPasswordGenerator):
         <Message-ID>
         """
 
+        self.message_id = super().send_otp_via_gmail(
+            receiver_email=receiver_email, subject=subject, body=body
+        )  # jangan kupa ubah ke string to uuid
+
+
+# notif absensi kirim gmail
+class AbsensiNotify(OtpPasswordGenerator):
+
+    message_id = None
+
+    def __init__(
+        self,
+        email_receiver: str = "",
+        angka_delta: int = None,
+    ):
+        """
+        Kirimkan notifikasi absensi ke email user yang bersangkutan
+
+        Parameters:
+        email_receiver (str): Email address yang akan di kirimkan email.
+        angka_delta (int): Jumlah menit yang tersisa untuk melakukan absensi.
+
+        Returns:
+        str: Message ID jika berhasil, None jika gagal.
+
+        Examples:
+        >>> from generate_otp import AbsensiNotify
+        >>> notif = AbsensiNotify(email_receiver="john.doe@example.com", angka_delta=10)
+        >>> message_id = notif.send_notif_gmail_absensi()
+        >>> print(message_id)
+        <Message-ID>
+        """
+        from app import db
+
+        self.__email_receiver = email_receiver
+        self.__angka_delta = angka_delta
+
+        # Check if any input is empty
+        if not self.__email_receiver.strip() or angka_delta is None:
+            print("Some input values are empty. Existing...")
+            return None
+
+        self.__subject = "Absensiku Notif Kehadiran"
+
+        # Create email body template with user details
+        if angka_delta > 0:
+            self.__body = f"""
+                Waktu tinggal {angka_delta} menit, persiapan untuk melakukan absensi di <b>AbsensiKu<b>
+            """
+        elif angka_delta == 0:
+            self.__body = f"""
+                Absensi telah dimulai, segera lakukan absensi di <b>AbsensiKu<b> sekarang
+            """
+        elif angka_delta == -20:
+            self.__body = f"""
+                <p class='poppins-regular'>Waktu absensi Habis, Anda memasuki telat!.</p> 
+                
+                <p class='poppins-regular'>Jika anda merasa telat karena kendala, silahan hubungi melalui faq kami untuk perubahan absensi.</p> 
+            """
+
+        else:
+            self.__body = f"""
+                Waktu tinggal {(angka_delta)} menit, segera lakukan absensi di <b>AbsensiKu<b> sekarang
+            """
+
+        self.send_absensiNotify_via_gmail(
+            self.__email_receiver, self.__subject, self.__body
+        )
+
+    # lakukan pengiriman email
+    def send_absensiNotify_via_gmail(self, receiver_email, subject, body):
+        """
+        Kirimkan notifikasi absensi ke email user yang bersangkutan
+
+        Parameters:
+        receiver_email (str): Email address yang akan di kirimkan email.
+        subject (str): Subject email yang akan di kirimkan.
+        body (str): Body email yang akan di kirimkan.
+
+        Returns:
+        str: Message ID jika berhasil, None jika gagal.
+
+        Examples:
+        >>> from generate_otp import AbsensiNotify
+        >>> notif = AbsensiNotify(email_receiver="john.doe@example.com", angka_delta=10)
+        >>> message_id = notif.send_absensiNotify_via_gmail(receiver_email="john.doe@example.com", subject="Absensiku Notif Kehadiran", body="<p>ini adalah contoh body email</p>")
+        >>> print(message_id)
+        <Message-ID>
+        """
         self.message_id = super().send_otp_via_gmail(
             receiver_email=receiver_email, subject=subject, body=body
         )  # jangan kupa ubah ke string to uuid

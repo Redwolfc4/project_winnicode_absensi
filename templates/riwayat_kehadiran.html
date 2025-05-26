@@ -9,13 +9,15 @@
 
 {% endblock %} {% block navbar %}
   <ul class="navbar-nav me-auto mb-2 mb-lg-0">
+    {% if not (data.departement == 'Mentor' and data.jobs == 'Sub Admin') and data.role == 1 %}
     <li class="nav-item">
       <a
         class="nav-link poppins-regular text-pink d-flex align-items-center gap-2"
         href="/dashboard"
-        ><i class="fas fa-house-chimney fa-2xl text-primary w-100" style="font-size: 1em; max-width:20px"></i>Dashboard</a
+        ><i class="fas fa-house-chimney fa-2xl text-primary w-100" style="font-size: 1em; max-width:20px"></i>Halaman Utama</a
       >
     </li>
+    {% endif %}
     <li class="nav-item">
       <a class="nav-link poppins-regular text-pink d-flex align-items-center gap-2" href="/change-password">
         <i class="fas fa-key fa-2xl text-primary w-100" style="font-size: 1em; max-width:20px"></i>Ubah Password
@@ -27,11 +29,13 @@
       >
     </li>
     {% if data.role==1 %}
+    {% if data.departement=='Mentor' and data.jobs=='Admin' %}
     <li class="nav-item">
       <a class="nav-link poppins-regular text-pink  d-flex align-items-center gap-2" href="/riwayat-bantuan"
         ><i class="fas fa-circle-question fa-2xl text-primary w-100" style="font-size: 1em; max-width:20px"></i> Riwayat Bantuan</a
       >
     </li>
+    {% endif %}
     {% if data.departement == 'Superuser' %}
     <li class="nav-item">
       <a class="nav-link poppins-regular text-pink d-flex align-items-center gap-2" href="/kelola-admin"><i class="fas fa-user-tie fa-2xl text-primary w-100" style="font-size: 1em; max-width:20px"></i>Kelola Admin</a>
@@ -39,7 +43,7 @@
     {% endif %}
     {% endif %}
     <li class="nav-item">
-      <a class="nav-link poppins-regular text-pink d-flex align-items-center gap-2" href="/task"><i class="fa-regular fa-pen-to-square fa-2xl text-primary w-100" style="font-size: 1em; max-width:20px"></i>Task</a>
+      <a class="nav-link poppins-regular text-pink d-flex align-items-center gap-2" href="/task"><i class="fa-regular fa-pen-to-square fa-2xl text-primary w-100" style="font-size: 1em; max-width:20px"></i>Tugas</a>
     </li>
   </ul>
 {% endblock %} {% block content %}
@@ -75,23 +79,23 @@
     {% if riwayat_absent %}
     <thead>
       <tr>
-        <th {{ 'rowspan=2' if data.role==1 else '' }} class="poppins-semibold">No</th>
+        <th {{ 'rowspan=2' if (data.role==1 and data.departement=='Mentor' and data.jobs=='Admin') else '' }} class="poppins-semibold">No</th>
         {% if data.role==1 and data.jobs in ('Admin','Sub Admin') %}
-        <th rowspan="2" class="poppins-semibold">Nik</th>
-        <th rowspan="2" class="poppins-semibold">Email</th>
-        <th rowspan="2" class="poppins-semibold">Nama Lengkap</th>
+        <th {{ 'rowspan=2' if(data.departement=='Mentor' and data.jobs=='Admin') else '' }} class="poppins-semibold">Nik</th>
+        <th {{ 'rowspan=2' if(data.departement=='Mentor' and data.jobs=='Admin') else '' }} class="poppins-semibold">Email</th>
+        <th {{ 'rowspan=2' if(data.departement=='Mentor' and data.jobs=='Admin') else '' }} class="poppins-semibold">Nama Lengkap</th>
         {% endif %}
-        <th {{ 'rowspan=2' if data.role==1 else '' }}  class="poppins-semibold">Tanggal Hadir</th>
-        <th {{ 'rowspan=2' if data.role==1 else '' }}  class="poppins-semibold">Waktu Hadir</th>
-        <th {{ 'rowspan=2' if data.role==1 else '' }}  class="poppins-semibold">Status Hadir</th>
-        {% if data.role==1 and data.jobs in ('Admin','Sub Admin') %}
-        <th colspan="2">Action</th>
+        <th {{ 'rowspan=2' if (data.role==1 and data.departement=='Mentor' and data.jobs=='Admin') else '' }}  class="poppins-semibold">Tanggal Hadir</th>
+        <th {{ 'rowspan=2' if (data.role==1 and data.departement=='Mentor' and data.jobs=='Admin') else '' }}  class="poppins-semibold">Waktu Hadir</th>
+        <th {{ 'rowspan=2' if (data.role==1 and data.departement=='Mentor' and data.jobs=='Admin') else '' }}  class="poppins-semibold">Status Hadir</th>
+        {% if data.role==1 and data.jobs in ('Admin') and data.departement=='Mentor' %}
+        <th colspan="2">Aksi</th>
         {% endif %}
       </tr>
-      {% if data.role==1 and data.jobs in ('Admin','Sub Admin') %}
+      {% if data.role==1 and data.jobs in ('Admin') and data.departement=='Mentor' %}
       <tr>
         <th>Edit</th>
-        <th>Delete</th>
+        <th>Hapus</th>
       </tr>
       {% endif %}
     </thead>
@@ -119,7 +123,7 @@
             {{ 'hadir' if riwayat_absent[i-1].status_hadir == '1' else 'Telat' if riwayat_absent[i-1].status_hadir == 2 else 'Tidak Hadir' if riwayat_absent[i-1].status_hadir == 0 else 'Cuti' }}
           </button>
         </td>
-        {% if data.role==1 and data.jobs in ('Admin','Sub Admin') %}
+        {% if data.role==1 and data.jobs =='Admin' and data.departement=='Mentor' %}
         <!-- trigger modal edit -->
         <td class="poppins-regular align-middle">
           <a
@@ -179,8 +183,7 @@
                   <div class="form-floating mb-3">
                     <select id="status_hadir" name="status_hadir" class="form-select">
                       <option value='' {{'selected' if riwayat_absent[i-1].status_hadir=='' else '' }}>
-                        --Select
-                        Jobs--</option>
+                        --Pilih Pekerjaan--</option>
                       <option value="1" {{'selected' if riwayat_absent[i-1].status_hadir=='1'
                         else '' }}>Hadir</option>
                       <option value="2" {{'selected' if riwayat_absent[i-1].status_hadir==2
@@ -196,9 +199,9 @@
               </div>
               <div class="modal-footer">
                 <button type="button" type="reset" id="reset" class="btn btn-danger poppins-regular"
-                  data-bs-dismiss="modal">Close</button>
+                  data-bs-dismiss="modal">Tutup</button>
                   <input role="button" type="submit" type="submit" id="submit"
-                  class="btn btn-primary poppins-regular"" disabled="true" value="Save Changes"></input>
+                  class="btn btn-primary poppins-regular"" disabled="true" value="Simpan Perubahan"></input>
               </div>
             </form>
           </div>
@@ -223,7 +226,7 @@
             >
               <div class="modal-header">
                 <h5 class="modal-title poppins-regular" id="deleteModalLabel">
-                  Delete Confirmation
+                  Konfirmasi Hapus
                 </h5>
                 <button
                   type="button"
@@ -233,7 +236,7 @@
                 ></button>
               </div>
               <div class="modal-body">
-                Are you sure want to delete this riwayat absent?
+                Apakah kamu ingin menghapus riwayat absen karyawan ini?
                 <input type="hidden" name="_method" value="DELETE" />
                 <input
                   type="hidden"
@@ -247,13 +250,13 @@
                   class="btn btn-secondary poppins-regular"
                   data-bs-dismiss="modal"
                 >
-                  Close
+                  Tutup
                 </button>
                 <input
                   type="submit"
                   role="button"
                   class="btn btn-danger poppins-regular"
-                  value="Delete"
+                  value="Hapus"
                 />
               </div>
             </form>
@@ -274,7 +277,6 @@
 {% block cdn_custom_js %}
 <!-- datatables cdn js -->
 <script src="https://cdnjs.cloudflare.com/ajax/libs/pdfmake/0.2.7/pdfmake.min.js"></script>
-<!-- <script src="https://cdnjs.cloudflare.com/ajax/libs/pdfmake/0.2.7/vfs_fonts.js"></script> -->
 <script src="{{ url_for('static',filename='js/vfs_font.js') }}"></script>
 <script src="https://cdn.datatables.net/v/bs5/jq-3.7.0/jszip-3.10.1/dt-2.1.8/af-2.7.0/b-3.1.2/b-colvis-3.1.2/b-html5-3.1.2/b-print-3.1.2/cr-2.0.4/date-1.5.4/fc-5.0.3/fh-4.0.1/kt-2.12.1/r-3.0.3/rg-1.5.0/rr-1.5.0/sc-2.4.3/sb-1.8.1/sp-2.3.3/sl-2.1.0/sr-1.4.1/datatables.min.js"></script>
 {% endblock %} {% block js_custom %}
@@ -282,7 +284,7 @@
 <script src="{{ url_for('static', filename='js/index.js') }}"></script>
 <script>
   $(document).ready(function () {
-    const options = parseInt('{{ data.role }}') == 1 ? [0, 1, 2, 3, 4, 5,6] : [0, 1, 2, 3];
+    const options = (parseInt('{{ data.role }}') == 1 && (('{{ data.departement }}'!=='Superuser') && ('{{ data.jobs }}'==='Sub Admin')))? [0, 1, 2, 3, 4, 5,6] : [0, 1, 2, 3];
     //membuat fonts default export
     pdfMake.fonts = {
       Times: {
@@ -307,7 +309,7 @@
       templateHeading =` 
         <header class='d-flex flex-column justify-content-center align-items-center'>
           <h3 class="text-pink poppins-medium">Laporan Winnicode Garuda Terknologi</h3>
-          <h3 class="text-pink poppins-medium">Table Kelola Admin</h3>
+          <h3 class="text-pink poppins-medium">Table Riwayat Kehadiran</h3>
         </header>`
         
       //membuat border dan mealukan penambahan judul
@@ -346,7 +348,7 @@
         alignment: 'center',
         text: [
           { text: 'Laporan Winnicode Garuda Teknologi\n', fontSize: 18, bold: true, color: 'pink' },
-          { text: 'Table Kelola Admin\n\n', fontSize: 15, bold: true, color: 'pink' }
+          { text: 'Table Riwayat Kehadiran Karyawan\n\n', fontSize: 15, bold: true, color: 'pink' }
         ]
       });
 
@@ -408,7 +410,10 @@
 
     // datatables export
     $("#table-riwayat").DataTable({
-      dom: "Blfrtip",
+      dom: (('{{ data.jobs }}'=='Admin') && ('{{ data.departement }}'=='Mentor')) ? "Blfrtip" : "lfrtip",
+      language: {
+        url: "{{ url_for('static',filename='/data/id.json') }}"
+      },
       buttons: [
         {
           extend: "copy",
