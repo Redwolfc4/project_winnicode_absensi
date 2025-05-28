@@ -254,7 +254,7 @@
                       <th style="--bs-table-bg:#71ea71">Tidak Hadir</th>
                       <th style="--bs-table-bg:#71ea71">Liburan/izin</th>
                       <th style="--bs-table-bg:#38e9f2">Lihat</th>
-                      {% if (data.departement=='Mentor' and data.jobs=='Admin') and data.role==1 %}
+                      {% if data.departement=='Mentor' and data.jobs=='Admin' and data.role==1 %}
                       <th style="--bs-table-bg:#38e9f2">Edit</th>
                       <th style="--bs-table-bg:#38e9f2">Hapus</th>
                       {% endif %}
@@ -290,7 +290,7 @@
                       <td class="poppins-regular"><a type="button" id="triggerviewModal"
                           data-bs-target="#viewModal{{ data_karyawan_magang[i]._id }}" class="btn btn-primary"
                           data-bs-toggle="modal"><i class="fa-solid fa-xs text-white fa-user"></i></a></td>
-                      {% if data.departement=='Mentor' and data.jobs=='Sub Admin' and data.role==1 %}
+                      {% if data.departement=='Mentor' and data.jobs=='Admin' and data.role==1 %}
                       <!-- trigger modal edit -->
                       <td class="poppins-regular"><a href="#" type="button" class="btn btn-success"
                           data-bs-toggle="modal" id="triggerEditModal"
