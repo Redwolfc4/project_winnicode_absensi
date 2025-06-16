@@ -23,7 +23,7 @@
           {% block navbar %}
 
           <ul class="navbar-nav me-auto mb-2 mb-lg-0">
-            {% if not (data.departement == 'Mentor' and data.jobs == 'Sub Admin') and data.role == 1 %}
+            {% if not (data.departement == 'Mentor' and data.jobs == 'Sub Admin') and data.role in (1,3) %}
             <li class="nav-item">
               <a class="nav-link poppins-regular text-pink d-flex align-items-center gap-2 active" href="/dashboard"><i
                   class="fas fa-house-chimney fa-2xl text-primary w-100"
@@ -664,6 +664,7 @@
     {% endblock %}
   </div>
 
+  {% if data.jobs=='Admin' and data.departement=='Mentor' %}
   <!-- Add account karyawan -->
   <div id="addAccountKaryawan" class="position-fixed bottom-0 end-0 translate-middle">
     <button class="btn btn-pink p-2 rounded" data-bs-toggle="modal" data-bs-title="Create Account Karyawan / Magang"
@@ -761,6 +762,7 @@
       </div>
     </div>
   </div>
+  {% endif %}
   <!-- end modal -->
   {% endif %}
   {% endblock content %}

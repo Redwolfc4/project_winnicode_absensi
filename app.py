@@ -5332,6 +5332,7 @@ def task_post_admin(path):
         elif path == "edit":
             # ambil data json
             rowId, inputId, newValue = request.json.values()
+            pipeline = {}
 
             # cek nilai json tak kosong
             if not rowId and not inputId and not newValue:
@@ -5345,13 +5346,16 @@ def task_post_admin(path):
             # new value bila str True and False
             if newValue in ("True", "False"):
                 newValue = True if newValue == "True" else False
+                pipeline['status_task'] = "Pending"
 
-            if is_valid_datetime_format(newValue):
+            elif is_valid_datetime_format(newValue):
                 newValue = datetime.datetime.strptime(newValue, "%Y-%m-%dT%H:%M")
+            
+            pipeline[inputId] = newValue
 
             # edit database berdasarkan id
             result = db.tasks.find_one_and_update(
-                {"_id": ObjectId(rowId)}, {"$set": {inputId: newValue}}
+                {"_id": ObjectId(rowId)}, {"$set": pipeline}
             )
 
             # cek result
