@@ -3714,10 +3714,8 @@ def kelola_admin(path1=None, path2=None):
     Fungsi ini akan mengembalikan status 500 jika terjadi kesalahan di server.
 
     Contoh penggunaan:
-    - Tambah data admin: /kelola-admin/tambah
     - Edit data admin: /kelola-admin/edit/<id_admin>
     - Hapus data admin: /kelola-admin/hapus/<id_admin>
-    - Daftar admin: /kelola-admin/daftar
     """
 
     try:
