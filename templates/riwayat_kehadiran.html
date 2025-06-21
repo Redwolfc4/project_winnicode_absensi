@@ -410,7 +410,7 @@
 
     // datatables export
     $("#table-riwayat").DataTable({
-      dom: (('{{ data.jobs }}'=='Admin') && ('{{ data.departement }}'=='Mentor')) ? "Blfrtip" : "lfrtip",
+      dom: (('{{ data.jobs }}'=='Admin') && ('{{ data.departement }}'=='Mentor') || ('{{ data.role }}'==3)) ? "Blfrtip" : "lfrtip",
       language: {
         url: "{{ url_for('static',filename='/data/id.json') }}"
       },
