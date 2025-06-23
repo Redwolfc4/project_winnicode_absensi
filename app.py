@@ -1885,14 +1885,28 @@ def forgetPassword():
             # eksekusi pasword
             password_hash = hashlib.sha256(password_new.encode()).hexdigest()
             result = db.users.find_one(
-                {"email": email.lower(), "jobs": {"$in": ["Magang", "Karyawan"]}}
+                {"email": email.lower(), "jobs": {"$in": ["Magang", "Karyawan","Admin", "Sub Admin"]}}
             )
 
             # cek lanjutan dan update
             if not result:
-                raise Exception("Email tidak ditemukan / jobs bukan Magang/Karyawan")
+                raise Exception("Email tidak ditemukan")
             if result["password"] == password_hash:
                 raise ValueError("Password sama")
+            
+            # lupa password buat admin dan sub admin
+            if result['jobs'] in ('Admin','Sub Admin'):
+                db.users.update_one({
+                    "_id": ObjectId(result['_id'])
+                },{
+                    '$set':{
+                        'password': password_hash
+                    }
+                })
+                
+                return redirect(url_for('signIn',status='success', title='Lupa Password', msg='Password berhasil diubah'))       
+            # end
+            
             Otp = OtpPasswordGenerator(email.lower(), result["nama"])
             if not Otp:
                 raise Exception("Terjadi kesalahan dalam pembuatan otp")
@@ -4314,10 +4328,7 @@ def dashboardAdminCreateAccount():
         # cek email apakah sudah ada di database
         if db.users.find_one(
             {
-                "email": email.strip(),
-                "nama": nama.strip(),
-                "jobs": jobs.strip(),
-                "departement": departement.strip(),
+               'email':email.strip().lower()
             }
         ):
             raise ValueError("email or name already exist")
