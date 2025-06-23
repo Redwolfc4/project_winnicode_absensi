@@ -2111,6 +2111,15 @@ def ask():
             )
         if kendala.strip() == "" or kendala.strip() == None:
             raise Exception("kendala anda Kosong, silahkan masukkan kendala anda")
+        
+        # cek jobs
+        if jobs not in ('Karyawan','Magang','Sub Admin'):
+            raise Exception("Pekerjaan anda salah, silahkan masukkan pekerjaan anda")
+        
+        # cek departement
+        if jobs not in ('web-developer','copywriting',"fullstack-developer","Mentor"):
+            raise Exception("Departement anda salah, silahkan masukkan departement anda")
+        
         # melakukan pengiroman kendala ke gmail
         result_kirim_email = FaqGmailSender(
             email.strip(),
@@ -2159,7 +2168,7 @@ def ask():
     # The above code is handling exceptions related to JWT (JSON Web Token) authentication. It catches
     # different types of exceptions that can occur during JWT verification:
     except Exception as e:
-        return jsonify({"redirect": url_for("signIn", msg=e.args[0])}), 500
+        return jsonify({"redirect": url_for("signIn", msg=e.args[0])}), 400
 
 
 # update my profile
