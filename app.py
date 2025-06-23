@@ -2168,7 +2168,7 @@ def ask():
     # The above code is handling exceptions related to JWT (JSON Web Token) authentication. It catches
     # different types of exceptions that can occur during JWT verification:
     except Exception as e:
-        return jsonify({"redirect": url_for("signIn", msg=e.args[0])}), 400
+        return jsonify({"redirect": url_for("signIn", msg=e.args[0])}), 500
 
 
 # update my profile
