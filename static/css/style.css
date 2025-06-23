@@ -5,6 +5,10 @@
   --primary-color-hover: #fa1fa6;
 }
 
+.cursor-pointer{
+  cursor: pointer;
+}
+
 body{
   scroll-behavior: smooth;
 }

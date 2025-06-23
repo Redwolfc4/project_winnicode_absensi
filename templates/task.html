@@ -139,13 +139,18 @@
                     <!-- Dynamic rows will be appended here -->
                     <!-- enumerate data_user_all -->
                     {% for index, tr in enumerate(data_user_all) %}
-
+                    
+                    {% if tr['jobs'] %}
                     <tr class="align-middle" id="{{ tr['_id'] }}"><!--  inisiasi id  -->
-                        <td class="poppins-regular" style='cursor:default'>{{ index+1 }}</td>
+                    {% else %}
+                    <tr class="align-middle cursor-pointer" id="{{ tr['_id'] }}"><!--  inisiasi id  -->
+                    {% endif %}
+                        
+                        <td class="poppins-regular" >{{ index+1 }}</td>
 
                         {% if not path1 %}
                         <td class="poppins-regular"><a class="text-decoration-none" href="/task?path1={{ tr['jobs'] }}"
-                                style="cursor: pointer;">{{
+                                >{{
                                 tr.jobs
                                 }}</a></td>
 

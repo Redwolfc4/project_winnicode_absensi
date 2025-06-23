@@ -2113,11 +2113,11 @@ def ask():
             raise Exception("kendala anda Kosong, silahkan masukkan kendala anda")
         
         # cek jobs
-        if jobs not in ('Karyawan','Magang','Sub Admin'):
+        if jobs.strip() not in ('Karyawan','Magang','Sub Admin'):
             raise Exception("Pekerjaan anda salah, silahkan masukkan pekerjaan anda")
         
         # cek departement
-        if jobs not in ('web-developer','copywriting',"fullstack-developer","Mentor"):
+        if departement.strip() not in ('web-developer','copywriting',"fullstack-developer","Mentor"):
             raise Exception("Departement anda salah, silahkan masukkan departement anda")
         
         # melakukan pengiroman kendala ke gmail

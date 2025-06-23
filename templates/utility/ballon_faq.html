@@ -161,7 +161,7 @@
 
       // Validasi input kosong
       if (!name || !email || !jobs || !department || !issue) {
-        return window.location.replace("/signin?msg=ada data yang kosong");
+        return window.location.replace("/sign-in?msg=ada data yang kosong");
       }
 
       // Data yang dikirim
@@ -186,9 +186,15 @@
           window.location.replace(response.redirect);
         },
         error: function (err) {
-          window.location.replace(
-            `/signin?msg=Terjadi kesalahan, silahkan coba lagi`
-          );
+          console.log(err);
+          responseError = err.responseJSON;
+          if (responseError && responseError.redirect) {
+            window.location.replace(responseError.redirect);
+          } else {
+            window.location.replace(
+              `/sign-in?msg=Terjadi kesalahan, silahkan coba lagi`
+            );
+          }
         },
       });
     });
