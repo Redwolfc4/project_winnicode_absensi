@@ -4729,7 +4729,7 @@ def adminDelete(id):
         result1 = db.users.find_one_and_delete({"_id": ObjectId(id)})
         result2 = db.absen_magang.delete_many({"user_id": ObjectId(id)})
         result3 = db.tasks.delete_many({"user_id": ObjectId(id)})
-        result4 = db.angka_notif.delete_many({result1['email']})
+        result4 = db.angka_notif.delete_many({"email": result1["email"]})
         
         if not result1:
             raise Exception("Data user yang akan dihapus tidak ditemukan")
