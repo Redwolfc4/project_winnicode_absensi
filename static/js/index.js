@@ -379,14 +379,6 @@ function submitAbsen(action, e) {
     $("section#loading").fadeIn(500);
   });
 
-  console.log(tepatWaktu, action);
-  if (!tepatWaktu) {
-    return;
-  }
-  if (!action) {
-    return;
-  }
-
   if (action == "hadir" && tepatWaktu == true) {
     status_hadir = 1;
   } else if (action == "hadir" && tepatWaktu == false) {
