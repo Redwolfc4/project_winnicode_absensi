@@ -380,6 +380,13 @@ function submitAbsen(action, e) {
   });
 
   console.log(tepatWaktu, action);
+  if (!tepatWaktu) {
+    return;
+  }
+  if (!action) {
+    return;
+  }
+
   if (action == "hadir" && tepatWaktu == true) {
     status_hadir = 1;
   } else if (action == "hadir" && tepatWaktu == false) {
@@ -419,27 +426,27 @@ function submitAbsen(action, e) {
       // Tindakan jika gagal
       $("section#loading").fadeOut(300);
       console.log(xhr, status, error);
-      if (xhr.readyState === 0) {
-        // Request never sent (network error)
-        window.location.replace(
-          "/dashboard/magang?msg=Network Error - Request failed to send"
-        );
-      } else if (xhr.responseJSON) {
-        // Server responded with JSON
-        if (xhr.responseJSON.redirect) {
-          window.location.replace(xhr.responseJSON.redirect);
-        } else {
-          window.location.replace(
-            "/dashboard/magang?msg=Server Error: " +
-              (xhr.responseJSON.message || "Unknown error")
-          );
-        }
-      } else {
-        // Server responded with non-JSON or empty response
-        window.location.replace(
-          "/dashboard/magang?msg=Server Error - Invalid response"
-        );
-      }
+      // if (xhr.readyState === 0) {
+      //   // Request never sent (network error)
+      //   window.location.replace(
+      //     "/dashboard/magang?msg=Network Error - Request failed to send"
+      //   );
+      // } else if (xhr.responseJSON) {
+      //   // Server responded with JSON
+      //   if (xhr.responseJSON.redirect) {
+      //     window.location.replace(xhr.responseJSON.redirect);
+      //   } else {
+      //     window.location.replace(
+      //       "/dashboard/magang?msg=Server Error: " +
+      //         (xhr.responseJSON.message || "Unknown error")
+      //     );
+      //   }
+      // } else {
+      //   // Server responded with non-JSON or empty response
+      //   window.location.replace(
+      //     "/dashboard/magang?msg=Server Error - Invalid response"
+      //   );
+      // }
     },
   });
 }
