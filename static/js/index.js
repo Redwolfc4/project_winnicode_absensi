@@ -419,10 +419,26 @@ function submitAbsen(action, e) {
       // Tindakan jika gagal
       $("section#loading").fadeOut(300);
       console.log(xhr, status, error);
-      if (xhr.responseJSON.redirect) {
-        window.location.replace(xhr.responseJSON.redirect), 500;
+      if (xhr.readyState === 0) {
+        // Request never sent (network error)
+        window.location.replace(
+          "/dashboard/magang?msg=Network Error - Request failed to send"
+        );
+      } else if (xhr.responseJSON) {
+        // Server responded with JSON
+        if (xhr.responseJSON.redirect) {
+          window.location.replace(xhr.responseJSON.redirect);
+        } else {
+          window.location.replace(
+            "/dashboard/magang?msg=Server Error: " +
+              (xhr.responseJSON.message || "Unknown error")
+          );
+        }
       } else {
-        window.location.replace("/dashboard/magang?msg=jaringan Error"), 500;
+        // Server responded with non-JSON or empty response
+        window.location.replace(
+          "/dashboard/magang?msg=Server Error - Invalid response"
+        );
       }
     },
   });
