@@ -2806,12 +2806,12 @@ def dashboardAbsen():
         return jsonify({"redirect": url_for("signIn", msg="Session Kadaluarsa")}), 500
     except jwt.DecodeError:
         return jsonify({"redirect": url_for("signIn", msg="Anda telah logout")}), 500
-    # except Exception as e:
-    #     if not e.args:
-    #         e.args = [
-    #             "terjadi kesalahan data",
-    #         ]
-    #     return jsonify({"redirect": url_for("signIn", msg=f"{e.args[0]}")}), 500
+    except Exception as e:
+        if not e.args:
+            e.args = [
+                "terjadi kesalahan data",
+            ]
+        return jsonify({"redirect": url_for("signIn", msg=f"{e.args[0]}")}), 500
 
 
 # change password
