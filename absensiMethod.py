@@ -231,7 +231,6 @@ def unhadir_absensi():
     """
 
     from app import db
-
     users = list(db.users.find({"role": 3}))  # nanti diubah bisa role 2 dan 3
     now = get_time_zone_now()
     time_now = now.time()
@@ -276,9 +275,15 @@ def unhadir_absensi():
                         last_absen = datetime.datetime.strptime(
                             riwayat_absen["tanggal_hadir"], "%d %B %Y"
                         )
+                       
                         # apakah tanggal riwayat kurang dari sekarang
+                        print(last_absen.date(),now.date())
+                        print(time_now,datetime.datetime.strptime(
+                                waktu_akhir_kerja, "%H.%M"
+                            ).time(),time_now> datetime.datetime.strptime(
+                                waktu_akhir_kerja, "%H.%M"
+                            ).time())
                         if last_absen.date() < now.date():
-
                             # apakah jam riwayat lebih dari waktu akhir kerja
                             if (
                                 time_now
@@ -330,6 +335,9 @@ def unhadir_absensi():
                                 waktu_akhir_kerja, "%H.%M"
                             ).time()
                         ):
+                            print(datetime.datetime.now()
+                                    .strftime("%H.%M")
+                                    .lower())
                             db.absen_magang.insert_one(
                                 {
                                     "user_id": ObjectId(user_id),
