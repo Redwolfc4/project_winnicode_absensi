@@ -72,44 +72,18 @@ def get_time_zone_now(location: str = "asia/jakarta"):
         datetime.datetime: Waktu sekarang berdasarkan lokasi timezone yang di request.
 
     Contoh:
-        >>> import requests
-        >>> response = requests.get("https://absensi.winnicode.com/api/time/now?location=asia/jakarta")
-        >>> print(response.json())
+        >>> import pytz
+        >>> tz = pytz.timezone(location)
+        >>> print("Waktu sekarang ({}):".format(location), waktu_sekarang)
         datetime.datetime(2023, 3, 14, 10, 32, 45)
     """
 
-    # url = f"https://www.timeapi.io/api/time/current/zone?timeZone={location}"
-    # print(url)
-    # waktu_str = requests.get(url, verify=certifi.where()).json()["dateTime"]
-    # print(waktu_str)
-    # waktu_sekarang = datetime.datetime.fromisoformat(waktu_str)
-    # return waktu_sekarang
-    
-    # import subprocess
-    # import json
-    # command = f'curl -s "https://www.timeapi.io/api/Time/current/zone?timeZone={location}"'
-    # output = subprocess.check_output(command, shell=True)
-    # data = json.loads(output)['dateTime']
-    # print("Waktu:", data)
-    # waktu_sekarang = datetime.datetime.fromisoformat(data)
-    # print(waktu_sekarang)
-    # return waktu_sekarang
-
     # Zona waktu Indonesia Barat (WIB)
     import pytz
-    tz = pytz.timezone('Asia/Jakarta')
-
-    # Ambil waktu sekarang dengan timezone Asia/Jakarta
-    waktu_sekarang = datetime.datetime.now(tz)
-    
-    iso_str = waktu_sekarang.isoformat(timespec='microseconds').replace("+07:00", "")
-    print("ISO format:", iso_str)  # Hasil: 2025-04-15T23:08:37.862270
-    
-    waktu_sekarang = datetime.datetime.fromisoformat(iso_str)
-
-    print("Waktu sekarang (WIB):", waktu_sekarang)
+    tz = pytz.timezone(location)
+    waktu_sekarang = datetime.datetime.now(tz).replace(tzinfo=None)  # timezone-aware, lalu ubah ke naive untuk keseragaman
+    print("Waktu sekarang ({}):".format(location), waktu_sekarang)
     return waktu_sekarang
-    
 
 
 def is_valid_datetime_format(value):
@@ -209,164 +183,71 @@ def countdown_time(a: datetime.datetime, b: datetime.datetime, email: str):
 
 # tidak hadir untuk magang / karyawan
 def unhadir_absensi():
-    """
-    API untuk menghapus data absensi magang / karyawan yang tidak hadir.
-
-    Parameter:
-        None
-
-    Response:
-        None
-
-    Contoh:
-        >>> import requests
-        >>> response = requests.get("https://absensi.winnicode.com/api/unhadir_absensi")
-        >>> print(response.text)
-        None
-
-    Description:
-        API ini digunakan untuk menghapus data absensi magang / karyawan yang tidak hadir.
-        Data yang dihapus adalah data yang memiliki tanggal hadir sama dengan hari ini.
-        API ini akan berjalan secara otomatis setiap 1 menit sekali.
-    """
-
     from app import db
-    users = list(db.users.find({"role": 3}))  # nanti diubah bisa role 2 dan 3
+    users = list(db.users.find({"role": 3}))  # bisa diperluas ke role 2 juga
     now = get_time_zone_now()
     time_now = now.time()
     print("Server sedang berjalan dilatar belakang")
-    
-    # cek table users
+
     if users:
         for user in users:
-            email_user = user["email"]
-            mulai_kerja = user["mulai_kerja"]
-            akhir_kerja = user["akhir_kerja"]
-            waktu_awal_kerja = user["waktu_awal_kerja"]
-            waktu_akhir_kerja = user["waktu_akhir_kerja"]
-            user_id = user["_id"]
-            
-             # cek nik sudah terissi / belum
-            if user['nik'] == "" and user['nik'] == None and type(user['nik'])==int:
-                raise Exception('Data nik belum terisi');
-            
-            # cek mulai kerja dan akhir kerja user
-            if mulai_kerja != "" and akhir_kerja != "":
-                # cek tanggal sekarang dengan rentang kerja
-                if cek_tanggal_kerja(mulai_kerja, akhir_kerja):
-                    riwayat_absen = db.absen_magang.find_one(
-                        {"user_id": user_id}, sort={"_id": -1}
-                    )  # cek riwayat absen
+            email_user = user.get("email")
+            mulai_kerja = user.get("mulai_kerja")
+            akhir_kerja = user.get("akhir_kerja")
+            waktu_awal_kerja = user.get("waktu_awal_kerja")
+            waktu_akhir_kerja = user.get("waktu_akhir_kerja")
+            user_id = user.get("_id")
 
-                    # cek countdown waktu sekarang kurang dari waktu awa kerja
+            if not user.get("nik"):
+                raise Exception('Data NIK belum terisi')
+            
+            print('\n\n'+email_user)
+
+            if mulai_kerja and akhir_kerja:
+                if cek_tanggal_kerja(mulai_kerja, akhir_kerja):
+                    riwayat_absen = db.absen_magang.find_one({"user_id": user_id}, sort={"_id": -1})
+
                     angka_delta_pilih = countdown_time(
                         a=now,
                         b=datetime.datetime.strptime(waktu_awal_kerja, "%H.%M"),
                         email=email_user,
                     )
-
-                    # jika angka delta piluh tidak false
                     if angka_delta_pilih:
-                        # kirim ke class absensi notify
                         AbsensiNotify(email_user, angka_delta_pilih)
 
-                    # cek table riwayat absen pernah di insert atau tidak sama sekali sesuai dengan
+                    akhir_kerja_time = datetime.datetime.strptime(waktu_akhir_kerja, "%H.%M").time()
+
                     if riwayat_absen:
-                        last_absen = datetime.datetime.strptime(
-                            riwayat_absen["tanggal_hadir"], "%d %B %Y"
-                        )
-                       
-                        # apakah tanggal riwayat kurang dari sekarang
-                        print(last_absen.date(),now.date())
-                        print(time_now,datetime.datetime.strptime(
-                                waktu_akhir_kerja, "%H.%M"
-                            ).time(),time_now> datetime.datetime.strptime(
-                                waktu_akhir_kerja, "%H.%M"
-                            ).time())
-                        if last_absen.date() < now.date():
-                            # apakah jam riwayat lebih dari waktu akhir kerja
-                            if (
-                                time_now
-                                > datetime.datetime.strptime(
-                                    waktu_akhir_kerja, "%H.%M"
-                                ).time()
-                            ):
-                                print('jalan1')
-                                db.absen_magang.insert_one(
-                                    {
-                                        "user_id": ObjectId(user_id),
-                                        "status_hadir": 0,
-                                        "waktu_hadir": datetime.datetime.now()
-                                        .strftime("%H.%M")
-                                        .lower(),
-                                        "tanggal_hadir": datetime.datetime.now()
-                                        .strftime("%d %B %Y")
-                                        .lower(),
-                                    }
-                                )
-                                db.users.find_one_and_update(
-                                    {"_id": ObjectId(user_id)},
-                                    {
-                                        "$set": {
-                                            "absen.tidak_hadir": db.users.find_one(
-                                                {"_id": ObjectId(user_id)}
-                                            )["absen"]["tidak_hadir"]
-                                            + 1
-                                        }
-                                    },
-                                )
-                    # non riwayat absen
-                    else:
-                        # cek countdown waktu sekarang kurang dari waktu awa kerja
-                        angka_delta_pilih = countdown_time(
-                            a=now,
-                            b=datetime.datetime.strptime(waktu_awal_kerja, "%H.%M"),
-                            email=email_user,
-                        )
+                        last_absen = datetime.datetime.strptime(riwayat_absen["tanggal_hadir"], "%d %B %Y")
 
-                        # jika angka delta piluh tidak false
-                        if angka_delta_pilih:
-                            # kirim ke class absensi notify
-                            AbsensiNotify(email_user, angka_delta_pilih)
-
-                        # apakah jam riwayat lebih dari waktu akhir kerja
-                        if (
-                            time_now
-                            > datetime.datetime.strptime(
-                                waktu_akhir_kerja, "%H.%M"
-                            ).time()
-                        ):
-                            print('jalan2')
-                            print(datetime.datetime.now()
-                                    .strftime("%H.%M")
-                                    .lower())
-                            db.absen_magang.insert_one(
-                                {
-                                    "user_id": ObjectId(user_id),
-                                    "status_hadir": 0,
-                                    "waktu_hadir": datetime.datetime.now()
-                                    .strftime("%H.%M")
-                                    .lower(),
-                                    "tanggal_hadir": datetime.datetime.now()
-                                    .strftime("%d %B %Y")
-                                    .lower(),
-                                }
-                            )
+                        if last_absen.date() < now.date() and time_now > akhir_kerja_time:
+                            print('jalan1')
+                            db.absen_magang.insert_one({
+                                "user_id": ObjectId(user_id),
+                                "status_hadir": 0,
+                                "waktu_hadir": now.strftime("%H.%M").lower(),
+                                "tanggal_hadir": now.strftime("%d %B %Y").lower(),
+                            })
                             db.users.find_one_and_update(
                                 {"_id": ObjectId(user_id)},
-                                {
-                                    "$set": {
-                                        "absen.hadir": db.users.find_one(
-                                            {"_id": ObjectId(user_id)}
-                                        )["absen"]["tidak_hadir"]
-                                        + 1
-                                    }
-                                },
+                                {"$inc": {"absen.tidak_hadir": 1}}
                             )
-        print('jalan')
+                    else:
+                        if time_now > akhir_kerja_time:
+                            print('jalan2')
+                            db.absen_magang.insert_one({
+                                "user_id": ObjectId(user_id),
+                                "status_hadir": 0,
+                                "waktu_hadir": now.strftime("%H.%M").lower(),
+                                "tanggal_hadir": now.strftime("%d %B %Y").lower(),
+                            })
+                            db.users.find_one_and_update(
+                                {"_id": ObjectId(user_id)},
+                                {"$inc": {"absen.tidak_hadir": 1}}
+                            )
+        print('sudah diluar')
 
     return "berhasil ya!"
-
 
 # lakukan sigin payload
 def signInPayload(a, b, c, d):
@@ -439,34 +320,19 @@ def cek_tanggal_kerja(awal_kerja_str: str, akhir_kerja_str: str):
     """
     Mengecek apakah tanggal sekarang berada diantara awal_kerja dan akhir_kerja.
 
-    Fungsi ini digunakan untuk mengecek apakah tanggal sekarang berada diantara
-    tanggal awal_kerja dan akhir_kerja.
-
     Parameters:
         awal_kerja_str (str): string tanggal awal kerja dalam format Hari NamaBulan Tahun
         akhir_kerja_str (str): string tanggal akhir kerja dalam format Hari NamaBulan Tahun
 
-    Contoh pemanggilan:
-        >>> cek_tanggal_kerja("1 Januari 2022", "31 Januari 2022")
-        True
-
     Returns:
-    bool: True jika tanggal sekarang berada diantara awal_kerja dan akhir_kerja, False jika sebaliknya
+        bool: True jika tanggal sekarang berada diantara awal_kerja dan akhir_kerja, False jika sebaliknya
     """
-    # Mengonversi string tanggal menjadi objek datetime
-    format_tanggal = "%d %B %Y"  # Format: Hari NamaBulan Tahun
-    awal_kerja = datetime.datetime.strptime(awal_kerja_str, format_tanggal)
-    akhir_kerja = datetime.datetime.strptime(akhir_kerja_str, format_tanggal)
+    format_tanggal = "%d %B %Y"
+    awal_kerja = datetime.datetime.strptime(awal_kerja_str, format_tanggal).date()
+    akhir_kerja = datetime.datetime.strptime(akhir_kerja_str, format_tanggal).date()
+    tanggal_sekarang = get_time_zone_now().date()
 
-    tanggal_sekarang = get_time_zone_now()
-
-    # apakah awal kerja > tanggal_sekarang > akhir kerja
-    if (tanggal_sekarang - awal_kerja >= datetime.timedelta(days=0)) and (
-        akhir_kerja - tanggal_sekarang >= datetime.timedelta(days=0)
-    ):
-        return True
-    else:
-        return False
+    return awal_kerja <= tanggal_sekarang <= akhir_kerja
 
 
 # Fungsi untuk mengonversi string menjadi bentuk UUID-like

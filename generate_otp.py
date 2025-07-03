@@ -659,15 +659,15 @@ class AbsensiNotify(OtpPasswordGenerator):
         self.__subject = "Absensiku Notif Kehadiran"
 
         # Create email body template with user details
-        if angka_delta > 0:
+        if self.__angka_delta > 0:
             self.__body = f"""
-                Waktu tinggal {angka_delta} menit, persiapan untuk melakukan absensi di <b>AbsensiKu<b>
+                Waktu tinggal {self.__angka_delta } menit, persiapan untuk melakukan absensi di <b>AbsensiKu<b>
             """
-        elif angka_delta == 0:
+        elif self.__angka_delta  == 0:
             self.__body = f"""
                 Absensi telah dimulai, segera lakukan absensi di <b>AbsensiKu<b> sekarang
             """
-        elif angka_delta == -20:
+        elif self.__angka_delta  == -20:
             self.__body = f"""
                 <p class='poppins-regular'>Waktu absensi Habis, Anda memasuki telat!.</p> 
                 
@@ -676,7 +676,7 @@ class AbsensiNotify(OtpPasswordGenerator):
 
         else:
             self.__body = f"""
-                Waktu tinggal {(angka_delta)} menit, segera lakukan absensi di <b>AbsensiKu<b> sekarang
+                Waktu tinggal {(self.__angka_delta )} menit, segera lakukan absensi di <b>AbsensiKu<b> sekarang
             """
 
         self.send_absensiNotify_via_gmail(
