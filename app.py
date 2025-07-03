@@ -5650,11 +5650,11 @@ def cron_task():
             example:
               message: Terjadi kesalahan saat menghandle cron job pengecekan absensi.
     """
-    # try:
-    response = unhadir_absensi()
-    return make_response(jsonify({"message": "success", "data": response}), 200)
-    # except Exception as e:
-    #     return make_response(jsonify({"message": str(e)}), 500)
+    try:
+        response = unhadir_absensi()
+        return make_response(jsonify({"message": "success", "data": response}), 200)
+    except Exception as e:
+        return make_response(jsonify({"message": str(e)}), 500)
 
 
 # stating app

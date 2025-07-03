@@ -291,6 +291,7 @@ def unhadir_absensi():
                                     waktu_akhir_kerja, "%H.%M"
                                 ).time()
                             ):
+                                print('jalan1')
                                 db.absen_magang.insert_one(
                                     {
                                         "user_id": ObjectId(user_id),
@@ -335,6 +336,7 @@ def unhadir_absensi():
                                 waktu_akhir_kerja, "%H.%M"
                             ).time()
                         ):
+                            print('jalan2')
                             print(datetime.datetime.now()
                                     .strftime("%H.%M")
                                     .lower())
