@@ -21,6 +21,7 @@ from flask import (
     jsonify,
     send_file,
     make_response,
+    send_from_directory
 )
 from flask_wtf.csrf import CSRFProtect
 from pymongo.mongo_client import MongoClient
@@ -1325,7 +1326,11 @@ def update_host_for_api_docs():
         swagger_template["host"] = host_name
         # Update Swagger instance
         app.config["SWAGGER"] = {"template": swagger_template}
-
+        
+# file gsc
+@app.route('/googlee5e28172e9781136.html')
+def google_verification():
+    return send_from_directory('static', 'googlee5e28172e9781136.html')
 
 # home
 @app.route("/", methods=["GET"])
