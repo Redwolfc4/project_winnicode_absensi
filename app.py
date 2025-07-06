@@ -1346,7 +1346,7 @@ def sitemap():
         'changefreq': 'daily',
         'priority': '1.0'
     })
-     pages.append({
+    pages.append({
         'url': url_for('signIn', _external=True),
         'lastmod': ten_days_ago.strftime('%Y-%m-%d'),
         'changefreq': 'daily',
