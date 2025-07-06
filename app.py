@@ -1333,9 +1333,24 @@ def google_verification():
     return send_from_directory('static', 'googlee5e28172e9781136.html')
 
 # sitemap xml
-@app.route('/sitemap.xml')
+@app.route('/sitemap.xml', methods=['GET'])
 def sitemap():
-    return send_from_directory('static', 'sitemap-v1.xml', mimetype='application/xml')
+    """Generate sitemap.xml dynamically"""
+    pages = []
+    ten_days_ago = datetime.datetime.now().date() - datetime.timedelta(days=10)
+    
+    # Static pages
+    pages.append({
+        'url': url_for('home', _external=True),
+        'lastmod': ten_days_ago.strftime('%Y-%m-%d'),
+        'changefreq': 'daily',
+        'priority': '1.0'
+    })
+    sitemap_xml = render_template('sitemap_template.xml', pages=pages)
+    response = make_response(sitemap_xml)
+    response.headers["Content-Type"] = "application/xml"
+    
+    return response
 
 # home
 @app.route("/", methods=["GET"])
