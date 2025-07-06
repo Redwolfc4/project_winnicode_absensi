@@ -1346,6 +1346,12 @@ def sitemap():
         'changefreq': 'daily',
         'priority': '1.0'
     })
+     pages.append({
+        'url': url_for('signIn', _external=True),
+        'lastmod': ten_days_ago.strftime('%Y-%m-%d'),
+        'changefreq': 'daily',
+        'priority': '1.0'
+    })
     sitemap_xml = render_template('sitemap_template.xml', pages=pages)
     response = make_response(sitemap_xml)
     response.headers["Content-Type"] = "application/xml"
