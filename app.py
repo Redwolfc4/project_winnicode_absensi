@@ -1333,9 +1333,9 @@ def google_verification():
     return send_from_directory('static', 'googlee5e28172e9781136.html')
 
 # sitemap xml
-@app.route('/sitemap.xml')
-def sitemap():
-    return send_from_directory('static', 'sitemap.xml', mimetype='application/xml')
+# @app.route('/sitemap.xml')
+# def sitemap():
+#     return send_from_directory('static', 'sitemap.xml', mimetype='application/xml')
 
 # home
 @app.route("/", methods=["GET"])
