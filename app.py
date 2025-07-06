@@ -1332,6 +1332,10 @@ def update_host_for_api_docs():
 def google_verification():
     return send_from_directory('static', 'googlee5e28172e9781136.html')
 
+@app.route('/sitemap.xml')
+def sitemap():
+    return send_from_directory('public', 'sitemap.xml')
+
 # home
 @app.route("/", methods=["GET"])
 def home():
