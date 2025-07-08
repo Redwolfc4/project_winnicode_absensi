@@ -283,7 +283,6 @@ notifAbsen = () => {
       const countdown = setInterval(() => {
         countdownTime--;
         if (getText == "Keluar") {
-          console.log(countdownTime >= 17 * 60, countdownTime, 17 * 60);
           if (
             countdownTime <= 17 * 60 &&
             Notification.permission === "granted" &&
@@ -294,7 +293,7 @@ notifAbsen = () => {
               body: "Waktu Absen keluar telah dibuka",
             });
           } else if (
-            countdownTime >= 17 * 60 &&
+            countdownTime <= 0 &&
             Notification.permission === "granted" &&
             tepatWaktu != false
           ) {
@@ -307,7 +306,7 @@ notifAbsen = () => {
         } else {
           // Jika waktu tersisa 30 menit,sebelum absensi dibuka kirim notifikasi browser
           if (
-            countdownTime == 30 * 60 &&
+            countdownTime <= 30 * 60 &&
             Notification.permission === "granted" &&
             tepatWaktu != true
           ) {
@@ -315,9 +314,19 @@ notifAbsen = () => {
               body: "Waktu tinggal 30 menit, persiapan untuk absensi!",
             });
           }
+          // Jika waktu tersisa 20 menit,sebelum absensi dibuka kirim notifikasi browser
+          else if (
+            countdownTime <= 20 * 60 &&
+            Notification.permission === "granted" &&
+            tepatWaktu != true
+          ) {
+            new Notification("Absensi Alert!", {
+              body: "Waktu tinggal 20 menit, persiapan untuk absensi!",
+            });
+          }
           // Jika waktu tersisa 5 menit sebelum absensi dibuka, kirim notifikasi browser
           else if (
-            countdownTime >= 5 * 60 &&
+            countdownTime <= 5 * 60 &&
             Notification.permission === "granted" &&
             tepatWaktu != true
           ) {
@@ -339,7 +348,7 @@ notifAbsen = () => {
           }
           // Jika waktu tersisa 10 menit setelah absensi dibuka, kirim notifikasi browser
           else if (
-            countdownTime >= -10 * 60 &&
+            countdownTime <= -10 * 60 &&
             Notification.permission === "granted" &&
             tepatWaktu != false
           ) {
@@ -350,7 +359,7 @@ notifAbsen = () => {
           }
           // Jika waktu tersisa 15 menit setelah absensi dibuka, kirim notifikasi browser
           else if (
-            countdownTime >= -15 * 60 &&
+            countdownTime <= -15 * 60 &&
             Notification.permission === "granted" &&
             tepatWaktu != true
           ) {
@@ -362,6 +371,7 @@ notifAbsen = () => {
           // Jika waktu tersisa 5 menit setelah absensi dibuka, kirim notifikasi browser
           else if (
             countdownTime >= -5 * 60 &&
+            countdownTime < 0 &&
             Notification.permission === "granted" &&
             tepatWaktu != true
           ) {
