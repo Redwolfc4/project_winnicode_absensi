@@ -263,14 +263,9 @@ notifAbsen = () => {
 
   let time_absent = konversiNotifAbsen(index);
 
-  // tentukan timezone server
-  const options = {
-    timeZone: "Asia/Jakarta", // Zona waktu WIB
-  };
-
   // Mengambil waktu server sekarang
   $.ajax({
-    url: `https://www.timeapi.io/api/time/current/zone?timeZone=${options.timeZone}`,
+    url: `/waktu-jakarta`,
     type: "GET",
     headers: {
       Accept: "application/json",
@@ -413,6 +408,7 @@ function submitAbsen(action, e) {
   // Ambil parent `section#menu`
   const parentMenu = $(e.target).closest("section#menu");
   let status_hadir;
+  let data = { user_id: $("#user_id").val() };
 
   if (parentMenu.length < 0) {
     return;
@@ -420,7 +416,7 @@ function submitAbsen(action, e) {
   parentMenu.fadeOut(200, function () {
     $("section#loading").fadeIn(500);
   });
-
+  console.log(action, tepatWaktu);
   // absensi masuk
   if (action == "hadir" && tepatWaktu == true) {
     status_hadir = 1;
@@ -436,13 +432,14 @@ function submitAbsen(action, e) {
     status_hadir = "3";
   }
 
+  data["action"] = action;
+  data["status_hadir"] = status_hadir;
+  console.log(data);
+
   $.ajax({
     type: "post",
     url: "/dashboard/absen",
-    data: {
-      user_id: $("#user_id").val(),
-      status_hadir: status_hadir,
-    },
+    data: data,
     headers: {
       "X-CSRF-Token": $("#csrf_token1").val(),
     },

@@ -2410,11 +2410,14 @@ def dashboard():
                     table_hadir["status_hadir"] in ("1", 2)
                     and waktu_hadir <= waktu_akhir_kerja and waktu_sekarang >= waktu_akhir_minus_15menit
                 ):
-                    # data["class-button-hadir"] = "btn-secondary disabled"
-                    # data["text-button"] = "Selesai"
-                    data["class-button-hadir"] = "btn-primary"
-                    data["text-button"] = "Keluar"
-                    data["event"]="submitAbsen('Keluar',event)"
+                    if(table_hadir['waktu_keluar'] and table_hadir['waktu_keluar']):
+                        data["class-button-hadir"] = "btn-secondary disabled"
+                        data["text-button"] = "Selesai"                   
+                    else:
+                        data["class-button-hadir"] = "btn-primary"
+                        data["text-button"] = "Keluar"
+                        data["event"]="submitAbsen('Keluar',event)"
+                        
                 # saat jam awal dan sudah dapat melakukan absen
                 elif (
                     table_hadir["status_hadir"] == "1"
@@ -2571,6 +2574,10 @@ def dashboard():
         return redirect(url_for("signIn", msg="Anda telah logout"))
     except Exception as e:
         return redirect(url_for("signIn", msg=e.args[0]))
+    
+@app.route("/waktu-jakarta")
+def timeJakarta():
+    return jsonify({"result": "success", 'dateTime': get_time_zone_now()}), 200
 
 
 # dashboard absen
@@ -2616,7 +2623,6 @@ def dashboardAbsen():
 
     # ambil tanggal sekarang dan waktu sekarang
     now = get_time_zone_now()
-    time_now = now.time()
     try:
         # ambil csrf token
         csrf_token = request.headers.get("X-CSRF-Token")
@@ -2632,6 +2638,7 @@ def dashboardAbsen():
         # ambil data dari form
         userId = request.form.get("user_id")
         status_hadir = request.form.get("status_hadir")
+        action = request.form.get('action')
 
         # ambil riwayat absen
         riwayat_absen = db.absen_magang.find_one(
@@ -2640,13 +2647,14 @@ def dashboardAbsen():
 
         # cek sudah klik button absen / belum sebelumnya
         if riwayat_absen:
+            if 'waktu_keluar' not in riwayat_absen and action == 'Keluar':
+                raise Exception("Key waktu_keluar tidak ditemukan dalam riwayat absen")
             if (
                 now.date()
-                <= datetime.datetime.strptime(
+                == datetime.datetime.strptime(
                     riwayat_absen["tanggal_hadir"], "%d %B %Y"
                 ).date()
-                and time_now
-                >= datetime.datetime.strptime(riwayat_absen["waktu_hadir"], "%H.%M").time()
+                and riwayat_absen["waktu_hadir"] and action != 'Keluar'
             ):
                 return (
                     jsonify(
@@ -2654,51 +2662,88 @@ def dashboardAbsen():
                             "result": "unsuccess",
                             "redirect": url_for(
                                 "dashboard",
-                                msg="Anda sudah absen pada tanggal "
+                                msg="Anda sudah absen masuk pada tanggal "
                                 + riwayat_absen["tanggal_hadir"],
                             ),
                         }
                     ),
                     200,
                 )
+            
+            elif(now.date()
+                == datetime.datetime.strptime(
+                    riwayat_absen["tanggal_hadir"], "%d %B %Y"
+                ).date()
+                and riwayat_absen["waktu_keluar"] and action == 'Keluar'):
+                return (
+                    jsonify(
+                        {
+                            "result": "unsuccess",
+                            "redirect": url_for(
+                                "dashboard",
+                                msg="Anda sudah absen keluar pada tanggal "
+                                + riwayat_absen["tanggal_hadir"],
+                            ),
+                        }
+                    ),
+                    200,
+                )
+                
         # cek status hadir bukan 1 ubah jadi int
+        print(status_hadir)
         if status_hadir != "1":
             status_hadir = int(status_hadir)
 
-        # jika hadir
-        if status_hadir == "1":
-            setting = {
-                "absen.hadir": db.users.find_one({"_id": ObjectId(userId)})["absen"][
-                    "hadir"
-                ]
-                + 1
-            }
-        # jika telat
+        # jika hadir/keluar
+        if action != 'Keluar':
+            if status_hadir == "1":
+                setting = {
+                    "absen.hadir": db.users.find_one({"_id": ObjectId(userId)})["absen"][
+                        "hadir"
+                    ]
+                    + 1
+                }
+            # jika telat
+            else:
+                setting = {
+                    "absen.telat": db.users.find_one({"_id": ObjectId(userId)})["absen"][
+                        "telat"
+                    ]
+                    + 1
+                }
         else:
-            setting = {
-                "absen.telat": db.users.find_one({"_id": ObjectId(userId)})["absen"][
-                    "telat"
-                ]
-                + 1
+            if not riwayat_absen:
+                raise Exception("Riwayat absen tidak ditemukan")
+            update_db_keluar = {
+                'waktu_keluar': now.strftime("%H.%M").lower(),
+                'ket_keluar': status_hadir
             }
-
-        # lakukan update
-        result = db.users.find_one_and_update(
-            {"_id": ObjectId(userId)},
-            {"$set": setting},
-        )
-        if not result:
-            raise Exception("Terjadi kesalahan dalam update jumlah absen ke db")
-
-        # lakukan penambahan absen magang riwayat
-        result = db.absen_magang.insert_one(
-            {
-                "user_id": ObjectId(userId),
-                "status_hadir": status_hadir,
-                "waktu_hadir": get_time_zone_now().strftime("%H.%M").lower(),
-                "tanggal_hadir": get_time_zone_now().strftime("%d %B %Y").lower(),
-            }
-        )
+        
+        # update sesuai kondisi keluar / hadir
+        if action != 'Keluar':
+             # lakukan update
+            result = db.users.find_one_and_update(
+                {"_id": ObjectId(userId)},
+                {"$set": setting},
+            )
+            if not result:
+                raise Exception("Terjadi kesalahan dalam update jumlah absen ke db")
+            # lakukan penambahan absen magang riwayat
+            result = db.absen_magang.insert_one(
+                {
+                    "user_id": ObjectId(userId),
+                    "status_hadir": status_hadir,
+                    "waktu_hadir": now.strftime("%H.%M").lower(),
+                    'waktu_keluar':'',
+                    'ket_keluar':'',
+                    "tanggal_hadir": now.strftime("%d %B %Y").lower(),
+                }
+            )
+        else:
+            result = db.absen_magang.update_one(
+                {"user_id": ObjectId(userId), '_id':riwayat_absen['_id']},
+                {"$set": update_db_keluar},
+            )
         if not result:
             raise Exception("Terjadi kesalahan dalam penambahan riwayat ke db")
         # success
@@ -2713,6 +2758,7 @@ def dashboardAbsen():
             e.args = [
                 "terjadi kesalahan data",
             ]
+        print(e)
         return jsonify({"redirect": url_for("signIn", msg=f"{e.args[0]}")}), 500
 
 

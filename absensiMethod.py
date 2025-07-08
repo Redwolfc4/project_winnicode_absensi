@@ -225,6 +225,8 @@ def unhadir_absensi():
                             db.absen_magang.insert_one({
                                 "user_id": ObjectId(user_id),
                                 "status_hadir": 0,
+                                'waktu_keluar':'',
+                                'ket_keluar':'',
                                 "waktu_hadir": now.strftime("%H.%M").lower(),
                                 "tanggal_hadir": now.strftime("%d %B %Y").lower(),
                             })
@@ -238,6 +240,8 @@ def unhadir_absensi():
                             db.absen_magang.insert_one({
                                 "user_id": ObjectId(user_id),
                                 "status_hadir": 0,
+                                'waktu_keluar':'',
+                                'ket_keluar':'',
                                 "waktu_hadir": now.strftime("%H.%M").lower(),
                                 "tanggal_hadir": now.strftime("%d %B %Y").lower(),
                             })
