@@ -3036,7 +3036,7 @@ def riwayat_kehadiran():
             riwayat_absent = list(
                 db.absen_magang.find(
                     {"user_id": ObjectId(payloads["_id"])},
-                    {"_id": 0, "status_hadir": 1, "waktu_hadir": 1, "tanggal_hadir": 1},
+                    {"_id": 0, "status_hadir": 1, "waktu_hadir": 1, "tanggal_hadir": 1, 'waktu_keluar':1, 'ket_keluar':1},
                 )
             )
         else:
@@ -3066,6 +3066,8 @@ def riwayat_kehadiran():
                                 "status_hadir": 1,
                                 "waktu_hadir": 1,
                                 "tanggal_hadir": 1,
+                                'waktu_keluar':1, 
+                                'ket_keluar':1,
                                 "user.nama": 1,  # Tampilkan `nama` dari `users`
                                 "user.jobs": 1,  # Tampilkan `jobs` dari `users`
                                 "user.departement": 1,  # Tampilkan `departement` dari `users`
@@ -3206,11 +3208,24 @@ def riwayat_kehadiran_post(path1=None, path2=None):
                     # decript id riwayat absen
                     absen_magang_id = uuid_like_to_string(id_riwayat_absent)
                     # print(absen_magang_id, type(absen_magang_id))
-
+                    
                     # do change it absen_magang
                     update_absen_magang = db.absen_magang.find_one_and_update(
                         {"_id": ObjectId(absen_magang_id)},
-                        {"$set": {"status_hadir": status_hadir}},
+                        [  # <- Perhatikan tanda kurung siku untuk pipeline
+                            {
+                                "$set": {
+                                    "status_hadir": status_hadir,
+                                    "waktu_telat": {
+                                        "$cond": {
+                                            "if": {"$in": [status_hadir, [0, 3]]},
+                                            "then": "",
+                                            "else": "$waktu_telat"
+                                        }
+                                    }
+                                }
+                            }
+                        ]
                     )
 
                     # cek berhasil diupdate

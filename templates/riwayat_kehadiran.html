@@ -87,6 +87,8 @@
         {% endif %}
         <th {{ 'rowspan=2' if (data.role==1 and data.departement=='Mentor' and data.jobs=='Admin') else '' }}  class="poppins-semibold">Tanggal Hadir</th>
         <th {{ 'rowspan=2' if (data.role==1 and data.departement=='Mentor' and data.jobs=='Admin') else '' }}  class="poppins-semibold">Waktu Hadir</th>
+        <th {{ 'rowspan=2' if (data.role==1 and data.departement=='Mentor' and data.jobs=='Admin') else '' }}  class="poppins-semibold">Waktu Keluar</th>
+        <th {{ 'rowspan=2' if (data.role==1 and data.departement=='Mentor' and data.jobs=='Admin') else '' }}  class="poppins-semibold">Ket Keluar</th>
         <th {{ 'rowspan=2' if (data.role==1 and data.departement=='Mentor' and data.jobs=='Admin') else '' }}  class="poppins-semibold">Status Hadir</th>
         {% if data.role==1 and data.jobs in ('Admin') and data.departement=='Mentor' %}
         <th colspan="2">Aksi</th>
@@ -116,6 +118,8 @@
         {% endif %}
         <td class="poppins-regular align-middle">{{ riwayat_absent[i-1].tanggal_hadir }}</td>
         <td class="poppins-regular align-middle">{{ riwayat_absent[i-1].waktu_hadir }}</td>
+        <td class="poppins-regular align-middle">{{ riwayat_absent[i-1].waktu_keluar }}</td>
+        <td class="poppins-regular align-middle">{{ riwayat_absent[i-1].ket_keluar }}</td>
         <td>
           <button
             class="btn btn-{{'success' if riwayat_absent[i-1].status_hadir == '1' else 'warning' if riwayat_absent[i-1].status_hadir == 2 else 'danger' if riwayat_absent[i-1].status_hadir == 0 else 'secondary' }} poppins-regular"
