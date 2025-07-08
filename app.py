@@ -1511,7 +1511,7 @@ def signIn():
                     user["_id"],
                     user["jobs"],
                     user["role"],
-                    datetime.timedelta(minutes=30),
+                    datetime.timedelta(days=1),
                 )
 
                 # make the jwt
@@ -1538,7 +1538,7 @@ def signIn():
                     httponly=True,
                     secure=True,
                     samesite="Lax",
-                    expires=get_time_zone_now() + datetime.timedelta(minutes=30),
+                    expires=get_time_zone_now() + datetime.timedelta(days=1),
                 )  # ubah secure jadi true saat production
                 resp.set_cookie(
                     "csrf_token",
@@ -1546,7 +1546,7 @@ def signIn():
                     httponly=True,
                     secure=True,
                     samesite="Lax",
-                    expires=get_time_zone_now() + datetime.timedelta(minutes=30),
+                    expires=get_time_zone_now() + datetime.timedelta(days=1),
                 )  # ubah secure jadi true saat production
 
                 # kembalikan responsenya
@@ -2365,15 +2365,21 @@ def dashboard():
             )
 
             # cek tanggal pelaksanan kerja
-            waktu_sekarang = get_time_zone_now()
-            waktu30menit = waktu_sekarang + datetime.timedelta(minutes=30)
-            waktu_sekarang = waktu_sekarang.time()
             waktu_awal_kerja = datetime.datetime.strptime(
                 data["waktu_awal_kerja"].replace(".", ":"), "%H:%M"
             ).time()
             waktu_akhir_kerja = datetime.datetime.strptime(
                 data["waktu_akhir_kerja"].replace(".", ":"), "%H:%M"
             ).time()
+            waktu_sekarang = get_time_zone_now()
+            # Untuk menambahkan 30 menit, kita perlu mengkonversi ke datetime.datetime terlebih dahulu
+            waktu_akhir_dt = datetime.datetime.combine(waktu_sekarang, waktu_akhir_kerja)
+            waktu_akhir_minus_15menit = (waktu_akhir_dt - datetime.timedelta(minutes=15)).time()
+
+            print(f"Waktu akhir kerja: {waktu_akhir_kerja}")
+            print(f"Waktu akhir - 30 menit: {waktu_akhir_minus_15menit}")
+            waktu_sekarang = waktu_sekarang.time()
+
 
             # customize button berdasarkan jam kerja ,sebelum, dan sesudah tanpa melakukan klik hadir
             if waktu_awal_kerja <= waktu_sekarang:
@@ -2397,10 +2403,20 @@ def dashboard():
                 ).time()
                 # membuat jumlah absen dalam rentang kontrak
                 data["heading-card"] = (
-                    data["absen"]["hadir"] + data["absen"]["tidak_hadir"]
+                    data["absen"]["hadir"] + data["absen"]["tidak_hadir"] + data["absen"]["telat"]
                 )
-                # saat jam awal dan sudah dapat melakukan absen
+                
                 if (
+                    table_hadir["status_hadir"] in ("1", 2)
+                    and waktu_hadir <= waktu_akhir_kerja and waktu_sekarang >= waktu_akhir_minus_15menit
+                ):
+                    # data["class-button-hadir"] = "btn-secondary disabled"
+                    # data["text-button"] = "Selesai"
+                    data["class-button-hadir"] = "btn-primary"
+                    data["text-button"] = "Keluar"
+                    data["event"]="submitAbsen('Keluar',event)"
+                # saat jam awal dan sudah dapat melakukan absen
+                elif (
                     table_hadir["status_hadir"] == "1"
                     and waktu_hadir <= waktu_akhir_kerja
                 ):
@@ -2413,19 +2429,12 @@ def dashboard():
                 ):
                     data["class-button-hadir"] = "btn-warning disabled opacity-100"
                     data["text-button"] = "Telat"
-                elif (
-                    table_hadir["status_hadir"] in ("1", 2)
-                    and waktu_hadir >= waktu_akhir_kerja
-                ):
-                    data["class-button-hadir"] = "btn-secondary disabled"
-                    data["text-button"] = "Selesai"
                 else:
                     pass
             else:
                 data["heading-card"] = (
-                    data["absen"]["hadir"] + data["absen"]["tidak_hadir"] + 1
+                    data["absen"]["hadir"] + data["absen"]["tidak_hadir"] + data["absen"]["telat"] + 1
                 )
-            print(data)
             # ini buat lihat hadir dan tidak hadir
             data2 = [
                 {

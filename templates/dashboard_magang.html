@@ -147,7 +147,7 @@
             <input type="hidden" id="csrf_token1" name="csrf_token" value="{{ csrf_token() }}" />
             <input type="hidden" id="user_id" name="user_id" value="{{ data._id }}" />
             <button class="btn {{ data['class-button-hadir'] }}" id="status_hadir" name="status_hadir"
-              onclick="submitAbsen('hadir',event)">
+              onclick="{{ data.get('event', "submitAbsen('hadir',event)") }}">
               {{ data['text-button'] }}
             </button>
           </div>
