@@ -42,8 +42,8 @@ $("#kelolaAdmin #triggerEditModal").on("click", function () {
 
     // Jika salah satu input berubah, tombol akan diaktifkan
     if (
-      nama_baru !== nama_lama||
-      departement_baru !== departement_lama||
+      nama_baru !== nama_lama ||
+      departement_baru !== departement_lama ||
       jobs_baru !== jobs_lama
     ) {
       $(`#kelolaAdmin ${button_id} #submit`).prop("disabled", false);
@@ -53,9 +53,9 @@ $("#kelolaAdmin #triggerEditModal").on("click", function () {
   }
 });
 
-// add modal 
-$('#addAccountAdmin #triggerAddModal').on('click', function () {
-  button_id =  $(this).attr('data-bs-target')
+// add modal
+$("#addAccountAdmin #triggerAddModal").on("click", function () {
+  button_id = $(this).attr("data-bs-target");
   // imput lama
   departement_lama = $(`${button_id} #departement`).val();
   nama_lama = $(`${button_id} #nama`).val();
@@ -69,27 +69,26 @@ $('#addAccountAdmin #triggerAddModal').on('click', function () {
   $(`${button_id} #password2`).on("input", checkChanges);
   $(`${button_id} #nama`).on("input", checkChanges);
 
-  
   // Fungsi untuk mengecek apakah ada perubahan
   function checkChanges() {
-      // imput baru
-      departement_baru = $(`${button_id} #departement`).val();
-      nama_baru = $(`${button_id} #nama`).val();
-      jobs_baru = $(`${button_id} #jobs`).val();
-      password_baru = $(`${button_id} #password`).val();
-      password2_baru = $(`${button_id} #password2`).val();
-      // Jika salah satu input berubah, tombol akan diaktifkan
-      if (
-        departement_baru !== departement_lama ||
-        jobs_baru !== jobs_lama ||
-        password_baru !== password_lama ||
-        password2_baru !== password2_lama ||
-        nama_baru !== nama_lama 
-      ) {
-        $(`${button_id} #submit`).prop("disabled", false);
-      } else {
-        $(`${button_id} #submit`).prop("disabled", true);
-      }
+    // imput baru
+    departement_baru = $(`${button_id} #departement`).val();
+    nama_baru = $(`${button_id} #nama`).val();
+    jobs_baru = $(`${button_id} #jobs`).val();
+    password_baru = $(`${button_id} #password`).val();
+    password2_baru = $(`${button_id} #password2`).val();
+    // Jika salah satu input berubah, tombol akan diaktifkan
+    if (
+      departement_baru !== departement_lama ||
+      jobs_baru !== jobs_lama ||
+      password_baru !== password_lama ||
+      password2_baru !== password2_lama ||
+      nama_baru !== nama_lama
+    ) {
+      $(`${button_id} #submit`).prop("disabled", false);
+    } else {
+      $(`${button_id} #submit`).prop("disabled", true);
+    }
   }
-})
+});
 // end
