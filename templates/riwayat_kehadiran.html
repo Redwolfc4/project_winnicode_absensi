@@ -120,7 +120,7 @@
         <td class="poppins-regular align-middle">{{ riwayat_absent[i-1].waktu_hadir }}</td>
         <td class="poppins-regular align-middle">{{ riwayat_absent[i-1].waktu_keluar }}</td>
         <td class="poppins-regular align-middle">{{ riwayat_absent[i-1].ket_keluar }}</td>
-        <td>
+        <td class="poppins-regular align-middle">
           <button
             class="btn btn-{{'success' if riwayat_absent[i-1].status_hadir == '1' else 'warning' if riwayat_absent[i-1].status_hadir == 2 else 'danger' if riwayat_absent[i-1].status_hadir == 0 else 'secondary' }} poppins-regular"
           >
