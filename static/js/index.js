@@ -157,7 +157,8 @@ $(window).ready(function () {
     !(
       $(".absensi_kehadiran #status_hadir").hasClass("btn-warning") ||
       $(".absensi_kehadiran #status_hadir").hasClass("btn-success") ||
-      $(".absensi_kehadiran #status_hadir").hasClass("btn-danger")
+      $(".absensi_kehadiran #status_hadir").hasClass("btn-danger") ||
+      $(".absensi_kehadiran #status_hadir").hasClass("btn-secondary")
     )
   ) {
     localStorage.removeItem("notificationShown");
@@ -273,19 +274,20 @@ notifAbsen = () => {
     },
     success: function (response) {
       // dapatkan respon waktu sekarang
-      convertZone = new Date(response.dateTime);
+      convertZone = moment.tz(response.dateTime, "Asia/Jakarta").toDate();
       // conver waktu user ke format Date
       entry_time = moment(time_absent, "DD MMMM YYYY HH:mm").toDate();
       // ubah jadi detik
       let countdownTime = Math.floor((entry_time - convertZone) / 1000);
-      console.log(countdownTime);
+      console.log(entry_time, convertZone, countdownTime);
+
       // jalankan setiap 1 detik
       const countdown = setInterval(() => {
         countdownTime--;
         if (getText == "Keluar") {
-          console.log(countdownTime >= 17 * 60, countdownTime, 17 * 60);
           if (
             countdownTime <= 17 * 60 &&
+            countdownTime > 0 &&
             Notification.permission === "granted" &&
             tepatWaktu != true
           ) {
@@ -294,7 +296,7 @@ notifAbsen = () => {
               body: "Waktu Absen keluar telah dibuka",
             });
           } else if (
-            countdownTime >= 17 * 60 &&
+            countdownTime <= 0 &&
             Notification.permission === "granted" &&
             tepatWaktu != false
           ) {
@@ -303,30 +305,9 @@ notifAbsen = () => {
               body: "Waktu Absen keluar telah dibuka",
             });
           }
-          clearInterval(countdown);
         } else {
-          // Jika waktu tersisa 30 menit,sebelum absensi dibuka kirim notifikasi browser
-          if (
-            countdownTime == 30 * 60 &&
-            Notification.permission === "granted" &&
-            tepatWaktu != true
-          ) {
-            new Notification("Absensi Alert!", {
-              body: "Waktu tinggal 30 menit, persiapan untuk absensi!",
-            });
-          }
-          // Jika waktu tersisa 5 menit sebelum absensi dibuka, kirim notifikasi browser
-          else if (
-            countdownTime >= 5 * 60 &&
-            Notification.permission === "granted" &&
-            tepatWaktu != true
-          ) {
-            new Notification("Absensi Alert!", {
-              body: "Waktu tinggal 5 menit, persiapan untuk absensi!",
-            });
-          }
           // Jika waktu tersisa 20 menit setelah absensi dibuka, kirim notifikasi browser
-          else if (
+          if (
             countdownTime < -20 * 60 &&
             Notification.permission === "granted" &&
             tepatWaktu != false
@@ -335,22 +316,11 @@ notifAbsen = () => {
             new Notification("Absensi Alert!", {
               body: "Waktu absensi Habis, Anda memasuki telat!",
             });
-            clearInterval(countdown);
-          }
-          // Jika waktu tersisa 10 menit setelah absensi dibuka, kirim notifikasi browser
-          else if (
-            countdownTime >= -10 * 60 &&
-            Notification.permission === "granted" &&
-            tepatWaktu != false
-          ) {
-            tepatWaktu = true;
-            new Notification("Absensi Alert!", {
-              body: "Waktu absensi sudah memasuki 10 menitan, segera lakukan absensi!",
-            });
           }
           // Jika waktu tersisa 15 menit setelah absensi dibuka, kirim notifikasi browser
           else if (
-            countdownTime >= -15 * 60 &&
+            countdownTime <= -15 * 60 &&
+            countdownTime > -20 * 60 &&
             Notification.permission === "granted" &&
             tepatWaktu != true
           ) {
@@ -359,20 +329,22 @@ notifAbsen = () => {
               body: "Waktu absensi sudah memasuki 15 menitan, segera lakukan absensi!",
             });
           }
-          // Jika waktu tersisa 5 menit setelah absensi dibuka, kirim notifikasi browser
+          // Jika waktu tersisa 10 menit setelah absensi dibuka, kirim notifikasi browser
           else if (
-            countdownTime >= -5 * 60 &&
+            countdownTime <= -10 * 60 &&
+            countdownTime > 15 * 60 &&
             Notification.permission === "granted" &&
-            tepatWaktu != true
+            tepatWaktu != false
           ) {
             tepatWaktu = true;
             new Notification("Absensi Alert!", {
-              body: "Waktu sudah dalam kurang dari 5 menit, segera lakukan absensi!",
+              body: "Waktu absensi sudah memasuki 10 menitan, segera lakukan absensi!",
             });
           }
           // Jika waktu tersisa >5 menit setelah absensi dibuka, kirim notifikasi browser
           else if (
             countdownTime <= -5 * 60 &&
+            countdownTime > -10 * 60 &&
             Notification.permission === "granted" &&
             tepatWaktu != true
           ) {
@@ -381,9 +353,11 @@ notifAbsen = () => {
               body: "Waktu sudah dalam 5 menit, segera lakukan absensi!",
             });
           }
+
           // Jika waktu habis
           else if (
             countdownTime == 0 &&
+            countdownTime > -5 * 60 &&
             tepatWaktu != true &&
             Notification.permission === "granted"
           ) {
@@ -392,7 +366,42 @@ notifAbsen = () => {
               body: "Waktu absensi sudah dibuka, silahkan absensi dalam kurun 20 menit !",
             });
           }
+          // Jika waktu tersisa 5 menit sebelum absensi dibuka, kirim notifikasi browser
+          else if (
+            countdownTime <= 5 * 60 &&
+            countdownTime > 0 &&
+            Notification.permission === "granted" &&
+            tepatWaktu != true
+          ) {
+            new Notification("Absensi Alert!", {
+              body: "Waktu tinggal 5 menit, persiapan untuk absensi!",
+            });
+          }
+          // Jika waktu tersisa 20 menit,sebelum absensi dibuka kirim notifikasi browser
+          else if (
+            countdownTime <= 20 * 60 &&
+            countdownTime > 5 * 60 &&
+            Notification.permission === "granted" &&
+            tepatWaktu != true
+          ) {
+            new Notification("Absensi Alert!", {
+              body: "Waktu tinggal 20 menit, persiapan untuk absensi!",
+            });
+          }
+          // Jika waktu tersisa 30 menit,sebelum absensi dibuka kirim notifikasi browser
+          else if (
+            countdownTime <= 30 * 60 &&
+            countdownTime > 20 * 60 &&
+            Notification.permission === "granted" &&
+            tepatWaktu != true
+          ) {
+            new Notification("Absensi Alert!", {
+              body: "Waktu tinggal 30 menit, persiapan untuk absensi!",
+            });
+          }
         }
+        console.log("jalan", tepatWaktu, countdownTime);
+        // clearInterval(countdown);
       }, 1000); // Jalankan setiap detik (1000 ms)
     },
     error: function (xhr, status, error) {
