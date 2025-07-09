@@ -153,24 +153,27 @@ $(window).ready(function () {
 
   // notifikasi
   // Cek apakah notifikasi sudah pernah ditampilkan
-  if (
-    !(
-      $(".absensi_kehadiran #status_hadir").hasClass("btn-warning") ||
-      $(".absensi_kehadiran #status_hadir").hasClass("btn-success") ||
-      $(".absensi_kehadiran #status_hadir").hasClass("btn-danger") ||
-      $(".absensi_kehadiran #status_hadir").hasClass("btn-secondary")
-    )
-  ) {
-    localStorage.removeItem("notificationShown");
-  }
-  const notificationShown = localStorage.getItem("notificationShown");
-  // Jika notifikasi belum pernah ditampilkan
-  if (!notificationShown) {
-    // Tampilkan notifikasi (gunakan fungsi notifikasi di sini)
-    notifAbsen();
+  if ($(".absensi_kehadiran #status_hadir").html() !== undefined) {
+    if (
+      !(
+        $(".absensi_kehadiran #status_hadir").hasClass("btn-warning") ||
+        $(".absensi_kehadiran #status_hadir").hasClass("btn-success") ||
+        $(".absensi_kehadiran #status_hadir").hasClass("btn-danger") ||
+        $(".absensi_kehadiran #status_hadir").hasClass("btn-secondary")
+      )
+    ) {
+      localStorage.removeItem("notificationShown");
+    }
+    const notificationShown = localStorage.getItem("notificationShown");
+    console.log(!notificationShown, localStorage.getItem("notificationShown"));
+    // Jika notifikasi belum pernah ditampilkan
+    if (!notificationShown) {
+      // Tampilkan notifikasi (gunakan fungsi notifikasi di sini)
+      notifAbsen();
 
-    // Set nilai di Local Storage agar notifikasi tidak tampil lagi
-    localStorage.setItem("notificationShown", "true");
+      // Set nilai di Local Storage agar notifikasi tidak tampil lagi
+      localStorage.setItem("notificationShown", "true");
+    }
   }
 });
 
