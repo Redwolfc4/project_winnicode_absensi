@@ -119,7 +119,18 @@
         <td class="poppins-regular align-middle">{{ riwayat_absent[i-1].tanggal_hadir }}</td>
         <td class="poppins-regular align-middle">{{ riwayat_absent[i-1].waktu_hadir }}</td>
         <td class="poppins-regular align-middle">{{ riwayat_absent[i-1].waktu_keluar }}</td>
-        <td class="poppins-regular align-middle">{{ riwayat_absent[i-1].ket_keluar }}</td>
+        <td class="poppins-regular align-middle">
+          
+          {% if riwayat_absent[i-1].ket_keluar !='' %}
+          <button
+            class="btn btn-{{'primary' if riwayat_absent[i-1].ket_keluar  ==2 else 'warning' }} poppins-regular"
+          >
+            {{ 'Tepat' if riwayat_absent[i-1].ket_keluar ==2 else 'Lembur' }}
+          </button>
+          {% else %}
+          {{ riwayat_absent[i-1].ket_keluar }}
+          {% endif %}
+        </td>
         <td class="poppins-regular align-middle">
           <button
             class="btn btn-{{'success' if riwayat_absent[i-1].status_hadir == '1' else 'warning' if riwayat_absent[i-1].status_hadir == 2 else 'danger' if riwayat_absent[i-1].status_hadir == 0 else 'secondary' }} poppins-regular"

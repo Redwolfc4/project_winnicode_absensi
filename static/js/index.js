@@ -157,7 +157,8 @@ $(window).ready(function () {
     !(
       $(".absensi_kehadiran #status_hadir").hasClass("btn-warning") ||
       $(".absensi_kehadiran #status_hadir").hasClass("btn-success") ||
-      $(".absensi_kehadiran #status_hadir").hasClass("btn-danger")
+      $(".absensi_kehadiran #status_hadir").hasClass("btn-danger") ||
+      $(".absensi_kehadiran #status_hadir").hasClass("btn-secondary")
     )
   ) {
     localStorage.removeItem("notificationShown");
