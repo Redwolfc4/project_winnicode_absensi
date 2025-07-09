@@ -2577,7 +2577,7 @@ def dashboard():
     
 @app.route("/waktu-jakarta")
 def timeJakarta():
-    return jsonify({"result": "success", 'dateTime': get_time_zone_now()}), 200
+    return jsonify({"result": "success", 'dateTime': get_time_zone_now().strftime('%Y-%m-%d %H:%M:%S')}), 200
 
 
 # dashboard absen
