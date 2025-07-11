@@ -299,7 +299,7 @@
 <script src="{{ url_for('static', filename='js/index.js') }}"></script>
 <script>
   $(document).ready(function () {
-    const options = (parseInt('{{ data.role }}') == 1 && (('{{ data.departement }}'!=='Superuser') && ('{{ data.jobs }}'==='Sub Admin')))? [0, 1, 2, 3, 4, 5,6] : [0, 1, 2, 3];
+    const options = (parseInt('{{ data.role }}') == 1 && (('{{ data.departement }}'!=='Superuser') && ('{{ data.jobs }}'==='Admin')))? [0, 1, 2, 3, 4, 5,6,7,8] : [0, 1, 2, 3,4,5];
     //membuat fonts default export
     pdfMake.fonts = {
       Times: {
