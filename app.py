@@ -2166,7 +2166,7 @@ def myProfiles():
                 response = upload_to_imgbb(gambar, imgbb_api_key)
                 print(response)
                 if response["status"] == "success":
-                    filepath_db = response["url"] + " " + response["filename"]
+                    filepath_db = response["url"]
                 else:
                     raise Exception("Gagal Upload Gambar ke Imgbb")
             else:
@@ -4154,8 +4154,8 @@ def kelola_admin_export(path1):
         return redirect(url_for("signIn", msg="Session Kadaluarsa"))
     except jwt.DecodeError:
         return redirect(url_for("signIn", msg="Anda telah logout"))
-    except Exception as e:
-        return redirect(url_for("dashboard", msg=e.args[0]))
+    # except Exception as e:
+        # return redirect(url_for("dashboard", msg=e.args[0]))
 
 
 # add account admin / sub admin

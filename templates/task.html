@@ -116,7 +116,10 @@
         <!-- Task Table -->
         <div data-aos="zoom-in" data-aos-delay="400" data-aos-duration="800">
             <table id="taskTable" class="table table-striped display no-wrap table-winnicode w-100">
-                <thead>
+                
+               
+               {% if  data_user_all[0]|length >0%}
+               <thead>
                     <tr>
                         <th>No</th>
                         {% for th in table_heading %}
@@ -220,6 +223,8 @@
                     </tr>
                     {% endfor %}
                 </tbody>
+                
+                {% endif %}
             </table>
         </div>
         <!-- Task Modal add -->
@@ -447,6 +452,7 @@
     <script>
         $(document).ready(function () {
             const options = [...Array(parseInt('{{ data_user_all[0]|length }}')).keys()];
+            
 
             //membuat fonts default export
             pdfMake.fonts = {

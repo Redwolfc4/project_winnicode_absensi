@@ -143,21 +143,22 @@ class PDF(FPDF):
                     )
                     and data_cell_value.endswith((".png", ".jpg", ".jpeg"))
                 ):
+                    alt = data_cell_value.split(' ')[1] if len(data_cell_value.split(' '))==2 else 'temp_png.png'
+                    data_cell_value = data_cell_value.split(' ')[0]
+                    
                     # inisiasi
                     img_path = None
+                    print(data_cell_value)
 
                     # Unduh gambar dari URL
                     response = requests.get(data_cell_value, stream=True)
                     if response.status_code == 200:
-                        # Jika tidak bisa menulis ke folder static, simpan ke /tmp
-                        print(
-                            "Tidak dapat menulis ke folder static. Menyimpan ke /tmp..."
-                        )
                         file_path = "/tmp"
                         # buat dulu tmp
                         os.makedirs(os.path.join(file_path, "img"), exist_ok=True)
+                        
                         # akses
-                        temp_img_path = os.path.join(file_path, "temp_image.png")
+                        temp_img_path = os.path.join(file_path,'img', alt)
                         with open(temp_img_path, "wb") as img_file:
                             img_file.write(response.content)
 
@@ -171,6 +172,7 @@ class PDF(FPDF):
                     if os.path.exists(img_path.strip()):
                         # Tambahkan border pada sel sebelum gambar dimasukkan
                         self.cell(cell_width, cell_height, border=1)
+                        print('img=',img_path)
                         # tambahkan image
                         self.image(img_path, x + 2, y + 1, cell_width - 4, 8)
                         # Geser posisi X untuk sel berikutnya
@@ -287,12 +289,14 @@ def convert_to_excel(ws, result, currentPage=None, start=None, stop=None):
 
     # iterasi width
     for row in ws.iter_rows(min_row=start - 1, max_row=stop):
+        print('baris')
         for cell in row:
+            print('satu sel')
             column = cell.column_letter  # Mendapatkan huruf kolom (A, B, C, dst.)
             cell_value = (
                 str(cell.value).strip() if cell.value else ""
             )  # Nilai sel sebagai string
-
+            
             if (
                 isinstance(cell_value, str)
                 and (
@@ -301,25 +305,31 @@ def convert_to_excel(ws, result, currentPage=None, start=None, stop=None):
                 )
                 and cell_value.endswith((".png", ".jpg", ".jpeg"))
             ):
+                alt = cell_value.split(' ')[1] if len(cell_value.split(' '))==2 else 'temp_png.png'
+                cell_value = cell_value.split(' ')[0]
+                print(type(cell_value),cell_value)
+                
                 # inisiasi
                 img_path = None
                 print(cell_value)
 
                 # Unduh gambar dari URL
                 response = requests.get(cell_value, stream=True)
+                print(response)
                 if response.status_code == 200:
-                    # Jika tidak bisa menulis ke folder static, simpan ke /tmp
-                    print("Tidak dapat menulis ke folder static. Menyimpan ke /tmp...")
-                    file_path = "/tmp"
                     # buat dulu tmp
+                    file_path = "/tmp"
                     os.makedirs(os.path.join(file_path, "img"), exist_ok=True)
+                    
                     # akses
-                    temp_img_path = os.path.join(file_path, "temp_image.png")
+                    temp_img_path = os.path.join(file_path,'img', alt)
                     with open(temp_img_path, "wb") as img_file:
-                        img_file.write(response.content)
+                        for chunk in response.iter_content(chunk_size=8192):
+                            img_file.write(chunk)
 
                     # rubah terbaru ke tmp
                     img_path = temp_img_path
+                    print('result=',img_path)
 
                 # Jika file gambar ditemukan
                 if os.path.exists(img_path.strip()):
