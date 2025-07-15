@@ -111,20 +111,23 @@ def is_valid_datetime_format(value):
 def build_target(now: datetime, target_time) -> datetime:
     """Padukan jam‑menit target ke tanggal hari ini (atau besok)."""
     today_target = datetime.datetime.combine(now.date(), target_time)
-    if today_target < now:           # kalau sudah lewat hari ini, pakai besok
-        today_target += datetime.timedelta(days=1)
     return today_target
 
 def pick_delta(diff: datetime.timedelta) -> int | None:
-    breakpoints = [30, 5, 0, -5, -10, -15, -20]        # satuan: menit
+    breakpoints = [30,25,20,15,10, 5, 0, -5, -10, -15, -20]   
+    bp_ke = None
+    print(datetime.timedelta(minutes=-15)>=datetime.timedelta(minutes=breakpoints[-1]))
+    # satuan: menit
     for bp in breakpoints:
-        if bp >= 0:                                    # masa sebelum target
-            if diff <= datetime.timedelta(minutes=bp):
-                return bp
-        else:                                          # masa sesudah target
-            if diff <= datetime.timedelta(minutes=bp):          # diff negatif lebih besar ⇒ lebih lampau
-                return bp
-    return None
+        print(diff, datetime.timedelta(minutes=bp))
+        # masa diff berada di area target awal
+        if diff <= datetime.timedelta(minutes=bp):
+            if (diff >= datetime.timedelta(minutes=breakpoints[-1])):
+                bp_ke=bp
+    else:
+        if not bp_ke:
+            return None
+        return bp_ke
 
 def countdown_time(a: datetime.datetime, b: datetime.datetime, email: str):
     from app import db
@@ -147,6 +150,7 @@ def countdown_time(a: datetime.datetime, b: datetime.datetime, email: str):
     now = a
     target =  build_target(now, b.time())
     diff = target - now
+    print(target,now, diff)
     
     angka_delta_pilih = pick_delta(diff)
     print(angka_delta_pilih)
