@@ -108,6 +108,23 @@ def is_valid_datetime_format(value):
     
     return bool(re.match(pattern, value))
 
+def build_target(now: datetime, target_time) -> datetime:
+    """Padukan jam‑menit target ke tanggal hari ini (atau besok)."""
+    today_target = datetime.datetime.combine(now.date(), target_time)
+    if today_target < now:           # kalau sudah lewat hari ini, pakai besok
+        today_target += datetime.timedelta(days=1)
+    return today_target
+
+def pick_delta(diff: datetime.timedelta) -> int | None:
+    breakpoints = [30, 5, 0, -5, -10, -15, -20]        # satuan: menit
+    for bp in breakpoints:
+        if bp >= 0:                                    # masa sebelum target
+            if diff <= datetime.timedelta(minutes=bp):
+                return bp
+        else:                                          # masa sesudah target
+            if diff <= datetime.timedelta(minutes=bp):          # diff negatif lebih besar ⇒ lebih lampau
+                return bp
+    return None
 
 def countdown_time(a: datetime.datetime, b: datetime.datetime, email: str):
     from app import db
@@ -123,27 +140,16 @@ def countdown_time(a: datetime.datetime, b: datetime.datetime, email: str):
         email (str): email target
     """
     # inisiasi angka deltanya
-    angka_deltas = [30, 5, 0, -5, -10, -15, -20]
     angka_delta_pilih = None
     result = None
 
     # lakukan synkron terhadap data yang didapat
     now = a
-    target = b
+    target =  build_target(now, b.time())
     diff = target - now
-
-    # cek apakah angka delta sesuai dengan inisiasi jika ada masuk angka delta pilih
-    for angka_delta in angka_deltas:
-        if angka_delta == 0:
-            if (
-                diff <= datetime.timedelta(seconds=angka_delta)
-                or diff >= datetime.timedelta(seconds=angka_delta)
-                and not diff <= datetime.timedelta(minutes=-5)
-            ):
-                angka_delta_pilih = angka_delta
-        else:
-            if diff <= datetime.timedelta(minutes=angka_delta):
-                angka_delta_pilih = angka_delta
+    
+    angka_delta_pilih = pick_delta(diff)
+    print(angka_delta_pilih)
 
     # cek jika angka_delta pilih diluar kondisi
     if angka_delta_pilih is None:
@@ -212,6 +218,7 @@ def unhadir_absensi():
                         b=datetime.datetime.strptime(waktu_awal_kerja, "%H.%M"),
                         email=email_user,
                     )
+                    print('angka delta = ',angka_delta_pilih)
                     if angka_delta_pilih:
                         AbsensiNotify(email_user, angka_delta_pilih)
 
