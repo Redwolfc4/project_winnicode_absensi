@@ -359,7 +359,7 @@ notifAbsen = () => {
 
           // Jika waktu habis
           else if (
-            countdownTime == 0 &&
+            countdownTime <= 0 &&
             countdownTime > -5 * 60 &&
             tepatWaktu != true &&
             Notification.permission === "granted"
