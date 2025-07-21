@@ -646,7 +646,7 @@ class AbsensiNotify(OtpPasswordGenerator):
         >>> print(message_id)
         <Message-ID>
         """
-        from app import db
+        from app import db,url_for
 
         self.__email_receiver = email_receiver
         self.__angka_delta = angka_delta
@@ -661,11 +661,11 @@ class AbsensiNotify(OtpPasswordGenerator):
         # Create email body template with user details
         if self.__angka_delta > 0:
             self.__body = f"""
-                Waktu tinggal {self.__angka_delta } menit, persiapan untuk melakukan absensi di <b>AbsensiKu<b>
+                Waktu tinggal {self.__angka_delta } menit, persiapan untuk melakukan absensi di <a href='{url_for('dashboard',_external=True)}' target='_blank' style='text-decoration: none; color: #ff66c4'>Absensi<span style='color: black;'>Ku</span></a>
             """
         elif self.__angka_delta  == 0:
             self.__body = f"""
-                Absensi telah dimulai, segera lakukan absensi di <b>AbsensiKu<b> sekarang
+                Absensi telah dimulai, segera lakukan absensi di <a href='{url_for('dashboard',_external=True)}' target='_blank' style='text-decoration: none; color: #ff66c4'>Absensi<span style='color: black;'>Ku</span></a> sekarang
             """
         elif self.__angka_delta  == -20:
             self.__body = f"""
