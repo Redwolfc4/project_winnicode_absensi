@@ -1059,12 +1059,23 @@
 
                 // Event ketika selesai mengetik
                 cell.off('blur').on('blur', function () {
+                    const isSelect = this.tagName.toLowerCase()==='select'
+
                     //value baru
                     const newValue = $(this).val().trim();
 
                     if (!newValue) {
                         if (inputId != 'link_input') {
                             console.error('Value tidak boleh kosong');
+                            Swal.fire({
+                                icon: "error",
+                                title: "OOPS!",
+                                html: `Value tidak boleh kosong`,
+                                timer: 3000,
+                                willClose: () => {
+                                    return
+                                },
+                            });
                             return;
 
                         }
@@ -1073,6 +1084,16 @@
                     //jika value baru sama dengan value lama dan bukan dari accepted
                     if (newValue === oldValue && inputId != 'accepted') {
                         console.error('Value tidak berubah');
+                        Swal.fire({
+                                icon: "error",
+                                title: "OOPS!",
+                                html: `Value tidak berubah`,
+                                timer: 3000,
+                                willClose: () => {
+                                    return
+                                },
+                            });
+                            return;
                         return;
                     }
 
@@ -1092,62 +1113,75 @@
                     }
 
                     cell.prop('disabled', true); // Disable input temporarily
+                    
                     // Kirim data ke server
-                    $.ajax({
-                        url: '/task/edit', // Endpoint backend
-                        method: 'POST',
-                        contentType: 'application/json',
-                        data: JSON.stringify({
-                            rowId_receive: rowId,
-                            inputId_receive: inputId,
-                            newValue_receive: newValue,
-                        }),
-                        headers: {
-                            'Content-Type': 'Application/json',
-                            'X-CSRF-Token': '{{ csrf_token() }}'
-                        },
-                        success: function (response, status, xhr) {
-                            console.log(response, status, xhr)
-                            if (response.redirect && xhr.status == 200) {
-                                const url = new URL(response.redirect, window.location.origin);
-                                const msg = url.searchParams.get('msg');
-                                Swal.fire({
-                                    icon: "success",
-                                    title: "Sukses!",
-                                    html: `${msg}`,
-                                    timer: 3000,
-                                    willClose: () => {
-                                        console.log('Update Data berhasil'), xhr.status;
-                                    },
-                                });
-                            }
+                    console.log('jalan')
+                    $("section#menu").fadeOut(200, async function () {
+                        $("section#loading").fadeIn(500, function () {
+                            $.ajax({
+                                url: '/task/edit', // Endpoint backend
+                                method: 'POST',
+                                contentType: 'application/json',
+                                data: JSON.stringify({
+                                    rowId_receive: rowId,
+                                    inputId_receive: inputId,
+                                    newValue_receive: newValue,
+                                }),
+                                headers: {
+                                    'Content-Type': 'Application/json',
+                                    'X-CSRF-Token': '{{ csrf_token() }}'
+                                },
+                                success: function (response, status, xhr) {
+                                    console.log(response, status, xhr)
+                                    if (response.redirect && xhr.status == 200) {
+                                        const url = new URL(response.redirect, window.location.origin);
+                                        const msg = url.searchParams.get('msg');
+                                        Swal.fire({
+                                            icon: "success",
+                                            title: "Sukses!",
+                                            html: `${msg}`,
+                                            timer: 3000,
+                                            willClose: () => {
+                                                console.log('Update Data berhasil'), xhr.status;
+                                            },
+                                        });
+                                    }
 
-                        },
-                        error: function (xhr, status, error) {
-                            console.log(xhr, status, error);
-                            if (xhr.responseJSON) {
-                                const url = new URL(xhr.responseJSON.redirect, window.location.origin);
-                                console.log(url)
-                                const msg = url.searchParams.get('msg');
-                                if (xhr.responseJSON.redirect && xhr.status == 500 && url.pathname !== '/sign-in/') {
-                                    Swal.fire({
-                                        icon: "error",
-                                        title: "OOPS!",
-                                        html: `${msg}`,
-                                        timer: 3000,
-                                        willClose: () => {
-                                            console.log('Update data gagal'), 500;
-                                        },
-                                    });
-                                } else if (xhr.responseJSON.redirect && xhr.status == 500 && url.pathname === '/sign-in/') {
-                                    window.location.replace('/task')
-                                }
-                            }
-                        },
-                        complete: function () {
-                            cell.prop('disabled', false); // Re-enable input
-                        },
-                    });
+                                },
+                                error: function (xhr, status, error) {
+                                    console.log(xhr, status, error);
+                                    if (xhr.responseJSON) {
+                                        const url = new URL(xhr.responseJSON.redirect, window.location.origin);
+                                        console.log(url)
+                                        const msg = url.searchParams.get('msg');
+                                        if (xhr.responseJSON.redirect && xhr.status == 500 && url.pathname !== '/sign-in/') {
+                                            Swal.fire({
+                                                icon: "error",
+                                                title: "OOPS!",
+                                                html: `${msg}`,
+                                                timer: 3000,
+                                                willClose: () => {
+                                                    console.log('Update data gagal'), 500;
+                                                },
+                                            });
+                                        } else if (xhr.responseJSON.redirect && xhr.status == 500 && url.pathname === '/sign-in/') {
+                                            window.location.replace('/task')
+                                        }
+                                    }
+                                },
+                                complete: function () {
+                                    $("section#loading").fadeOut(200, async function () {
+                                        $("section#menu").fadeIn(500, function () {
+                                            if(isSelect){
+                                                window.location.reload()
+                                            }
+                                            cell.prop('disabled', false); // Re-enable input
+                                        })
+                                    })
+                                },
+                            });
+                        })
+                    })
 
                 });
             });
