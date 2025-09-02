@@ -1,4 +1,3 @@
-
 ![Logo](https://i.ibb.co.com/Nr4prRB/absensiku-logo.png)
 
 
@@ -11,7 +10,7 @@
 
 # AbsensiKu Project`s
 
-&nbsp;&nbsp;&nbsp;Merupakan sebuah proyek website absensi yang berguna untuk otomatisasi kehadiran dalam meningkatkan efisiensi, transparansi dan akurasi pengelolaan waktu dan kehadiran karyawan serta memungkinkan pengelolaan sumber daya manusia yang lebih optimal. Fitur yang ditawarkan berbagai macam mulai dari rekap kehadiran sampai progress tugas yang diberikan serta website ini dikembangkan dengan menggunakan framework **Flask**.
+Merupakan sebuah proyek website absensi yang berguna untuk otomatisasi kehadiran dalam meningkatkan efisiensi, transparansi dan akurasi pengelolaan waktu dan kehadiran karyawan serta memungkinkan pengelolaan sumber daya manusia yang lebih optimal. Fitur yang ditawarkan berbagai macam mulai dari rekap kehadiran sampai progress tugas yang diberikan serta website ini dikembangkan dengan menggunakan framework **Flask**.
 
 
 
